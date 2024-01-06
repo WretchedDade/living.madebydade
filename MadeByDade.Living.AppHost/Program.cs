@@ -6,17 +6,17 @@ IDistributedApplicationBuilder builder = DistributedApplication.CreateBuilder(ar
 
 bool useLocalDB = builder.Configuration.GetValue<bool>("UseLocalDB");
 
-IResourceBuilder<ProjectResource> api = builder.AddProject<Projects.MadeByDade_Living_API>("API");
+IResourceBuilder<ProjectResource> api = builder.AddProject<Projects.MadeByDade_Living_API>("living-api");
 
 if (useLocalDB)
 {
-    IResourceBuilder<SqlServerDatabaseResource> sqlServer = builder.AddSqlServer("SQL")
+    IResourceBuilder<SqlServerDatabaseResource> sqlServer = builder.AddSqlServer("living-sql")
     .AddDatabase("Living");
 
     api = api.WithReference(sqlServer);
 }
 
-builder.AddNpmApp("UI", "../MadeByDade.Living.React", "dev")
+builder.AddNpmApp("living-ui", "../MadeByDade.Living.React", "dev")
     .WithReference(api)
     .WithServiceBinding(hostPort: 5173, scheme: "http", env: "PORT")
     .AsDockerfileInManifest();
