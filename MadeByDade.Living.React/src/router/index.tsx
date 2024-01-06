@@ -7,10 +7,9 @@ import { queryClient } from "../config";
 import bills from "../bills/BillSetup";
 import home from "../home";
 import layout from "../layout";
-import redirect from "./redirect";
 import root from "./root";
 
-const routeTree = root.addChildren([layout.addChildren([home, bills]), redirect]);
+const routeTree = root.addChildren([layout.addChildren([home, bills])]);
 
 export default function Router() {
 	const auth = useAuth();
