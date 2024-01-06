@@ -18,7 +18,7 @@ if (useLocalDB)
 else
 {
     api = api.WithEnvironment("ConnectionStrings__Living", "Living")
-             .WithEnvironment("AzureAD:ClientSecret", "ClientSecret");
+             .WithEnvironment("AzureAD__ClientSecret", "ClientSecret");
 }
 
 builder.AddNpmApp("living-ui", "../MadeByDade.Living.React", "dev")
