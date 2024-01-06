@@ -1,4 +1,7 @@
+using Aspire.Hosting;
 using Microsoft.Extensions.Configuration;
+using Microsoft.OpenApi.Models;
+using Aspire.Hosting.Azure;
 
 IDistributedApplicationBuilder builder = DistributedApplication.CreateBuilder(args);
 
@@ -6,14 +9,20 @@ IDistributedApplicationBuilder builder = DistributedApplication.CreateBuilder(ar
 
 bool useLocalDB = builder.Configuration.GetValue<bool>("UseLocalDB");
 
+
 IResourceBuilder<ProjectResource> api = builder.AddProject<Projects.MadeByDade_Living_API>("living-api");
 
 if (useLocalDB)
 {
     IResourceBuilder<SqlServerDatabaseResource> sqlServer = builder.AddSqlServer("living-sql")
-    .AddDatabase("Living");
+        .AddDatabase("Living");
 
     api = api.WithReference(sqlServer);
+}
+else
+{
+    api = api.WithEnvironment("ConnectionStrings__Living", "Living")
+             .WithEnvironment("AzureAD:ClientSecret", "ClientSecret");
 }
 
 builder.AddNpmApp("living-ui", "../MadeByDade.Living.React", "dev")
