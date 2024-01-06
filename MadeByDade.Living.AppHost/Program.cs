@@ -1,14 +1,10 @@
-using Aspire.Hosting;
 using Microsoft.Extensions.Configuration;
-using Microsoft.OpenApi.Models;
-using Aspire.Hosting.Azure;
 
 IDistributedApplicationBuilder builder = DistributedApplication.CreateBuilder(args);
 
 //var cache = builder.AddRedis("cache");
 
 bool useLocalDB = builder.Configuration.GetValue<bool>("UseLocalDB");
-
 
 IResourceBuilder<ProjectResource> api = builder.AddProject<Projects.MadeByDade_Living_API>("living-api");
 
