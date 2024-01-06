@@ -1,11 +1,25 @@
+using Hangfire;
+using MadeByDade.Living.API.Jobs;
 using MadeByDade.Living.Data;
 using MadeByDade.Living.ServiceDefaults;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Identity.Web;
 using System.Reflection;
+using System.Text.Json.Serialization;
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddHangfire(config =>
+{
+    config
+    .SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
+        .UseSimpleAssemblyNameTypeSerializer()
+        .UseRecommendedSerializerSettings()
+        .UseSqlServerStorage(builder.Configuration.GetConnectionString("Living"));
+});
+
+builder.Services.AddHangfireServer();
 
 builder.Services.AddDbContext<LivingContext>(options =>
 {
@@ -18,6 +32,8 @@ builder.Services.AddDbContext<LivingContext>(options =>
         });
 });
 
+builder.Services.AddScoped<ICreateUpcomingBillPayments, CreateUpcomingBillPayments>();
+
 builder.AddServiceDefaults();
 
 // Add services to the container.
@@ -27,7 +43,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             .AddMicrosoftGraph(builder.Configuration.GetSection("MicrosoftGraph"))
             .AddInMemoryTokenCaches();
 
-builder.Services.AddControllers();
+builder.Services.AddControllers().AddJsonOptions(options => options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()));
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
@@ -71,5 +87,8 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+app.MapHangfireDashboard();
+
+RecurringJob.AddOrUpdate<ICreateUpcomingBillPayments>(nameof(CreateUpcomingBillPayments), service => service.Execute(), Cron.Minutely());
 
 app.Run();

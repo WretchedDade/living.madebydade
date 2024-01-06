@@ -4,11 +4,13 @@ import { useAuth } from "../auth";
 import { AuthContext } from "../auth/AuthProvider";
 import { queryClient } from "../config";
 
+import bills from "../bills/BillSetup";
 import home from "../home";
 import layout from "../layout";
+import redirect from "./redirect";
 import root from "./root";
 
-const routeTree = root.addChildren([layout.addChildren([home])]);
+const routeTree = root.addChildren([layout.addChildren([home, bills]), redirect]);
 
 export default function Router() {
 	const auth = useAuth();

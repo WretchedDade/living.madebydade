@@ -19,6 +19,8 @@ public class Bill
 
     [Required]
     public BillDueType DueType { get; set; }
+
+    public List<BillPayment> Payments { get; set; } = [];
 }
 
 public enum BillDueType

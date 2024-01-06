@@ -26,4 +26,14 @@ public class LivingContext : DbContext
 
         base.OnConfiguring(optionsBuilder);
     }
+
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<Bill>()
+            .HasMany(bill => bill.Payments)
+            .WithOne(payment => payment.Bill)
+            .HasForeignKey(payment => payment.BillId);
+
+        base.OnModelCreating(modelBuilder);
+    }
 }

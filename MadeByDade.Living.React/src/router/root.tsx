@@ -9,10 +9,12 @@ import { GetRouterDevTools } from "./utils";
 // eslint-disable-next-line react-refresh/only-export-components
 const TanStackRouterDevtools = GetRouterDevTools()!;
 
-const buildRoot = rootRouteWithContext<{
+export interface RouterContext {
 	auth: AuthContext;
 	queryClient: QueryClient;
-}>();
+}
+
+const buildRoot = rootRouteWithContext<RouterContext>();
 
 const root = buildRoot({
 	component: function Root() {

@@ -1,7 +1,7 @@
 import { useAuth } from "../auth";
 import root from "./root";
 
-import { Route, redirect } from "@tanstack/react-router";
+import { Route, redirect as TanstackRedirect } from "@tanstack/react-router";
 
 export default new Route({
 	getParentRoute: () => root,
@@ -9,7 +9,7 @@ export default new Route({
 	component: function Home() {
 		const auth = useAuth();
 
-		return redirect({
+		return TanstackRedirect({
 			to: auth.redirect ?? "/",
 		});
 	},

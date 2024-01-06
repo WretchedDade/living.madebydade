@@ -1,0 +1,29 @@
+.control {
+	background-color: transparent;
+	border: none;
+	border-bottom: 2px solid transparent;
+	color: light-dark(var(--mantine-color-gray-7), var(--mantine-color-dark-0));
+	display: block;
+	padding: 9px var(--mantine-spacing-md) 5px;
+	border-radius: var(--mantine-radius-xs);
+	font-weight: 500;
+	text-decoration: none;
+	height: 40px;
+
+	[data-mantine-color-scheme] &[data-status="active"] {
+		color: var(--mantine-color-blue-9);
+		background-color: light-dark(var(--mantine-color-gray-0), var(--mantine-color-dark-6));
+		border-bottom: 2px solid var(--mantine-color-blue-9);
+	}
+
+	@mixin hover {
+		background-color: light-dark(var(--mantine-color-gray-0), var(--mantine-color-dark-6));
+		border-bottom: 2px solid var(--mantine-color-blue-9);
+
+		[data-mantine-color-scheme] &[data-status="active"] {
+			color: var(--mantine-color-blue-9);
+			background-color: light-dark(var(--mantine-color-gray-1), var(--mantine-color-dark-7));
+			border-bottom: 2px solid var(--mantine-color-blue-9);
+		}
+	}
+}

@@ -1,24 +1,35 @@
-import { Burger, Container, Group } from "@mantine/core";
+import { AppShell, Burger, Group, Stack } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
-import { Link } from "@tanstack/react-router";
+import { Outlet } from "@tanstack/react-router";
 
-import classes from "./Layout.module.css";
+import Links from "./Links";
 
 export default function Layout() {
-	const [opened, { toggle }] = useDisclosure(false);
+	const [opened, { toggle }] = useDisclosure();
 
 	return (
-		<header className={classes.header}>
-			<Container size="md" className={classes.inner}>
-				Living
-				{/* <MantineLogo size={28} /> */}
-				<Group gap={5} visibleFrom="xs">
-					<Link to="/" className={classes.link} activeProps={{ className: classes.linkActive }}>
-						Home
-					</Link>
+		<AppShell header={{ height: 60 }} navbar={{ width: 300, breakpoint: "sm", collapsed: { desktop: true, mobile: !opened } }} padding="md">
+			<AppShell.Header>
+				<Group h="100%" px="md">
+					<Burger opened={opened} onClick={toggle} hiddenFrom="sm" size="sm" />
+					<Group justify="space-between" style={{ flex: 1 }}>
+						Living | Made by Dade
+						<Group ml="xl" visibleFrom="sm">
+							<Links />
+						</Group>
+					</Group>
 				</Group>
-				<Burger opened={opened} onClick={toggle} hiddenFrom="xs" size="sm" />
-			</Container>
-		</header>
+			</AppShell.Header>
+
+			<AppShell.Navbar py="md" px="md">
+				<Stack>
+					<Links />
+				</Stack>
+			</AppShell.Navbar>
+
+			<AppShell.Main>
+				<Outlet />
+			</AppShell.Main>
+		</AppShell>
 	);
 }

@@ -1,12 +1,16 @@
 ﻿using MadeByDade.Living.Data;
 using MadeByDade.Living.Data.Bills;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Identity.Web;
 
 namespace MadeByDade.Living.API.Controllers;
 
-[Route("api/[controller]")]
+[Authorize]
 [ApiController]
+[Route("api/[controller]")]
+[AuthorizeForScopes(ScopeKeySection = "AzureAd:Scopes")]
 public class BillsController : ControllerBase
 {
     private readonly LivingContext _context;
