@@ -1,0 +1,35 @@
+.root {
+	background-color: var(--mantine-color-blue-filled);
+
+	height: 100vh;
+
+	padding-top: rem(80px);
+	padding-bottom: rem(120px);
+}
+
+.label {
+	text-align: center;
+	font-weight: 900;
+	font-size: rem(220px);
+	line-height: 1;
+	margin-bottom: calc(var(--mantine-spacing-xl) * 1.5);
+	color: var(--mantine-color-blue-3);
+
+	@media (max-width: $mantine-breakpoint-sm) {
+		font-size: rem(120px);
+	}
+}
+
+.title {
+	color: var(--mantine-color-white);
+
+	font-family: Greycliff CF, var(--mantine-font-family);
+	font-weight: 900;
+	font-size: rem(38px);
+
+	text-align: center;
+
+	@media (max-width: $mantine-breakpoint-sm) {
+		font-size: rem(32px);
+	}
+}
