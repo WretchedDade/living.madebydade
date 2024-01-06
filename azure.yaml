@@ -1,0 +1,8 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/Azure/azure-dev/main/schemas/v1.0/azure.yaml.json
+
+name: living.madebydade
+services:  
+  app:
+    language: dotnet
+    project: .\MadeByDade.Living.AppHost\MadeByDade.Living.AppHost.csproj
+    host: containerapp

@@ -1,16 +1,24 @@
+using Microsoft.Extensions.Configuration;
+
 IDistributedApplicationBuilder builder = DistributedApplication.CreateBuilder(args);
 
 //var cache = builder.AddRedis("cache");
 
-IResourceBuilder<SqlServerDatabaseResource> sqlServer = builder.AddSqlServer("SQL")
-    .AddDatabase("living");
+bool useLocalDB = builder.Configuration.GetValue<bool>("UseLocalDB");
 
-IResourceBuilder<ProjectResource> api = builder.AddProject<Projects.MadeByDade_Living_API>("API")
-    .WithReference(sqlServer);
+IResourceBuilder<ProjectResource> api = builder.AddProject<Projects.MadeByDade_Living_API>("API");
+
+if (useLocalDB)
+{
+    IResourceBuilder<SqlServerDatabaseResource> sqlServer = builder.AddSqlServer("SQL")
+    .AddDatabase("Living");
+
+    api = api.WithReference(sqlServer);
+}
 
 builder.AddNpmApp("UI", "../MadeByDade.Living.React", "dev")
     .WithReference(api)
-    .WithServiceBinding(scheme: "http", env: "PORT")
+    .WithServiceBinding(hostPort: 5173, scheme: "http", env: "PORT")
     .AsDockerfileInManifest();
 
 builder.Build().Run();

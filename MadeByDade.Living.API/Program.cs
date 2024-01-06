@@ -12,8 +12,7 @@ WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddHangfire(config =>
 {
-    config
-    .SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
+    config.SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
         .UseSimpleAssemblyNameTypeSerializer()
         .UseRecommendedSerializerSettings()
         .UseSqlServerStorage(builder.Configuration.GetConnectionString("Living"));
