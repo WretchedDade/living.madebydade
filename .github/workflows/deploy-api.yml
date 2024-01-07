@@ -12,6 +12,7 @@ on:
         paths:
             - "MadeByDade.Living.API/**"
             - "MadeByDade.Living.Data/**"
+            - ".github/workflows/deploy-api.yml"
 
 jobs:
     Build:
