@@ -69,7 +69,7 @@ export default function BillSetup() {
 	});
 
 	return (
-		<Container fluid>
+		<Container fluid flex={1}>
 			<Title order={1}>Bill Setup</Title>
 
 			{billsQuery.isSuccess && billsQuery.data.length > 0 && (

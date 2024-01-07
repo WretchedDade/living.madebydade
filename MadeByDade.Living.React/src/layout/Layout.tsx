@@ -2,10 +2,15 @@ import { AppShell, Burger, Group, Stack } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
 import { Outlet } from "@tanstack/react-router";
 
+import { useEffect } from "react";
 import Links from "./Links";
 
 export default function Layout() {
-	const [opened, { toggle }] = useDisclosure();
+	const [opened, { close, toggle }] = useDisclosure();
+
+	useEffect(() => {
+		close();
+	}, [window.location.href]);
 
 	return (
 		<AppShell header={{ height: 60 }} navbar={{ width: 300, breakpoint: "sm", collapsed: { desktop: true, mobile: !opened } }} padding="md">
@@ -27,7 +32,7 @@ export default function Layout() {
 				</Stack>
 			</AppShell.Navbar>
 
-			<AppShell.Main>
+			<AppShell.Main display="flex">
 				<Outlet />
 			</AppShell.Main>
 		</AppShell>

@@ -1,4 +1,4 @@
-import { Button, Group, Skeleton, Table, Text } from "@mantine/core";
+import { Button, Group, Skeleton, Stack, Table, Text } from "@mantine/core";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
 
@@ -38,7 +38,7 @@ export function BillsToPay() {
 			);
 
 		return (
-			<>
+			<Stack h="100%" justify="space-between">
 				<Table striped="even" highlightOnHover withColumnBorders>
 					<Table.Thead>
 						<Table.Tr>
@@ -63,7 +63,7 @@ export function BillsToPay() {
 						Go to Unpaid Bills
 					</Button>
 				</Group>
-			</>
+			</Stack>
 		);
 	}
 }

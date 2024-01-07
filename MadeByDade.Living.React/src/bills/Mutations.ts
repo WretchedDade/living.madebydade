@@ -14,9 +14,13 @@ export function useBillPaymentUpdateMutation(options?: BillPaymentUpdateMutation
 		mutationFn: async (billPayment: BillPayment) => {
 			const accessToken = await acquireToken();
 
-			const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/BillPayments/${billPayment.id}`, {
+			const response = await fetch(`${import.meta.env.VITE_API_URL}/api/BillPayments/${billPayment.id}`, {
 				method: "PUT",
-				headers: { Authorization: `Bearer ${accessToken}` },
+				headers: {
+					"Content-Type": "application/json",
+					Authorization: `Bearer ${accessToken}`,
+				},
+				body: JSON.stringify(billPayment),
 			});
 
 			if (!response.ok) throw new Error("Failed to update bill payment");

@@ -5,7 +5,8 @@ export const BillPaymentSchema = z.object({
 	id: z.number(),
 	billId: z.number(),
 	dateDue: z.string(),
-	datePaid: z.string(),
+	datePaid: z.string().nullable(),
+	createdOn: z.string(),
 	isPaid: z.boolean(),
 
 	bill: BillSchema,

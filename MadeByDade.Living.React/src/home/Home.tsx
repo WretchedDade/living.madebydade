@@ -5,7 +5,7 @@ import { Countdown } from "./Countdown";
 
 export default function Home() {
 	return (
-		<Container fluid>
+		<Container fluid flex={1}>
 			<Title order={1}>Home</Title>
 			<SimpleGrid mt="xl" cols={{ base: 1, sm: 2 }} spacing="md">
 				<Card shadow="md" mb={{ base: 0, md: "xl" }}>
@@ -14,7 +14,7 @@ export default function Home() {
 							Bills to Pay
 						</Title>
 					</Card.Section>
-					<Card.Section px="xs" py="xs">
+					<Card.Section px="xs" py="xs" h="100%">
 						<BillsToPay />
 					</Card.Section>
 				</Card>

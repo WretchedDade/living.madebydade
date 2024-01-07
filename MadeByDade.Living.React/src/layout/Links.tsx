@@ -8,6 +8,9 @@ export default function Links() {
 			<Link to="/" className={classes.control}>
 				Home
 			</Link>
+			<Link to="/UnpaidBills" className={classes.control}>
+				Unpaid Bills
+			</Link>
 			<Link to="/BillSetup" className={classes.control}>
 				Bill Setup
 			</Link>
