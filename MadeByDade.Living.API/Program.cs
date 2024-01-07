@@ -1,4 +1,5 @@
 using Hangfire;
+using MadeByDade.Living.API;
 using MadeByDade.Living.API.Jobs;
 using MadeByDade.Living.Data;
 using MadeByDade.Living.ServiceDefaults;
@@ -86,7 +87,10 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
-app.MapHangfireDashboard();
+app.MapHangfireDashboard("/jobs", new()
+{
+    Authorization = new[] { new HangfireDashboardAuthorizationFilter() }
+});
 
 RecurringJob.AddOrUpdate<ICreateUpcomingBillPayments>(nameof(CreateUpcomingBillPayments), service => service.Execute(), Cron.Minutely());
 
