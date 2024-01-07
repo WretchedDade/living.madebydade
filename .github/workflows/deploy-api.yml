@@ -14,7 +14,7 @@ on:
             - "MadeByDade.Living.Data/**"
 
 jobs:
-    build:
+    Build:
         runs-on: windows-latest
 
         steps:
@@ -25,37 +25,40 @@ jobs:
               with:
                   dotnet-version: 8.0.x
 
-            - name: Build with dotnet
+            - name: Restore Workloads
+              run: dotnet workload restore
+
+            - name: Build
               run: dotnet build --configuration Release
 
-            - name: dotnet publish
+            - name: Publish
               run: dotnet publish ./MadeByDade.Living.API/ -c Release -o ${{env.DOTNET_ROOT}}/Release/MadeByDade.Living.API
 
-            - name: Upload artifact for deployment job
+            - name: Upload Artifact
               uses: actions/upload-artifact@v3
               with:
-                  name: .net-app
+                  name: living-api
                   path: ${{env.DOTNET_ROOT}}/Release/MadeByDade.Living.API
                   retention_days: 3
 
-    deploy:
+    Deploy:
         runs-on: windows-latest
-        needs: build
+        needs: Build
         environment:
             name: "Production"
             url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
 
         steps:
-            - name: Download artifact from build job
+            - name: Download Artifact
               uses: actions/download-artifact@v2
               with:
-                  name: .net-app
+                  name: living-api
 
             - name: Deploy to Azure Web App
               id: deploy-to-webapp
               uses: azure/webapps-deploy@v2
               with:
-                  app-name: "my-life-api"
+                  app-name: "living-api"
                   slot-name: "Production"
                   publish-profile: ${{ secrets.PUBLISH_PROFILE }}
                   package: .
