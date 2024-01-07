@@ -43,8 +43,8 @@ jobs:
               with:
                   name: build
                   path: |
-                      ./dist
-                      ./staticwebapp.config.json
+                      ./MadeByDade.Living.React/dist
+                      ./MadeByDade.Living.React/staticwebapp.config.json
 
     deploy:
         name: Deploy
