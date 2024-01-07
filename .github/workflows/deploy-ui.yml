@@ -33,6 +33,8 @@ jobs:
             - name: Build project
               run: npm run build
               env:
+                  VITE_AAD_CLIENT_ID: 6c397cda-0a74-4916-bf8c-a843bf40df0f
+                  VITE_AAD_TENANT_ID: f2bbf639-4b87-46e1-a343-e8d75a09a96a
                   VITE_API_URL: api.living.madebydade.com
 
             - name: Copy Static Web App Config
