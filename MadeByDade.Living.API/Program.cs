@@ -12,7 +12,7 @@ WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddHangfire(config =>
 {
-    config.SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
+    _ = config.SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
         .UseSimpleAssemblyNameTypeSerializer()
         .UseRecommendedSerializerSettings()
         .UseSqlServerStorage(builder.Configuration.GetConnectionString("Living"));
@@ -26,8 +26,8 @@ builder.Services.AddDbContext<LivingContext>(options =>
         connectionString: builder.Configuration.GetConnectionString("Living"),
         sqlServerOptionsAction: optionsBuilder =>
         {
-            optionsBuilder.MigrationsAssembly(Assembly.GetAssembly(typeof(LivingContext))!.FullName);
-            optionsBuilder.EnableRetryOnFailure();
+            _ = optionsBuilder.MigrationsAssembly(Assembly.GetAssembly(typeof(LivingContext))!.FullName);
+            _ = optionsBuilder.EnableRetryOnFailure();
         });
 });
 
@@ -62,6 +62,8 @@ _ = app.UseSwaggerUI(options =>
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
+    _ = app.UseCors(static builder => builder.AllowAnyMethod().AllowAnyHeader().AllowAnyOrigin());
+
     using IServiceScope scope = app.Services.CreateScope();
 
     LivingContext context = scope.ServiceProvider.GetRequiredService<LivingContext>();
@@ -69,6 +71,8 @@ if (app.Environment.IsDevelopment())
 }
 else
 {
+    _ = app.UseCors(static builder => builder.WithOrigins("https://living.madebydade.com").AllowAnyMethod().AllowAnyHeader().AllowCredentials());
+
     _ = app.UseExceptionHandler("/Error", createScopeForErrors: true);
     // The default HSTS value is 30 days.
     // You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
@@ -76,8 +80,6 @@ else
 }
 
 app.UseHttpsRedirection();
-
-app.UseCors(static builder => builder.AllowAnyMethod().AllowAnyHeader().AllowAnyOrigin());
 
 app.UseAuthentication();
 
