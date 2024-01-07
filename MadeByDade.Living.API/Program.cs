@@ -32,8 +32,6 @@ builder.Services.AddDbContext<LivingContext>(options =>
         });
 });
 
-builder.Services.AddScoped<ICreateUpcomingBillPayments, CreateUpcomingBillPayments>();
-
 builder.AddServiceDefaults();
 
 // Add services to the container.
@@ -49,16 +47,14 @@ builder.Services.AddControllers().AddJsonOptions(options => options.JsonSerializ
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+builder.Services.AddScoped<ICreateUpcomingBillPayments, CreateUpcomingBillPayments>();
+
 WebApplication app = builder.Build();
 
 app.MapDefaultEndpoints();
 
 _ = app.UseSwagger();
-_ = app.UseSwaggerUI(options =>
-{
-    options.SwaggerEndpoint("/swagger/v1/swagger.json", "v1");
-    options.RoutePrefix = string.Empty;
-}); ;
+_ = app.UseSwaggerUI();
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
@@ -92,6 +88,9 @@ app.MapHangfireDashboard("/jobs", new()
     Authorization = new[] { new HangfireDashboardAuthorizationFilter() }
 });
 
-RecurringJob.AddOrUpdate<ICreateUpcomingBillPayments>(nameof(CreateUpcomingBillPayments), service => service.Execute(), Cron.Minutely());
+RecurringJob.AddOrUpdate<ICreateUpcomingBillPayments>(
+    recurringJobId: nameof(CreateUpcomingBillPayments),
+    methodCall: service => service.Execute(), Cron.Daily()
+);
 
 app.Run();

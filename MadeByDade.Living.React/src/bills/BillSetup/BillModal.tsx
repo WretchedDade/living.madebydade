@@ -130,7 +130,9 @@ export default function BillModal({ id, bill, onClose }: BillModalProps) {
 				</Fieldset>
 
 				<Group justify="flex-end" mt="lg">
-					<Button type="submit">{bill ? "Save Changes" : "Add Bill"}</Button>
+					<Button loading={mutation.isPending} type="submit">
+						{bill ? "Save Changes" : "Add Bill"}
+					</Button>
 				</Group>
 			</form>
 		</Modal>

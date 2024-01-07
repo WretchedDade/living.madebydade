@@ -6,11 +6,11 @@ IDistributedApplicationBuilder builder = DistributedApplication.CreateBuilder(ar
 
 bool useLocalDB = builder.Configuration.GetValue<bool>("UseLocalDB");
 
-IResourceBuilder<ProjectResource> api = builder.AddProject<Projects.MadeByDade_Living_API>("living-api");
+IResourceBuilder<ProjectResource> api = builder.AddProject<Projects.MadeByDade_Living_API>("living_api");
 
 if (useLocalDB)
 {
-    IResourceBuilder<SqlServerDatabaseResource> sqlServer = builder.AddSqlServer("living-sql")
+    IResourceBuilder<SqlServerDatabaseResource> sqlServer = builder.AddSqlServer("living_sql")
         .AddDatabase("Living");
 
     api = api.WithReference(sqlServer);
@@ -21,7 +21,7 @@ else
              .WithEnvironment("AzureAD__ClientSecret", "ClientSecret");
 }
 
-builder.AddNpmApp("living-ui", "../MadeByDade.Living.React", "dev")
+builder.AddNpmApp("living_ui", "../MadeByDade.Living.React", "dev")
     .WithReference(api)
     .WithServiceBinding(hostPort: 5173, scheme: "http", env: "PORT")
     .AsDockerfileInManifest();

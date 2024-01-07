@@ -13,6 +13,7 @@ public class LivingContext : DbContext
     public DbSet<BudgetItem> BudgetItems => Set<BudgetItem>();
 
     public DbSet<Bill> Bills => Set<Bill>();
+    public DbSet<BillPayment> BillPayments => Set<BillPayment>();
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {

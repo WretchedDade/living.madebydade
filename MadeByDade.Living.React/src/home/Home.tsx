@@ -1,5 +1,6 @@
-import { Container, Grid, SimpleGrid, Title } from "@mantine/core";
+import { Card, Container, Grid, SimpleGrid, Title } from "@mantine/core";
 
+import { BillsToPay } from "./BillsToPay";
 import { Countdown } from "./Countdown";
 
 export default function Home() {
@@ -7,7 +8,7 @@ export default function Home() {
 		<Container fluid>
 			<Title order={1}>Home</Title>
 			<SimpleGrid mt="xl" cols={{ base: 1, sm: 2 }} spacing="md">
-				{/* <Card shadow="md" mb={{ base: 0, md: "xl" }}>
+				<Card shadow="md" mb={{ base: 0, md: "xl" }}>
 					<Card.Section withBorder>
 						<Title p="lg" order={2} fw="normal">
 							Bills to Pay
@@ -16,7 +17,7 @@ export default function Home() {
 					<Card.Section px="xs" py="xs">
 						<BillsToPay />
 					</Card.Section>
-				</Card> */}
+				</Card>
 				<Grid gutter="md" pb="xl">
 					{events
 						.sort((a, b) => a.eventDate.localeCompare(b.eventDate))

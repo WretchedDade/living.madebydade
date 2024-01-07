@@ -4,6 +4,7 @@ using MadeByDade.Living.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace MadeByDade.Living.Data.Migrations
 {
     [DbContext(typeof(LivingContext))]
-    partial class LivingContextModelSnapshot : ModelSnapshot
+    [Migration("20240107031546_AdjustBillPaymentsDateTypes")]
+    partial class AdjustBillPaymentsDateTypes
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
