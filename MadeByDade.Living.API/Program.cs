@@ -72,7 +72,7 @@ if (app.Environment.IsDevelopment())
 }
 else
 {
-    _ = app.UseCors(static builder => builder.WithOrigins("https://living.madebydade.com").AllowAnyMethod().AllowAnyHeader().AllowCredentials());
+    _ = app.UseCors(static builder => builder.WithOrigins("https://living.madebydade.dev").AllowAnyMethod().AllowAnyHeader().AllowCredentials());
 
     _ = app.UseExceptionHandler("/Error", createScopeForErrors: true);
     // The default HSTS value is 30 days.
