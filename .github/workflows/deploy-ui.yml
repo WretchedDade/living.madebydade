@@ -14,6 +14,9 @@ jobs:
     build:
         name: Build
         runs-on: windows-latest
+        defaults:
+            run:
+                working-directory: MadeByDade.Living.React
 
         steps:
             - name: Checkout repo
