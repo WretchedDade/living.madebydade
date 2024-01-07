@@ -15,17 +15,21 @@ import LivingRouter from "./router";
 import { AuthProvider } from "./auth";
 import { msalInstance, queryClient } from "./config";
 
+import { ErrorBoundary } from "react-error-boundary";
+
 createRoot(document.getElementById("root")!).render(
-	<StrictMode>
-		<MantineProvider>
-			<Notifications />
-			<MsalProvider instance={msalInstance}>
-				<AuthProvider>
-					<QueryClientProvider client={queryClient}>
-						<LivingRouter />
-					</QueryClientProvider>
-				</AuthProvider>
-			</MsalProvider>
-		</MantineProvider>
-	</StrictMode>
+	<ErrorBoundary fallback={<div>☹️</div>} onError={(error, info) => console.log({ error, info })}>
+		<StrictMode>
+			<MantineProvider>
+				<Notifications />
+				<MsalProvider instance={msalInstance}>
+					<AuthProvider>
+						<QueryClientProvider client={queryClient}>
+							<LivingRouter />
+						</QueryClientProvider>
+					</AuthProvider>
+				</MsalProvider>
+			</MantineProvider>
+		</StrictMode>
+	</ErrorBoundary>
 );

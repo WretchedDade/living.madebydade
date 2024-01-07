@@ -23,7 +23,7 @@ const root = buildRoot({
 				<Outlet />
 				<Suspense fallback={null}>
 					<ReactQueryDevtools buttonPosition="bottom-left" />
-					<TanStackRouterDevtools position="bottom-right" />
+					{TanStackRouterDevtools && <TanStackRouterDevtools position="bottom-right" />}
 				</Suspense>
 			</>
 		);
