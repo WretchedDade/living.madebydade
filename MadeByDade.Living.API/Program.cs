@@ -53,7 +53,11 @@ WebApplication app = builder.Build();
 app.MapDefaultEndpoints();
 
 _ = app.UseSwagger();
-_ = app.UseSwaggerUI();
+_ = app.UseSwaggerUI(options =>
+{
+    options.SwaggerEndpoint("/swagger/v1/swagger.json", "v1");
+    options.RoutePrefix = string.Empty;
+}); ;
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
@@ -70,12 +74,6 @@ else
     // You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     _ = app.UseHsts();
 }
-
-if (app.Environment.IsDevelopment())
-{
-    _ = app.UseSwagger();
-    _ = app.UseSwaggerUI();
-};
 
 app.UseHttpsRedirection();
 
