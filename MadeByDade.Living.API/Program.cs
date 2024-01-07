@@ -52,12 +52,12 @@ WebApplication app = builder.Build();
 
 app.MapDefaultEndpoints();
 
+_ = app.UseSwagger();
+_ = app.UseSwaggerUI();
+
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
-    _ = app.UseSwagger();
-    _ = app.UseSwaggerUI();
-
     using IServiceScope scope = app.Services.CreateScope();
 
     LivingContext context = scope.ServiceProvider.GetRequiredService<LivingContext>();
