@@ -14,7 +14,7 @@ export default function Layout() {
 
 	return (
 		<AppShell header={{ height: 60 }} navbar={{ width: 300, breakpoint: "sm", collapsed: { desktop: true, mobile: !opened } }} padding="md">
-			<AppShell.Header>
+			<AppShell.Header style={(theme) => ({ boxShadow: theme.shadows.md })}>
 				<Group h="100%" px="md">
 					<Burger opened={opened} onClick={toggle} hiddenFrom="sm" size="sm" />
 					<Group justify="space-between" style={{ flex: 1 }}>
@@ -32,7 +32,7 @@ export default function Layout() {
 				</Stack>
 			</AppShell.Navbar>
 
-			<AppShell.Main display="flex">
+			<AppShell.Main display="flex" bg="gray.0">
 				<Outlet />
 			</AppShell.Main>
 		</AppShell>

@@ -1,7 +1,7 @@
 import { SimpleGrid, SimpleGridProps } from "@mantine/core";
 
+import { BillCard } from "../BillCard";
 import { BillPayment } from "../BillPayment";
-import { BillsGridCard } from "./BillsGridCard";
 
 export function BillsGrid(props: BillsGridProps) {
 	const cols: SimpleGridProps["cols"] = { base: 1, xs: 2, lg: 4 };
@@ -11,7 +11,7 @@ export function BillsGrid(props: BillsGridProps) {
 	return (
 		<SimpleGrid cols={cols}>
 			{props.bills.map((bill) => (
-				<BillsGridCard key={bill.id} billPayment={bill} />
+				<BillCard key={bill.id} billPayment={bill} />
 			))}
 		</SimpleGrid>
 	);

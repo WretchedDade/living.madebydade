@@ -10,6 +10,5 @@ export default new Route({
 
 	loader: GetLoader(BuildUnpaidBillPaymentsQueryOptions),
 
-	wrapInSuspense: true,
 	component: lazyRouteComponent(() => import("./Home")),
 });

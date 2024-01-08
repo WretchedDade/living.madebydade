@@ -1,10 +1,9 @@
-import { Button, Group, Skeleton, Stack, Table, Text } from "@mantine/core";
+import { Grid, Skeleton, Text } from "@mantine/core";
 import { useSuspenseQuery } from "@tanstack/react-query";
-import { Link } from "@tanstack/react-router";
 
 import { useAuth } from "../auth";
-import { format } from "../utils";
 
+import { BillCard } from "../bills/BillCard";
 import { BuildUnpaidBillPaymentsQueryOptions } from "../bills/Queries";
 
 export function BillsToPay() {
@@ -38,32 +37,13 @@ export function BillsToPay() {
 			);
 
 		return (
-			<Stack h="100%" justify="space-between">
-				<Table striped="even" highlightOnHover withColumnBorders>
-					<Table.Thead>
-						<Table.Tr>
-							<Table.Th>Name</Table.Th>
-							<Table.Th>Date Due</Table.Th>
-							<Table.Th>Amount</Table.Th>
-						</Table.Tr>
-					</Table.Thead>
-					<Table.Tbody>
-						{billPayments.map((billPayment) => (
-							<Table.Tr key={billPayment.id}>
-								<Table.Td>{billPayment.bill.name}</Table.Td>
-								<Table.Td>{format.asDateString(billPayment.dateDue, "medium")}</Table.Td>
-								<Table.Td>{format.asCurrency(billPayment.bill.amount)}</Table.Td>
-							</Table.Tr>
-						))}
-					</Table.Tbody>
-				</Table>
-
-				<Group pt="lg" justify="flex-end">
-					<Button component={Link} to="/UnpaidBills" size="sm">
-						Go to Unpaid Bills
-					</Button>
-				</Group>
-			</Stack>
+			<Grid gutter="md" pb="xl">
+				{billPayments.map((billPayment) => (
+					<Grid.Col key={billPayment.id} span={{ base: 12, md: 6, lg: 4 }} bg="transparent">
+						<BillCard billPayment={billPayment} />
+					</Grid.Col>
+				))}
+			</Grid>
 		);
 	}
 }

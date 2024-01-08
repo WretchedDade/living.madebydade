@@ -39,10 +39,11 @@ export function Countdown({ title, eventDate }: CountdownProps) {
 			pb="sm"
 			bg={colorScheme === "light" ? "white" : "dark.6"}
 			style={(theme) => ({
-				// border: `1px solid ${colorScheme === "light" ? theme.colors.gray[4] : theme.colors.dark[4]}`,
+				// border: `1px solid ${colorScheme === "light" ? theme.colors.gray[3] : theme.colors.dark[4]}`,
 				borderRadius: theme.radius.sm,
 				boxShadow: theme.shadows.md,
-			})}>
+			})}
+		>
 			<Text size="lg" fw={500} mb="md" c={colorScheme === "light" ? "blue.7" : "dark.0"} ta="center" px="sm">
 				{title}
 			</Text>
