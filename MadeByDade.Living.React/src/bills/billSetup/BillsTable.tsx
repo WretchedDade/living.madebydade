@@ -12,7 +12,7 @@ interface BillsTableProps {
 export default function BillsTable({ bills, onEdit, onDelete }: BillsTableProps) {
 	return (
 		<ScrollArea>
-			<Table miw={800} verticalSpacing="sm">
+			<Table miw={800} verticalSpacing="sm" striped="even">
 				<Table.Thead>
 					<Table.Tr>
 						<Table.Th>Name</Table.Th>

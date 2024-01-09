@@ -7,6 +7,7 @@ import { useMutation, useQueryClient, useSuspenseQuery } from "@tanstack/react-q
 
 import { notifications } from "@mantine/notifications";
 import { useAuth } from "../../auth";
+import Card from "../../shared/Card";
 import { Bill } from "../Bill";
 import { BillQueryKeys, BuildBillsQueryOptions } from "../Queries";
 import BillModal from "./BillModal";
@@ -74,20 +75,23 @@ export default function BillSetup() {
 
 			{billsQuery.isSuccess && billsQuery.data.length > 0 && (
 				<>
-					<Group justify="flex-end">
+					<Group justify="flex-end" mb="md">
 						<Button mt="sm" size="xs" color="blue" onClick={() => openBillModal(null)} leftSection={<IconPlus size={16} />}>
 							Add a bill
 						</Button>
 					</Group>
-					<BillsTable bills={billsQuery.data} onEdit={openBillModal} onDelete={deleteMutation.mutate} />
+					<Card h="auto">
+						<BillsTable bills={billsQuery.data} onEdit={openBillModal} onDelete={deleteMutation.mutate} />
+					</Card>
 				</>
 			)}
+
 			{billsQuery.isSuccess && billsQuery.data.length === 0 && (
 				<Center
-					bg="gray.0"
 					mt="xl"
 					p="xl"
 					style={(theme) => ({
+						backgroundColor: "white",
 						borderRadius: theme.radius.xl,
 						boxShadow: theme.shadows.sm,
 					})}

@@ -16,7 +16,10 @@ builder.Services.AddHangfire(config =>
     _ = config.SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
         .UseSimpleAssemblyNameTypeSerializer()
         .UseRecommendedSerializerSettings()
-        .UseSqlServerStorage(builder.Configuration.GetConnectionString("Living"));
+        .UseSqlServerStorage(builder.Configuration.GetConnectionString("Living"), new()
+        {
+            QueuePollInterval = TimeSpan.FromMinutes(30),
+        });
 });
 
 builder.Services.AddHangfireServer();

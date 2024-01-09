@@ -1,10 +1,12 @@
-import { Container, Grid, GridColProps, Title } from "@mantine/core";
+import { Center, Container, Grid, GridColProps, Loader, Title } from "@mantine/core";
 import { useQuery } from "@tanstack/react-query";
 
 import { useAuth } from "../auth";
 import { BuildUnpaidBillPaymentsQueryOptions } from "../bills/Queries";
 
 import { BillCard } from "../bills/BillCard";
+
+import Card from "../shared/Card";
 import { Countdown } from "./Countdown";
 
 export default function Home() {
@@ -17,12 +19,23 @@ export default function Home() {
 		<Container fluid flex={1}>
 			<Title order={1}>Home</Title>
 			<Grid gutter="md" pb="xl" mt="md">
+				{unpaidBillsQuery.isLoading && (
+					<Grid.Col span={colSpan} bg="transparent">
+						<Card>
+							<Center flex={1}>
+								<Loader size="xl" />
+							</Center>
+						</Card>
+					</Grid.Col>
+				)}
 				{unpaidBillsQuery.isSuccess &&
-					unpaidBillsQuery.data.map((billPayment) => (
-						<Grid.Col key={billPayment.id} span={colSpan} bg="transparent">
-							<BillCard billPayment={billPayment} />
-						</Grid.Col>
-					))}
+					unpaidBillsQuery.data
+						.filter((billPayment) => !billPayment.bill.isAutoPay)
+						.map((billPayment) => (
+							<Grid.Col key={billPayment.id} span={colSpan} bg="transparent">
+								<BillCard billPayment={billPayment} />
+							</Grid.Col>
+						))}
 				{events
 					.sort((a, b) => a.eventDate.localeCompare(b.eventDate))
 					.map((event) => (

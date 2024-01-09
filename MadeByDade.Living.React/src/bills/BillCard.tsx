@@ -1,15 +1,16 @@
-import { Badge, Button, Group, MantineColor, Stack, Text, ThemeIcon, useMantineColorScheme } from "@mantine/core";
-
-import { IconReceipt } from "@tabler/icons-react";
 import dayjs from "dayjs";
+
+import { Badge, Button, Group, MantineColor, Text, ThemeIcon } from "@mantine/core";
+import { IconReceipt } from "@tabler/icons-react";
+
 import { format } from "../utils";
+
+import Card from "../shared/Card";
 import { BillPayment } from "./BillPayment";
 import { useBillPaymentUpdateMutation } from "./Mutations";
 
 export function BillCard(props: BillCardProps) {
 	const skeleton = isSkeleton(props);
-
-	const { colorScheme } = useMantineColorScheme();
 
 	const mutation = useBillPaymentUpdateMutation({ mutationKey: ["Pay Bill", skeleton ? undefined : props.billPayment.id] });
 
@@ -27,19 +28,7 @@ export function BillCard(props: BillCardProps) {
 	// const progress = ((totalDays - daysRemaining) / totalDays) * 100;
 
 	return (
-		<Stack
-			gap={0}
-			h="100%"
-			p="md"
-			pt="lg"
-			pb="sm"
-			bg={colorScheme === "light" ? "white" : "dark.6"}
-			style={(theme) => ({
-				justifyContent: "space-between",
-				borderRadius: theme.radius.sm,
-				boxShadow: theme.shadows.md,
-			})}
-		>
+		<Card>
 			<div>
 				<Group justify="space-between">
 					<ThemeIcon size="lg" variant="light">
@@ -66,7 +55,7 @@ export function BillCard(props: BillCardProps) {
 			>
 				Mark as Paid
 			</Button>
-		</Stack>
+		</Card>
 	);
 }
 
