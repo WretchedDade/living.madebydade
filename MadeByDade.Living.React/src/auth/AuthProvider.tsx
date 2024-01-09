@@ -79,3 +79,5 @@ export function AuthProvider({ children }: PropsWithChildren<object>) {
 const IdTokenClaimsSchema = z.object({
 	roles: z.array(z.string()).optional(),
 });
+
+export type AcquireToken = AuthContext["acquireToken"];

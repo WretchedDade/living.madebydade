@@ -2,6 +2,7 @@ using Hangfire;
 using MadeByDade.Living.API;
 using MadeByDade.Living.API.Jobs;
 using MadeByDade.Living.Data;
+using MadeByDade.Living.Data.Bills;
 using MadeByDade.Living.ServiceDefaults;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
@@ -72,6 +73,32 @@ if (app.Environment.IsDevelopment())
 
     LivingContext context = scope.ServiceProvider.GetRequiredService<LivingContext>();
     _ = context.Database.EnsureCreated();
+
+    _ = context.Bills.Add(new()
+    {
+        Name = "Dominion Energy",
+        Amount = 106,
+        DayDue = DateTime.Today.AddDays(5).Day,
+        DueType = BillDueType.Fixed,
+        Payments = [
+            new BillPayment()
+            {
+                CreatedOn = DateTime.Now,
+                DateDue = DateTime.Today.AddDays(5),
+            }
+        ]
+    });
+
+    _ = context.Bills.Add(new()
+    {
+        Name = "Water & Sewer",
+        Amount = 76,
+        DayDue = 0,
+        DueType = BillDueType.EndOfMonth
+    });
+
+    _ = context.SaveChanges();
+
 }
 else
 {

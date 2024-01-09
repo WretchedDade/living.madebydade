@@ -1,3 +1,6 @@
+import { z } from "zod";
+import { AcquireToken } from "./auth/AuthProvider";
+
 function asCurrency(value: number | undefined) {
 	if (value === undefined) {
 		return "";
@@ -73,3 +76,47 @@ export const format = {
 	asMonthName,
 	asTruncated,
 };
+
+interface FetchOptions {
+	url: string;
+	method?: "GET" | "POST" | "PUT" | "DELETE";
+	payload?: unknown;
+
+	signal?: AbortSignal;
+	acquireToken: AcquireToken;
+}
+
+interface FetchAndParseOptions<TSchema extends z.ZodTypeAny> extends FetchOptions {
+	schema: TSchema;
+}
+
+export async function safeFetchAndParse<TSchema extends z.ZodTypeAny>(options: FetchAndParseOptions<TSchema>): Promise<z.infer<TSchema>> {
+	const response = await safeFetch(options);
+
+	const json = await response.json();
+	const parseResult = options.schema.safeParse(json);
+
+	if (parseResult.success) return parseResult.data;
+	else throw new Error("Unable to parse the API response. Has the schema changed?");
+}
+
+export async function safeFetch({ url, method, payload: payload, signal, acquireToken }: FetchOptions): Promise<Response> {
+	const token = await acquireToken();
+
+	const response = await fetch(`${import.meta.env.VITE_API_URL}/${url}`, {
+		signal,
+		method,
+		body: payload ? JSON.stringify(payload) : undefined,
+
+		headers: {
+			Authorization: `Bearer ${token}`,
+			"Content-Type": "application/json",
+		},
+	});
+
+	if (!response.ok) {
+		throw new Error("API call failed.");
+	}
+
+	return response;
+}

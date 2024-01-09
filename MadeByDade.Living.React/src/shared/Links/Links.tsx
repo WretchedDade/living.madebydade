@@ -11,7 +11,7 @@ export default function Links() {
 			<Link to="/UnpaidBills" className={classes.control}>
 				Unpaid Bills
 			</Link>
-			<Link to="/BillSetup" className={classes.control}>
+			<Link to="/Bills" className={classes.control}>
 				Bill Setup
 			</Link>
 		</>

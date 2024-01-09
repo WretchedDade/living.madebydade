@@ -1,21 +1,48 @@
 import { useState } from "react";
 
-import { Button, Center, Container, Group, Stack, Text, Title } from "@mantine/core";
+import { useQuery } from "@tanstack/react-query";
+import { Route } from "@tanstack/react-router";
+
+import { Button, Card, Center, Group, Stack, Text, Title } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
-import { IconPlus, IconTrash } from "@tabler/icons-react";
-import { useMutation, useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
-
 import { notifications } from "@mantine/notifications";
-import { useAuth } from "../../auth";
-import Card from "../../shared/Card";
-import { Bill } from "../Bill";
-import { BillQueryKeys, BuildBillsQueryOptions } from "../Queries";
-import BillModal from "./BillModal";
-import BillsTable from "./BillsTable";
+import { IconPlus, IconTrash } from "@tabler/icons-react";
 
-export default function BillSetup() {
+import { LayoutRoute } from "../Layout";
+
+import { useAuth } from "../auth";
+
+import type { Bill } from "./api/Bill";
+import { useDeleteBillMutation } from "./api/Mutations";
+import { BillQueryKeys, GetBills } from "./api/Queries";
+
+import LivingContainer from "../shared/LivingContainer";
+import BillModal from "./components/BillModal";
+import BillsTable from "./components/BillsTable";
+
+export const BillsRoute = new Route({
+	getParentRoute: () => LayoutRoute,
+	path: "/Bills",
+
+	loader: ({ context }) => {
+		return context.queryClient.ensureQueryData({
+			queryKey: BillQueryKeys.Bills,
+
+			queryFn: ({ signal }) => GetBills(context.auth.acquireToken, signal),
+		});
+	},
+
+	wrapInSuspense: true,
+	component: Bills,
+});
+
+function Bills() {
 	const auth = useAuth();
-	const billsQuery = useSuspenseQuery(BuildBillsQueryOptions(auth));
+	const billsQuery = useQuery({
+		queryKey: BillQueryKeys.Bills,
+
+		queryFn: ({ signal }) => GetBills(auth.acquireToken, signal),
+	});
 
 	const [bill, setBill] = useState<Bill | null>(null);
 	const [opened, { open, close }] = useDisclosure(false);
@@ -30,35 +57,7 @@ export default function BillSetup() {
 		close();
 	}
 
-	const queryClient = useQueryClient();
-	const deleteMutation = useMutation({
-		mutationFn: async (bill: Bill) => {
-			const token = await auth.acquireToken();
-
-			const response = await fetch(`${import.meta.env.VITE_API_URL}/api/bills/${bill.id}`, {
-				method: "DELETE",
-				headers: {
-					Authorization: `Bearer ${token}`,
-				},
-			});
-
-			if (!response.ok) {
-				throw new Error("Failed to delete bill");
-			}
-		},
-
-		onMutate: (bill: Bill) => {
-			queryClient.cancelQueries({ queryKey: BillQueryKeys.Bills });
-
-			queryClient.setQueryData(BillQueryKeys.Bills, (old: Bill[] | undefined) => {
-				return old?.filter((b) => b.id !== bill.id) ?? [];
-			});
-		},
-
-		onSettled: () => {
-			queryClient.invalidateQueries({ queryKey: BillQueryKeys.Bills });
-		},
-
+	const deleteMutation = useDeleteBillMutation({
 		onSuccess: (_data, bill) => {
 			notifications.show({
 				title: "Bill Deleted",
@@ -70,9 +69,7 @@ export default function BillSetup() {
 	});
 
 	return (
-		<Container fluid flex={1}>
-			<Title order={1}>Bill Setup</Title>
-
+		<LivingContainer title="Bills">
 			{billsQuery.isSuccess && billsQuery.data.length > 0 && (
 				<>
 					<Group justify="flex-end" mb="md">
@@ -109,6 +106,6 @@ export default function BillSetup() {
 			)}
 
 			{opened && <BillModal id={bill?.id} bill={bill} onClose={closeBillModal} />}
-		</Container>
+		</LivingContainer>
 	);
 }

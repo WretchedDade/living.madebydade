@@ -4,7 +4,7 @@ import duration from "dayjs/plugin/duration";
 dayjs.extend(duration);
 
 import { Group, RingProgress, Text, useMantineColorScheme } from "@mantine/core";
-import Card from "../shared/Card";
+import LivingCard from "./LivingCard";
 
 interface CountdownProps {
 	title: string;
@@ -33,7 +33,7 @@ export function Countdown({ title, eventDate }: CountdownProps) {
 	const { colorScheme } = useMantineColorScheme();
 
 	return (
-		<Card>
+		<LivingCard>
 			<Text size="lg" fw={500} mb="md" c={colorScheme === "light" ? "blue.7" : "dark.0"} ta="center" px="sm">
 				{title}
 			</Text>
@@ -57,6 +57,6 @@ export function Countdown({ title, eventDate }: CountdownProps) {
 			<Text c="dimmed" ta="center" px="sm">
 				{event.format("MMMM D, YYYY")}
 			</Text>
-		</Card>
+		</LivingCard>
 	);
 }

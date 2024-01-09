@@ -1,18 +1,14 @@
 import { PropsWithChildren } from "react";
 
-import { Stack, StyleProp, useMantineColorScheme } from "@mantine/core";
+import { Stack, StackProps, useMantineColorScheme } from "@mantine/core";
 
-interface CardProps {
-	h?: StyleProp<React.CSSProperties["height"]>;
-}
-
-export default function Card({ h = "100%", children }: PropsWithChildren<CardProps>) {
+export default function LivingCard({ children, ...stackProps }: PropsWithChildren<StackProps>) {
 	const { colorScheme } = useMantineColorScheme();
 
 	return (
 		<Stack
 			gap={0}
-			h={h}
+			h="100%"
 			p="md"
 			pt="lg"
 			pb="sm"
@@ -22,6 +18,7 @@ export default function Card({ h = "100%", children }: PropsWithChildren<CardPro
 				borderRadius: theme.radius.sm,
 				boxShadow: theme.shadows.md,
 			})}
+			{...stackProps}
 		>
 			{children}
 		</Stack>

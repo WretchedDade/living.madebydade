@@ -1,11 +1,21 @@
+import { useEffect } from "react";
+
+import { Outlet, Route } from "@tanstack/react-router";
+
 import { AppShell, Burger, Group, Stack } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
-import { Outlet } from "@tanstack/react-router";
 
-import { useEffect } from "react";
-import Links from "./Links";
+import { RootRoute } from "./Router";
+import Links from "./shared/Links/Links";
 
-export default function Layout() {
+export const LayoutRoute = new Route({
+	getParentRoute: () => RootRoute,
+	id: "layout",
+
+	component: Layout,
+});
+
+function Layout() {
 	const [opened, { close, toggle }] = useDisclosure();
 
 	useEffect(() => {

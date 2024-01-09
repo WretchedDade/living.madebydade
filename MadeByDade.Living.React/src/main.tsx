@@ -10,18 +10,18 @@ import { QueryClientProvider } from "@tanstack/react-query";
 import { MantineProvider } from "@mantine/core";
 import { Notifications } from "@mantine/notifications";
 
-import LivingRouter from "./router";
+import LivingRouter from "./Router";
 
 import { AuthProvider } from "./auth";
-import { msalInstance, queryClient } from "./config";
+import { msalInstance, queryClient, theme } from "./config";
 
 import { ErrorBoundary } from "react-error-boundary";
 
 createRoot(document.getElementById("root")!).render(
 	<ErrorBoundary fallback={<div>☹️</div>} onError={(error, info) => console.log({ error, info })}>
 		<StrictMode>
-			<MantineProvider>
-				<Notifications />
+			<MantineProvider theme={theme}>
+				<Notifications position="bottom-center" />
 				<MsalProvider instance={msalInstance}>
 					<AuthProvider>
 						<QueryClientProvider client={queryClient}>

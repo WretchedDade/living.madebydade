@@ -3,13 +3,13 @@ import dayjs from "dayjs";
 import { Badge, Button, Group, MantineColor, Text, ThemeIcon } from "@mantine/core";
 import { IconReceipt } from "@tabler/icons-react";
 
-import { format } from "../utils";
+import { format } from "../../utils";
 
-import Card from "../shared/Card";
-import { BillPayment } from "./BillPayment";
-import { useBillPaymentUpdateMutation } from "./Mutations";
+import LivingCard from "../../shared/LivingCard";
+import { BillPayment } from "../api/BillPayment";
+import { useBillPaymentUpdateMutation } from "../api/Mutations";
 
-export function BillCard(props: BillCardProps) {
+export function BillPaymentCard(props: BillCardProps) {
 	const skeleton = isSkeleton(props);
 
 	const mutation = useBillPaymentUpdateMutation({ mutationKey: ["Pay Bill", skeleton ? undefined : props.billPayment.id] });
@@ -28,7 +28,7 @@ export function BillCard(props: BillCardProps) {
 	// const progress = ((totalDays - daysRemaining) / totalDays) * 100;
 
 	return (
-		<Card>
+		<LivingCard>
 			<div>
 				<Group justify="space-between">
 					<ThemeIcon size="lg" variant="light">
@@ -55,7 +55,7 @@ export function BillCard(props: BillCardProps) {
 			>
 				Mark as Paid
 			</Button>
-		</Card>
+		</LivingCard>
 	);
 }
 
