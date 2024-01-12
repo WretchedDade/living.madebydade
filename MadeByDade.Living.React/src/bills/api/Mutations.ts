@@ -19,20 +19,20 @@ export function useBillPaymentUpdateMutation(options?: BillPaymentUpdateMutation
 
 				method: "PUT",
 				payload: billPayment,
-				url: `/api/BillPayments/${billPayment.id}`,
+				url: `api/BillPayments/${billPayment.id}`,
 			});
 		},
 
 		onMutate: async (billPayment) => {
-			queryClient.setQueryData<BillPayment[] | undefined>(BillQueryKeys.UnpaidBillPayments, (oldData) => {
+			queryClient.setQueryData<BillPayment[] | undefined>(BillQueryKeys.BillPayments(), (oldData) => {
 				if (oldData === undefined) return;
 
-				return [...oldData].filter((bill) => bill.id !== billPayment.id);
+				return [...oldData].filter((payment) => payment.id !== billPayment.id);
 			});
 		},
 
 		onSettled: () => {
-			queryClient.invalidateQueries({ queryKey: BillQueryKeys.UnpaidBillPayments });
+			queryClient.invalidateQueries({ queryKey: [BillQueryKeys.BillPayments()[0]] });
 		},
 
 		...(options ?? {}),

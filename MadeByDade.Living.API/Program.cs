@@ -91,6 +91,30 @@ if (app.Environment.IsDevelopment())
 
     _ = context.Bills.Add(new()
     {
+        Name = "Mortgage",
+        Amount = 1213,
+        DayDue = DateTime.Today.AddDays(2).Day,
+        DueType = BillDueType.Fixed,
+        IsAutoPay = true,
+        Payments = [
+            new BillPayment(){ CreatedOn = DateTime.Now, DateDue = DateTime.Today.AddDays(2), },
+            new BillPayment(){ CreatedOn = DateTime.Now, DateDue = DateTime.Today.AddDays(2), },
+            new BillPayment(){ CreatedOn = DateTime.Now, DateDue = DateTime.Today.AddDays(2), },
+            new BillPayment(){ CreatedOn = DateTime.Now, DateDue = DateTime.Today.AddDays(2), },
+            new BillPayment(){ CreatedOn = DateTime.Now, DateDue = DateTime.Today.AddDays(2), },
+            new BillPayment(){ CreatedOn = DateTime.Now, DateDue = DateTime.Today.AddDays(2), },
+            new BillPayment(){ CreatedOn = DateTime.Now, DateDue = DateTime.Today.AddDays(2), },
+            new BillPayment(){ CreatedOn = DateTime.Now, DateDue = DateTime.Today.AddDays(2), },
+            new BillPayment(){ CreatedOn = DateTime.Now, DateDue = DateTime.Today.AddDays(2), },
+            new BillPayment(){ CreatedOn = DateTime.Now, DateDue = DateTime.Today.AddDays(2), },
+            new BillPayment(){ CreatedOn = DateTime.Now, DateDue = DateTime.Today.AddDays(2), },
+            new BillPayment(){ CreatedOn = DateTime.Now, DateDue = DateTime.Today.AddDays(2), },
+            new BillPayment(){ CreatedOn = DateTime.Now, DateDue = DateTime.Today.AddDays(2), },
+        ]
+    });
+
+    _ = context.Bills.Add(new()
+    {
         Name = "Water & Sewer",
         Amount = 76,
         DayDue = 0,

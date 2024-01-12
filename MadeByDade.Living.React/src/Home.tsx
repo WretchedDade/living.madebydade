@@ -11,6 +11,7 @@ import { BillPaymentCard } from "./bills/components/BillPaymentCard";
 
 import { Countdown } from "./shared/Countdown";
 
+import { useDocumentTitle } from "@mantine/hooks";
 import LivingCard from "./shared/LivingCard";
 import LivingContainer from "./shared/LivingContainer";
 
@@ -30,6 +31,8 @@ export const HomeRoute = new Route({
 });
 
 function Home() {
+	useDocumentTitle("Living | Made by Dade");
+
 	const auth = useAuth();
 
 	const billPayments = useQuery({

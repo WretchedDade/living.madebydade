@@ -2,7 +2,9 @@ import { PropsWithChildren } from "react";
 
 import { Stack, StackProps, useMantineColorScheme } from "@mantine/core";
 
-export default function LivingCard({ children, ...stackProps }: PropsWithChildren<StackProps>) {
+export type LivingCardProps = StackProps;
+
+export default function LivingCard({ children, ...stackProps }: PropsWithChildren<LivingCardProps>) {
 	const { colorScheme } = useMantineColorScheme();
 
 	return (

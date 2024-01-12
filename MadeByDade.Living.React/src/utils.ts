@@ -120,3 +120,14 @@ export async function safeFetch({ url, method, payload: payload, signal, acquire
 
 	return response;
 }
+
+export const PageBaseSchema = z.object({
+	pageSize: z.number(),
+	pageNumber: z.number(),
+	totalItems: z.number(),
+	totalPages: z.number(),
+});
+
+export type PageMetadata = z.infer<typeof PageBaseSchema>;
+export type PageItems<TModel> = { items: TModel[] };
+export type Page<TModel> = PageMetadata & PageItems<TModel>;

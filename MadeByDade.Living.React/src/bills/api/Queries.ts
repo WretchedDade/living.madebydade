@@ -1,5 +1,5 @@
 import { AcquireToken } from "../../auth/AuthProvider";
-import { safeFetchAndParse } from "../../utils";
+import { Page, PageBaseSchema, safeFetchAndParse } from "../../utils";
 
 import { BillSchema, BillsSchema, type Bill } from "./Bill";
 import { BillPaymentsSchema, type BillPayment } from "./BillPayment";
@@ -9,7 +9,8 @@ export const BillQueryKeys = {
 
 	Bill: (billId: number) => ["Bill", billId] as const,
 
-	UnpaidBillPayments: ["Unpaid Bill Payments"],
+	UnpaidBillPayments: ["Bill Payments", "Unpaid"] as const,
+	BillPaymentsPage: (billId: number, page: number, pageSize: number) => ["Bill Payments", billId, page, pageSize] as const,
 } as const;
 
 export async function GetBills(acquireToken: AcquireToken, signal: AbortSignal): Promise<Bill[]> {
@@ -21,5 +22,30 @@ export async function GetBill(billId: number, acquireToken: AcquireToken, signal
 }
 
 export async function GetUnpaidBillPayments(acquireToken: AcquireToken, signal: AbortSignal): Promise<BillPayment[]> {
-	return await safeFetchAndParse({ url: "api/BillPayments?unpaidOnly=true", schema: BillPaymentsSchema, signal, acquireToken });
+	const queryParams = new URLSearchParams({
+		unpaidOnly: "true",
+	});
+
+	const url = `api/BillPayments?${queryParams.toString()}`;
+
+	return await safeFetchAndParse({ url, schema: BillPaymentsSchema, signal, acquireToken });
+}
+
+export async function GetBillPaymentsPage(
+	billId: number,
+	page: number,
+	pageSize: number,
+	acquireToken: AcquireToken,
+	signal: AbortSignal
+): Promise<Page<BillPayment>> {
+	const queryParams = new URLSearchParams({
+		billId: billId.toString(),
+		unpaidOnly: "false",
+		page: page.toString(),
+		pageSize: pageSize.toString(),
+	});
+
+	const url = `api/BillPayments?${queryParams.toString()}`;
+
+	return await safeFetchAndParse({ url, schema: PageBaseSchema.extend({ items: BillPaymentsSchema }), signal, acquireToken });
 }

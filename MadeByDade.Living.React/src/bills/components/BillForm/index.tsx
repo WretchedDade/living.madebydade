@@ -29,6 +29,8 @@ export default function BillForm({ type, form, isSubmitting, onSubmit }: BillFor
 					label="Amount"
 					placeholder="0.00"
 					thousandSeparator=","
+					decimalScale={2}
+					fixedDecimalScale
 					leftSection={<IconCurrencyDollar />}
 					{...form.getInputProps("amount", { withError: true })}
 				/>

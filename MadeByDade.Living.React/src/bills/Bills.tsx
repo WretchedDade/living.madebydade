@@ -4,7 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Route } from "@tanstack/react-router";
 
 import { Button, Card, Center, Group, Stack, Text, Title } from "@mantine/core";
-import { useDisclosure } from "@mantine/hooks";
+import { useDisclosure, useDocumentTitle } from "@mantine/hooks";
 import { notifications } from "@mantine/notifications";
 import { IconPlus, IconTrash } from "@tabler/icons-react";
 
@@ -37,6 +37,8 @@ export const BillsRoute = new Route({
 });
 
 function Bills() {
+	useDocumentTitle("Living | Bills");
+
 	const auth = useAuth();
 	const billsQuery = useQuery({
 		queryKey: BillQueryKeys.Bills,

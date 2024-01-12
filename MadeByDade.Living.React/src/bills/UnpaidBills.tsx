@@ -9,6 +9,7 @@ import { useAuth } from "../auth";
 
 import { LayoutRoute } from "../Layout";
 
+import { useDocumentTitle } from "@mantine/hooks";
 import LivingContainer from "../shared/LivingContainer";
 import { BillPaymentsGrid } from "./components/BillPaymentsGrid";
 import NoUnpaidBillsBanner from "./components/NoUnpaidBillsBanner";
@@ -28,6 +29,8 @@ export const UnpaidBillsRoute = new Route({
 });
 
 function UnpaidBills() {
+	useDocumentTitle("Living | Unpaid Bills");
+
 	const auth = useAuth();
 
 	const unpaidBillsQuery = useQuery({
