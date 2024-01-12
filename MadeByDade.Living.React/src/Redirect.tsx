@@ -15,5 +15,6 @@ function Redirect() {
 	return TanstackRedirect({
 		to: auth.redirect ?? "/",
 		params: {},
+		search: {},
 	});
 }
