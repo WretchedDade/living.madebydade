@@ -23,16 +23,8 @@ export function useBillPaymentUpdateMutation(options?: BillPaymentUpdateMutation
 			});
 		},
 
-		onMutate: async (billPayment) => {
-			queryClient.setQueryData<BillPayment[] | undefined>(BillQueryKeys.BillPayments(), (oldData) => {
-				if (oldData === undefined) return;
-
-				return [...oldData].filter((payment) => payment.id !== billPayment.id);
-			});
-		},
-
 		onSettled: () => {
-			queryClient.invalidateQueries({ queryKey: [BillQueryKeys.BillPayments()[0]] });
+			queryClient.invalidateQueries({ queryKey: ["Bill Payments"] });
 		},
 
 		...(options ?? {}),
