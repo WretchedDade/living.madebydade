@@ -30,12 +30,12 @@ public class CreateUpcomingBillPayments(LivingContext context, ILogger<CreateUpc
                 continue;
 
             // Check if Bill Payment already exists for this date
-            if (bill.Payments.Any(payment => payment.DateDue == nextPaymentDate.Value.Date))
+            if (bill.Payments.Any(payment => payment.DateDue.Date == nextPaymentDate.Value.Date))
             {
                 if(bill.IsAutoPay && DateTime.Today == nextPaymentDate.Value.Date)
                 {
                     // Bill Payment already exists for this date, and the bill is set to AutoPay, so pay it
-                    bill.Payments.Single(payment => payment.DateDue == nextPaymentDate.Value.Date).DatePaid = DateTime.Today;
+                    bill.Payments.Single(payment => payment.DateDue.Date == nextPaymentDate.Value.Date).DatePaid = DateTime.Today;
                     await context.SaveChangesAsync();
                 }
                 else
@@ -83,8 +83,10 @@ public class CreateUpcomingBillPayments(LivingContext context, ILogger<CreateUpc
             var endOfCurrentMonth = DateTime.SpecifyKind(DateTime.Today, DateTimeKind.Utc).ToEndOfMonth();
 
             if (DateTime.Today.Day < endOfCurrentMonth.Day)
+            {
                 // Bill is due in current month
                 return endOfCurrentMonth;
+            }
             else
             {
                 // Bill isn't due till next month
