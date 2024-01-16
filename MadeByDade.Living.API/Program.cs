@@ -98,18 +98,13 @@ if (app.Environment.IsDevelopment())
         IsAutoPay = true,
         Payments = [
             new BillPayment(){ CreatedOn = DateTime.Now, DateDue = DateTime.Today.AddDays(2), },
-            new BillPayment(){ CreatedOn = DateTime.Now, DateDue = DateTime.Today.AddDays(2), },
-            new BillPayment(){ CreatedOn = DateTime.Now, DateDue = DateTime.Today.AddDays(2), },
-            new BillPayment(){ CreatedOn = DateTime.Now, DateDue = DateTime.Today.AddDays(2), },
-            new BillPayment(){ CreatedOn = DateTime.Now, DateDue = DateTime.Today.AddDays(2), },
-            new BillPayment(){ CreatedOn = DateTime.Now, DateDue = DateTime.Today.AddDays(2), },
-            new BillPayment(){ CreatedOn = DateTime.Now, DateDue = DateTime.Today.AddDays(2), },
-            new BillPayment(){ CreatedOn = DateTime.Now, DateDue = DateTime.Today.AddDays(2), },
-            new BillPayment(){ CreatedOn = DateTime.Now, DateDue = DateTime.Today.AddDays(2), },
-            new BillPayment(){ CreatedOn = DateTime.Now, DateDue = DateTime.Today.AddDays(2), },
-            new BillPayment(){ CreatedOn = DateTime.Now, DateDue = DateTime.Today.AddDays(2), },
-            new BillPayment(){ CreatedOn = DateTime.Now, DateDue = DateTime.Today.AddDays(2), },
-            new BillPayment(){ CreatedOn = DateTime.Now, DateDue = DateTime.Today.AddDays(2), },
+            new BillPayment(){ CreatedOn = DateTime.Now, DateDue = DateTime.Today.AddDays(3), },
+            new BillPayment(){ CreatedOn = DateTime.Now, DateDue = DateTime.Today.AddDays(4), },
+            new BillPayment(){ CreatedOn = DateTime.Now, DateDue = DateTime.Today.AddDays(5), },
+            new BillPayment(){ CreatedOn = DateTime.Now, DateDue = DateTime.Today.AddDays(6), },
+            new BillPayment(){ CreatedOn = DateTime.Now, DateDue = DateTime.Today.AddDays(7), },
+            new BillPayment(){ CreatedOn = DateTime.Now, DateDue = DateTime.Today.AddMonths(1), },
+            new BillPayment(){ CreatedOn = DateTime.Now, DateDue = DateTime.Today.AddMonths(2), },
         ]
     });
 

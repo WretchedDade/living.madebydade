@@ -26,7 +26,7 @@ export async function GetUnpaidBillPayments(acquireToken: AcquireToken, signal: 
 		unpaidOnly: "true",
 	});
 
-	const url = `api/BillPayments?${queryParams.toString()}`;
+	const url = `api/BillPayments?${queryParams.toString()}&order=DateDueAscending`;
 
 	return await safeFetchAndParse({ url, schema: BillPaymentsSchema, signal, acquireToken });
 }
@@ -45,7 +45,7 @@ export async function GetBillPaymentsPage(
 		pageSize: pageSize.toString(),
 	});
 
-	const url = `api/BillPayments?${queryParams.toString()}`;
+	const url = `api/BillPayments?${queryParams.toString()}&order=DateDueDescending`;
 
 	return await safeFetchAndParse({ url, schema: PageBaseSchema.extend({ items: BillPaymentsSchema }), signal, acquireToken });
 }

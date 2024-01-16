@@ -16,13 +16,20 @@ public class BillPaymentsController(LivingContext context) : ControllerBase
         [FromQuery] int? page,
         [FromQuery] int? pageSize,
         [FromQuery] bool unpaidOnly = true,
-        [FromQuery] int? billId = null
+        [FromQuery] int? billId = null,
+        [FromQuery] BillPaymentOrder order = BillPaymentOrder.DateDueAscending
     )
     {
         IQueryable<BillPayment> query = context.BillPayments
             .Include(payment => payment.Bill)
-            .OrderByDescending(payment => payment.DateDue)
             .AsQueryable();
+
+        query = order switch
+        {
+            BillPaymentOrder.DateDueAscending => query.OrderBy(payment => payment.DateDue),
+            BillPaymentOrder.DateDueDescending => query.OrderByDescending(payment => payment.DateDue),
+            _ => query
+        };
 
         if (billId.HasValue)
             query = query.Where(payment => payment.BillId == billId.Value);

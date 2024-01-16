@@ -166,7 +166,9 @@ function Bill() {
 						<div>
 							<Group mb="sm" px="lg" align="center" justify="space-between">
 								<Title order={2}>Payments</Title>
-								<Pagination value={search.pageIndex + 1} onChange={onPageChange} total={paymentsPage.totalPages} />
+								{paymentsPage.totalPages > 1 && (
+									<Pagination value={search.pageIndex + 1} onChange={onPageChange} total={paymentsPage.totalPages} />
+								)}
 							</Group>
 							<Divider mb="md" />
 							<Grid px="md">

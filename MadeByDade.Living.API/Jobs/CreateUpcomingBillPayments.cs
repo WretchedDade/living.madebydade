@@ -36,7 +36,7 @@ public class CreateUpcomingBillPayments(LivingContext context, ILogger<CreateUpc
                 {
                     // Bill Payment already exists for this date, and the bill is set to AutoPay, so pay it
                     bill.Payments.Single(payment => payment.DateDue.Date == nextPaymentDate.Value.Date).DatePaid = DateTime.Today;
-                    await context.SaveChangesAsync();
+                    continue;
                 }
                 else
                 {
@@ -53,9 +53,9 @@ public class CreateUpcomingBillPayments(LivingContext context, ILogger<CreateUpc
             };
 
             await context.BillPayments.AddAsync(billPayment);
-            await context.SaveChangesAsync();
-
         }
+
+        await context.SaveChangesAsync();
     }
 
     public DateTime? GetNextPaymentDate(Bill bill)

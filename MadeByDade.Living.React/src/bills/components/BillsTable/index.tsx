@@ -34,6 +34,7 @@ export default function BillsTable({ bills, onEdit, onDelete }: BillsTableProps)
 									href={`/Bills/${bill.id}`}
 									component={Link}
 									to="/Bills/$billId"
+									preload="intent"
 									params={{ billId: bill.id.toString() }}
 								>
 									{bill.name}
