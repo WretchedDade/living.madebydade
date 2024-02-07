@@ -66,6 +66,7 @@ function Home() {
 					))}
 
 				{events
+					.filter((event) => new Date(event.eventDate) > new Date())
 					.sort((a, b) => a.eventDate.localeCompare(b.eventDate))
 					.map((event) => (
 						<Grid.Col span={colSpan} bg="transparent" key={event.title}>
