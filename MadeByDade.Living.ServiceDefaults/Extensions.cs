@@ -12,66 +12,85 @@ namespace MadeByDade.Living.ServiceDefaults;
 
 public static class Extensions
 {
-    public static IHostApplicationBuilder AddServiceDefaults(this IHostApplicationBuilder builder)
+    public static WebApplicationBuilder AddServiceDefaults(this WebApplicationBuilder builder)
+    {
+        builder.Host.AddServiceDefaults();
+        return builder;
+    }
+
+    public static IHostBuilder AddServiceDefaults(this IHostBuilder builder)
     {
         _ = builder.ConfigureOpenTelemetry();
 
         _ = builder.AddDefaultHealthChecks();
 
-        _ = builder.Services.AddServiceDiscovery();
-
-        _ = builder.Services.ConfigureHttpClientDefaults(http =>
+        _ = builder.ConfigureServices(services =>
         {
-            // Turn on resilience by default
-            _ = http.AddStandardResilienceHandler();
+            _ = services.AddServiceDiscovery();
 
-            // Turn on service discovery by default
-            _ = http.UseServiceDiscovery();
+            _ = services.ConfigureHttpClientDefaults(http =>
+            {
+                // Turn on resilience by default
+                _ = http.AddStandardResilienceHandler();
+
+                // Turn on service discovery by default
+                _ = http.UseServiceDiscovery();
+            });
         });
 
         return builder;
     }
 
-    public static IHostApplicationBuilder ConfigureOpenTelemetry(this IHostApplicationBuilder builder)
+    public static IHostBuilder ConfigureOpenTelemetry(this IHostBuilder builder)
     {
-        _ = builder.Logging.AddOpenTelemetry(logging =>
+        _ = builder.ConfigureLogging(logging =>
         {
-            logging.IncludeFormattedMessage = true;
-            logging.IncludeScopes = true;
+            _ = logging.AddOpenTelemetry(logging =>
+            {
+                logging.IncludeFormattedMessage = true;
+                logging.IncludeScopes = true;
+            });
         });
 
-        _ = builder.Services.AddOpenTelemetry()
-            .WithMetrics(metrics =>
-            {
-                _ = metrics.AddRuntimeInstrumentation()
-                       .AddBuiltInMeters();
-            })
-            .WithTracing(tracing =>
-            {
-                if (builder.Environment.IsDevelopment())
-                    // We want to view all traces in development
-                    _ = tracing.SetSampler(new AlwaysOnSampler());
+        _ = builder.ConfigureServices((context, services) =>
+        {
+            _ = services.AddOpenTelemetry()
+                .WithMetrics(metrics =>
+                {
+                    _ = metrics.AddRuntimeInstrumentation()
+                           .AddBuiltInMeters();
+                })
+                .WithTracing(tracing =>
+                {
+                    if (context.HostingEnvironment.IsDevelopment())
+                        // We want to view all traces in development
+                        _ = tracing.SetSampler(new AlwaysOnSampler());
 
-                _ = tracing.AddAspNetCoreInstrumentation()
-                       .AddGrpcClientInstrumentation()
-                       .AddHttpClientInstrumentation();
-            });
+                    _ = tracing.AddAspNetCoreInstrumentation()
+                           .AddGrpcClientInstrumentation()
+                           .AddHttpClientInstrumentation();
+                });
+        });
 
         _ = builder.AddOpenTelemetryExporters();
 
         return builder;
     }
 
-    private static IHostApplicationBuilder AddOpenTelemetryExporters(this IHostApplicationBuilder builder)
+    private static IHostBuilder AddOpenTelemetryExporters(this IHostBuilder builder)
     {
-        bool useOtlpExporter = !string.IsNullOrWhiteSpace(builder.Configuration["OTEL_EXPORTER_OTLP_ENDPOINT"]);
-
-        if (useOtlpExporter)
+        _ = builder.ConfigureServices((context, services) =>
         {
-            _ = builder.Services.Configure<OpenTelemetryLoggerOptions>(logging => logging.AddOtlpExporter());
-            _ = builder.Services.ConfigureOpenTelemetryMeterProvider(metrics => metrics.AddOtlpExporter());
-            _ = builder.Services.ConfigureOpenTelemetryTracerProvider(tracing => tracing.AddOtlpExporter());
-        }
+
+            bool useOtlpExporter = !string.IsNullOrWhiteSpace(context.Configuration["OTEL_EXPORTER_OTLP_ENDPOINT"]);
+
+            if (useOtlpExporter)
+            {
+                _ = services.Configure<OpenTelemetryLoggerOptions>(logging => logging.AddOtlpExporter());
+                _ = services.ConfigureOpenTelemetryMeterProvider(metrics => metrics.AddOtlpExporter());
+                _ = services.ConfigureOpenTelemetryTracerProvider(tracing => tracing.AddOtlpExporter());
+            }
+        });
 
         // Uncomment the following lines to enable the Prometheus exporter (requires the OpenTelemetry.Exporter.Prometheus.AspNetCore package)
         // builder.Services.AddOpenTelemetry()
@@ -84,11 +103,14 @@ public static class Extensions
         return builder;
     }
 
-    public static IHostApplicationBuilder AddDefaultHealthChecks(this IHostApplicationBuilder builder)
+    public static IHostBuilder AddDefaultHealthChecks(this IHostBuilder builder)
     {
-        _ = builder.Services.AddHealthChecks()
-            // Add a default liveness check to ensure app is responsive
-            .AddCheck("self", () => HealthCheckResult.Healthy(), ["live"]);
+        _ = builder.ConfigureServices(services =>
+        {
+            _ = services.AddHealthChecks()
+                // Add a default liveness check to ensure app is responsive
+                .AddCheck("self", () => HealthCheckResult.Healthy(), ["live"]);
+        });
 
         return builder;
     }

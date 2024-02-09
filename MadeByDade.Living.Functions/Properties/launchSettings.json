@@ -1,0 +1,11 @@
+{
+  "profiles": {
+    "MadeByDade.Living.Functions": {
+      "commandName": "Project",
+      "commandLineArgs": "--port 7061"
+    },
+    "Container (Dockerfile)": {
+      "commandName": "Docker"
+    }
+  }
+}

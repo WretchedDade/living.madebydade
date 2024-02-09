@@ -1,31 +1,14 @@
-using Hangfire;
-using MadeByDade.Living.API;
 using MadeByDade.Living.API.Jobs;
 using MadeByDade.Living.Data;
 using MadeByDade.Living.Data.Bills;
 using MadeByDade.Living.ServiceDefaults;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.Azure.Cosmos;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Identity.Web;
 using System.Reflection;
 using System.Text.Json.Serialization;
 
-WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
-
-builder.AddAzureCosmosDB("living_cosmos");
-
-builder.Services.AddHangfire((services, config) =>
-{
-    CosmosClient cosmosClient = services.GetRequiredService<CosmosClient>();
-
-    _ = config.SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
-        .UseSimpleAssemblyNameTypeSerializer()
-        .UseRecommendedSerializerSettings()
-        .UseAzureCosmosDbStorage(cosmosClient, databaseName: "living", containerName: "hangfire");
-});
-
-builder.Services.AddHangfireServer();
+var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddDbContext<LivingContext>(options =>
 {
@@ -138,15 +121,5 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
-
-app.MapHangfireDashboard("/jobs", new()
-{
-    Authorization = new[] { new HangfireDashboardAuthorizationFilter() }
-});
-
-RecurringJob.AddOrUpdate<ICreateUpcomingBillPayments>(
-    recurringJobId: nameof(CreateUpcomingBillPayments),
-    methodCall: service => service.Execute(), Cron.Daily()
-);
 
 app.Run();

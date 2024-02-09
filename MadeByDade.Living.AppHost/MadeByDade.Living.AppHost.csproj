@@ -19,6 +19,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\MadeByDade.Living.API\MadeByDade.Living.API.csproj" />
+    <ProjectReference Include="..\MadeByDade.Living.Functions\MadeByDade.Living.Functions.csproj" />
   </ItemGroup>
 
 </Project>
