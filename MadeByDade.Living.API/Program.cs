@@ -22,18 +22,7 @@ builder.Services.AddHangfire((services, config) =>
     _ = config.SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
         .UseSimpleAssemblyNameTypeSerializer()
         .UseRecommendedSerializerSettings()
-        .UseAzureCosmosDbStorage(
-            cosmosClient,
-            databaseName: "living",
-            containerName: "hangfire",
-
-            storageOptions: new()
-            {
-                ExpirationCheckInterval = TimeSpan.FromMinutes(2),
-                CountersAggregateInterval = TimeSpan.FromMinutes(2),
-                QueuePollInterval = TimeSpan.FromSeconds(15)
-            }
-        );
+        .UseAzureCosmosDbStorage(cosmosClient, databaseName: "living", containerName: "hangfire");
 });
 
 builder.Services.AddHangfireServer();
