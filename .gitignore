@@ -549,3 +549,4 @@ sketch
 
 # End of https://www.toptal.com/developers/gitignore/api/csharp,dotnetcore,react,aspnetcore
 .azure
+MadeByDade.Living.AppHost/appsettings.Development.json

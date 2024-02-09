@@ -1,4 +1,6 @@
+using Aspire.Hosting.Azure.Data.Cosmos;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Hosting;
 
 IDistributedApplicationBuilder builder = DistributedApplication.CreateBuilder(args);
 
@@ -13,13 +15,18 @@ if (useLocalDB)
     IResourceBuilder<SqlServerDatabaseResource> sqlServer = builder.AddSqlServer("living_sql")
         .AddDatabase("Living");
 
-    api = api.WithReference(sqlServer);
+    api = api
+        .WithReference(sqlServer);
 }
 else
 {
     api = api.WithEnvironment("ConnectionStrings__Living", "Living")
              .WithEnvironment("AzureAD__ClientSecret", "ClientSecret");
 }
+
+IResourceBuilder<AzureCosmosDBResource> cosmos = builder.AddAzureCosmosDB("living_cosmos");
+
+api = api.WithReference(cosmos);
 
 builder.AddNpmApp("living_ui", "../MadeByDade.Living.React", "dev")
     .WithReference(api)

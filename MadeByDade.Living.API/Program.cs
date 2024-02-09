@@ -5,6 +5,7 @@ using MadeByDade.Living.Data;
 using MadeByDade.Living.Data.Bills;
 using MadeByDade.Living.ServiceDefaults;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.Azure.Cosmos;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Identity.Web;
 using System.Reflection;
@@ -12,15 +13,27 @@ using System.Text.Json.Serialization;
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddHangfire(config =>
+builder.AddAzureCosmosDB("living_cosmos");
+
+builder.Services.AddHangfire((services, config) =>
 {
+    CosmosClient cosmosClient = services.GetRequiredService<CosmosClient>();
+
     _ = config.SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
         .UseSimpleAssemblyNameTypeSerializer()
         .UseRecommendedSerializerSettings()
-        .UseSqlServerStorage(builder.Configuration.GetConnectionString("Living"), new()
-        {
-            QueuePollInterval = TimeSpan.FromMinutes(30),
-        });
+        .UseAzureCosmosDbStorage(
+            cosmosClient,
+            databaseName: "living",
+            containerName: "hangfire",
+
+            storageOptions: new()
+            {
+                ExpirationCheckInterval = TimeSpan.FromMinutes(2),
+                CountersAggregateInterval = TimeSpan.FromMinutes(2),
+                QueuePollInterval = TimeSpan.FromSeconds(15)
+            }
+        );
 });
 
 builder.Services.AddHangfireServer();
@@ -136,6 +149,7 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+
 app.MapHangfireDashboard("/jobs", new()
 {
     Authorization = new[] { new HangfireDashboardAuthorizationFilter() }
