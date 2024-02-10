@@ -1,4 +1,3 @@
-using MadeByDade.Living.API.Jobs;
 using MadeByDade.Living.Data;
 using MadeByDade.Living.Data.Bills;
 using MadeByDade.Living.ServiceDefaults;
@@ -39,8 +38,6 @@ builder.Services.AddControllers().AddJsonOptions(options =>
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
-
-builder.Services.AddScoped<ICreateUpcomingBillPayments, CreateUpcomingBillPayments>();
 
 WebApplication app = builder.Build();
 

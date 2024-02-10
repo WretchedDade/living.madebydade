@@ -7,12 +7,21 @@ using Microsoft.Extensions.Logging;
 
 namespace MadeByDade.Living.Functions;
 
-public class CreateUpcomingBillPayments(ILogger logger, LivingContext context)
+public class CreateUpcomingBillPayments
 {
-    [Function("CreateUpcomingBillPayments")]
-    public async Task RunAsync([TimerTrigger("0 0 * * * *")] TimerInfo myTimer)
+    private readonly ILogger<CreateUpcomingBillPayments> _logger;
+    private readonly LivingContext _context;
+
+    public CreateUpcomingBillPayments(ILogger<CreateUpcomingBillPayments> logger, LivingContext context)
     {
-        List<Bill> bills = await context.Bills.Include(bill => bill.Payments).ToListAsync();
+        _logger = logger;
+        _context = context;
+    }
+
+    [Function("CreateUpcomingBillPayments")]
+    public async Task RunAsync([TimerTrigger("0 * * * * *")] TimerInfo myTimer)
+    {
+        List<Bill> bills = await _context.Bills.Include(bill => bill.Payments).ToListAsync();
 
         foreach (Bill bill in bills)
         {
@@ -49,10 +58,10 @@ public class CreateUpcomingBillPayments(ILogger logger, LivingContext context)
                 DateDue = nextPaymentDate.Value.Date,
             };
 
-            _ = await context.BillPayments.AddAsync(billPayment);
+            _ = await _context.BillPayments.AddAsync(billPayment);
         }
 
-        _ = await context.SaveChangesAsync();
+        _ = await _context.SaveChangesAsync();
     }
 
     public DateTime? GetNextPaymentDate(Bill bill)
@@ -61,11 +70,14 @@ public class CreateUpcomingBillPayments(ILogger logger, LivingContext context)
         {
             if (bill.DayDue is < 1 or > 31)
             {
-                logger.LogError("Bill {BillName} is configured incorrectly. It has a fixed due type but the day due is {DayDue}", bill.Name, bill.DayDue);
+                _logger.LogError("Bill {BillName} is configured incorrectly. It has a fixed due type but the day due is {DayDue}", bill.Name, bill.DayDue);
                 return null;
             }
 
-            var dateDueThisMonth = new DateTime(DateTime.Today.Year, DateTime.Today.Month, bill.DayDue, 0, 0, 0, DateTimeKind.Utc);
+            var year = DateTime.Today.Year;
+            var month = DateTime.Today.Month;
+
+            var dateDueThisMonth = new DateTime(year, month, Math.Min(DateTime.DaysInMonth(year, month),  bill.DayDue), 0, 0, 0, DateTimeKind.Utc);
 
             if (DateTime.Today.Day <= bill.DayDue)
                 // Bill is due in current month
@@ -92,7 +104,7 @@ public class CreateUpcomingBillPayments(ILogger logger, LivingContext context)
         }
         else
         {
-            logger.LogError("Bill {BillName} has an unknown due type {DueType}", bill.Name, bill.DueType);
+            _logger.LogError("Bill {BillName} has an unknown due type {DueType}", bill.Name, bill.DueType);
             throw new NotImplementedException($"The {bill.DueType} BillDueType has not been implemented yet.");
         }
     }
