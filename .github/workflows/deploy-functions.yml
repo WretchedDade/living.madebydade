@@ -1,4 +1,4 @@
-name: Build and deploy .NET Core application to Function App living-madebydade-functions
+name: Deploy Azure Functions
 on:
     workflow_dispatch:
 
@@ -8,7 +8,7 @@ on:
         paths:
             - "MadeByDade.Living.Functions/**"
             - "MadeByDade.Living.Data/**"
-            - ".github/workflows/living-madebydade-functions.yml"
+            - ".github/workflows/deploy-functions.yml"
 env:
     AZURE_FUNCTIONAPP_NAME: living-madebydade-functions
     AZURE_FUNCTIONAPP_PACKAGE_PATH: MadeByDade.Living.Functions/published

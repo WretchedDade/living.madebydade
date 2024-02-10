@@ -19,7 +19,7 @@ public class CreateUpcomingBillPayments
     }
 
     [Function("CreateUpcomingBillPayments")]
-    public async Task RunAsync([TimerTrigger("0 * * * * *")] TimerInfo myTimer)
+    public async Task RunAsync([TimerTrigger("0 0 12 * * *")] TimerInfo myTimer) // Run every day at 12:00 UTC (8:00 EST)
     {
         List<Bill> bills = await _context.Bills.Include(bill => bill.Payments).ToListAsync();
 
@@ -74,10 +74,10 @@ public class CreateUpcomingBillPayments
                 return null;
             }
 
-            var year = DateTime.Today.Year;
-            var month = DateTime.Today.Month;
+            int year = DateTime.Today.Year;
+            int month = DateTime.Today.Month;
 
-            var dateDueThisMonth = new DateTime(year, month, Math.Min(DateTime.DaysInMonth(year, month),  bill.DayDue), 0, 0, 0, DateTimeKind.Utc);
+            var dateDueThisMonth = new DateTime(year, month, Math.Min(DateTime.DaysInMonth(year, month), bill.DayDue), 0, 0, 0, DateTimeKind.Utc);
 
             if (DateTime.Today.Day <= bill.DayDue)
                 // Bill is due in current month
