@@ -20,7 +20,7 @@ export const HomeRoute = new Route({
 	path: "/",
 
 	loader: ({ context }) => {
-		return context.queryClient.ensureQueryData({
+		context.queryClient.ensureQueryData({
 			queryKey: BillQueryKeys.UnpaidBillPayments,
 
 			queryFn: ({ signal }) => GetUnpaidBillPayments(context.auth.acquireToken, signal),

@@ -25,7 +25,7 @@ export const BillsRoute = new Route({
 	path: "/Bills",
 
 	loader: ({ context }) => {
-		return context.queryClient.ensureQueryData({
+		context.queryClient.ensureQueryData({
 			queryKey: BillQueryKeys.Bills,
 
 			queryFn: ({ signal }) => GetBills(context.auth.acquireToken, signal),
