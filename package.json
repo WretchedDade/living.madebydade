@@ -1,0 +1,36 @@
+{
+	"name": "living.madebydade",
+	"version": "1.0.0",
+	"description": "",
+	"main": "index.js",
+	"type": "module",
+	"scripts": {
+		"dev": "vinxi dev",
+		"build": "vinxi build",
+		"start": "vinxi start"
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/WretchedDade/living.madebydade.git"
+	},
+	"keywords": [],
+	"author": "",
+	"license": "ISC",
+	"bugs": {
+		"url": "https://github.com/WretchedDade/living.madebydade/issues"
+	},
+	"homepage": "https://github.com/WretchedDade/living.madebydade#readme",
+	"dependencies": {
+		"@tanstack/react-router": "^1.79.0",
+		"@tanstack/start": "^1.80.0",
+		"react": "^18.3.1",
+		"react-dom": "^18.3.1",
+		"vinxi": "^0.4.3"
+	},
+	"devDependencies": {
+		"@types/react": "^18.3.12",
+		"@types/react-dom": "^18.3.1",
+		"@vitejs/plugin-react": "^4.3.3",
+		"typescript": "^5.6.3"
+	}
+}
