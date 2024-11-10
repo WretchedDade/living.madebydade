@@ -1,41 +1,25 @@
-import { createFileRoute, useRouter } from "@tanstack/react-router";
-import { createServerFn } from "@tanstack/start";
-import * as fs from "node:fs";
+import { convexQuery } from '@convex-dev/react-query';
+import { useSuspenseQuery } from '@tanstack/react-query';
+import { createFileRoute } from '@tanstack/react-router';
+import { api } from 'convex/_generated/api';
+import { AppBody } from '~/components/app-body';
 
-const filePath = "count.txt";
-
-async function readCount() {
-	return parseInt(await fs.promises.readFile(filePath, "utf-8").catch(() => "0"));
-}
-
-const getCount = createServerFn("GET", () => {
-	return readCount();
-});
-
-const updateCount = createServerFn("POST", async (addBy: number) => {
-	const count = await readCount();
-	await fs.promises.writeFile(filePath, `${count + addBy}`);
-});
-
-export const Route = createFileRoute("/")({
+export const Route = createFileRoute('/')({
+	wrapInSuspense: true,
 	component: Home,
-	loader: async () => await getCount(),
+	loader: async ({ context }) => {
+		context.queryClient.prefetchQuery(convexQuery(api.bills.list, {}));
+	},
 });
 
 function Home() {
-	const router = useRouter();
-	const state = Route.useLoaderData();
+	const { data } = useSuspenseQuery(convexQuery(api.bills.list, {}));
+
+	console.log('Index Render:', data);
 
 	return (
-		<button
-			type="button"
-			onClick={() => {
-				updateCount(1).then(() => {
-					router.invalidate();
-				});
-			}}
-		>
-			Add 1 to {state}?
-		</button>
+		<AppBody>
+			<h1>Welcome!</h1>
+		</AppBody>
 	);
 }
