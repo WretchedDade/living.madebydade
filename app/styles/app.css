@@ -4,36 +4,28 @@
 
 @layer base {
 	:root {
-		--background: 0 0% 100%;
-		--foreground: 222.2 47.4% 11.2%;
-
-		--muted: 210 40% 96.1%;
-		--muted-foreground: 215.4 16.3% 46.9%;
-
-		--popover: 0 0% 100%;
-		--popover-foreground: 222.2 47.4% 11.2%;
-
-		--border: 214.3 31.8% 91.4%;
-		--input: 214.3 31.8% 91.4%;
-
-		--card: 0 0% 100%;
-		--card-foreground: 222.2 47.4% 11.2%;
-
-		--primary: 222.2 47.4% 11.2%;
-		--primary-foreground: 210 40% 98%;
-
-		--secondary: 210 40% 96.1%;
-		--secondary-foreground: 222.2 47.4% 11.2%;
-
-		--accent: 210 40% 96.1%;
-		--accent-foreground: 222.2 47.4% 11.2%;
-
-		--destructive: 0 100% 50%;
-		--destructive-foreground: 210 40% 98%;
-
-		--ring: 215 20.2% 65.1%;
-
+		--background: 0 0% 100% /* white */;
+		--foreground: 20 15% 5% /* stone-950 */;
+		--card: 0 0% 100% /* white */;
+		--card-foreground: 20 15% 5% /* stone-950 */;
+		--popover: 0 0% 100% /* white */;
+		--popover-foreground: 20 15% 5% /* stone-950 */;
+		--primary: 201 99% 40% /* sky-600 */;
+		--primary-foreground: 205 100% 98% /* sky-50 */;
+		--secondary: 141 85% 93% /* green-100 */;
+		--secondary-foreground: 144 62% 21% /* green-900 */;
+		--muted: 60 5% 96% /* stone-100 */;
+		--muted-foreground: 25 6% 45% /* stone-500 */;
+		--accent: 168 86% 90% /* teal-100 */;
+		--accent-foreground: 176 61% 20% /* teal-900 */;
+		--destructive: 0 85% 61% /* red-500 */;
+		--destructive-foreground: 60 10% 98% /* stone-50 */;
+		--border: 20 6% 90% /* stone-200 */;
+		--input: 20 6% 90% /* stone-200 */;
+		--ring: 201 99% 40% /* sky-600 */;
 		--radius: 0.5rem;
+
+		/* --card: 60, 9.09%, 97.84%; // stone-50 */
 
 		--sidebar-background: 0 0% 98%;
 
@@ -53,36 +45,27 @@
 	}
 
 	.dark {
-		--background: 224 71% 4%;
-		--foreground: 213 31% 91%;
+		--background: 20 15% 5% /* stone-950 */;
+		--foreground: 60 10% 98% /* stone-50 */;
+		--card: 20 15% 5% /* stone-950 */;
+		--card-foreground: 60 10% 98% /* stone-50 */;
+		--popover: 20 15% 5% /* stone-950 */;
+		--popover-foreground: 60 10% 98% /* stone-50 */;
+		--primary: 201 99% 40% /* sky-600 */;
+		--primary-foreground: 205 100% 98% /* sky-50 */;
+		--secondary: 143 65% 25% /* green-800 */;
+		--secondary-foreground: 139 77% 97% /* green-50 */;
+		--muted: 13 7% 16% /* stone-800 */;
+		--muted-foreground: 24 6% 64% /* stone-400 */;
+		--accent: 177 70% 22% /* teal-800 */;
+		--accent-foreground: 167 77% 97% /* teal-50 */;
+		--destructive: 0 63% 31% /* red-900 */;
+		--destructive-foreground: 60 10% 98% /* stone-50 */;
+		--border: 13 7% 16% /* stone-800 */;
+		--input: 13 7% 16% /* stone-800 */;
+		--ring: 201 99% 40% /* sky-600 */;
 
-		--muted: 223 47% 11%;
-		--muted-foreground: 215.4 16.3% 56.9%;
-
-		--accent: 216 34% 17%;
-		--accent-foreground: 210 40% 98%;
-
-		--popover: 224 71% 4%;
-		--popover-foreground: 215 20.2% 65.1%;
-
-		--border: 216 34% 17%;
-		--input: 216 34% 17%;
-
-		--card: 224 71% 4%;
-		--card-foreground: 213 31% 91%;
-
-		--primary: 210 40% 98%;
-		--primary-foreground: 222.2 47.4% 1.2%;
-
-		--secondary: 222.2 47.4% 11.2%;
-		--secondary-foreground: 210 40% 98%;
-
-		--destructive: 0 63% 31%;
-		--destructive-foreground: 210 40% 98%;
-
-		--ring: 216 34% 17%;
-
-		--radius: 0.5rem;
+		/* --card: 24, 9.8%, 10%; // stone-800 */
 
 		--sidebar-background: 240 5.9% 10%;
 

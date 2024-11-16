@@ -11,6 +11,9 @@ export function NavMain() {
 					<SidebarMenuButton asChild tooltip="Dashboard">
 						<Link to="/">Dashboard</Link>
 					</SidebarMenuButton>
+					<SidebarMenuButton asChild tooltip="Bills">
+						<Link to="/bills">Bills</Link>
+					</SidebarMenuButton>
 				</SidebarMenuItem>
 			</SidebarMenu>
 		</SidebarGroup>
