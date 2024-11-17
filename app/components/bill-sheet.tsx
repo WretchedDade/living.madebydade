@@ -7,7 +7,6 @@ import { Doc } from 'convex/_generated/dataModel';
 import { useConvexMutation } from '@convex-dev/react-query';
 import { useMutation } from '@tanstack/react-query';
 import { api } from 'convex/_generated/api';
-import { LoaderCircleIcon } from 'lucide-react';
 import { useEffect } from 'react';
 import { Button } from './ui/button';
 import { Checkbox } from './ui/checkbox';
@@ -159,8 +158,7 @@ export function BillSheet({ open, onClose, bill }: BillSheetProps) {
 						/>
 
 						<SheetFooter>
-							<Button type="submit" disabled={isPending}>
-								{isPending ? <LoaderCircleIcon className="animate-spin mr-1" /> : null}
+							<Button type="submit" disabled={isPending} loading={isPending}>
 								{isCreating ? 'Add' : 'Save Changes'}
 							</Button>
 							<Button type="button" variant="outline" onClick={close} disabled={isPending}>

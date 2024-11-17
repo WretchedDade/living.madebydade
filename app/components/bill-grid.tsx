@@ -74,7 +74,7 @@ export function BillGrid() {
 										Edit
 									</Button>
 									<Dialog>
-										<DialogTrigger>
+										<DialogTrigger asChild>
 											<Button
 												size="sm"
 												variant="outline"

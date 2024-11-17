@@ -10,4 +10,10 @@ export default defineSchema({
 		name: v.string(),
 		ownerId: v.string(),
 	}),
+	billPayments: defineTable({
+		dateDue: v.string(),
+		datePaid: v.optional(v.string()),
+		billId: v.id('bills'),
+		ownerId: v.string(),
+	}),
 });

@@ -1,5 +1,5 @@
 import { v } from 'convex/values';
-import { mutation, query } from './_generated/server';
+import { internalQuery, mutation, query } from './_generated/server';
 
 export const list = query({
 	args: {},
@@ -14,6 +14,21 @@ export const list = query({
 			.query('bills')
 			.filter(q => q.eq(q.field('ownerId'), user.subject))
 			.collect();
+	},
+});
+
+export const listWithPayments = internalQuery({
+	args: {},
+	handler: async ctx => {
+		const bills = await ctx.db.query('bills').collect();
+
+		return Promise.all(
+			bills.map(async bill => {
+				const billPayments = await ctx.db.query('billPayments').collect();
+
+				return { ...bill, payments: billPayments };
+			}),
+		);
 	},
 });
 

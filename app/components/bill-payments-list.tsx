@@ -1,0 +1,56 @@
+import { convexQuery, useConvexMutation } from '@convex-dev/react-query';
+import { useMutation, useSuspenseQuery } from '@tanstack/react-query';
+import { api } from 'convex/_generated/api';
+import { format } from 'date-fns';
+import { formatCurrency } from '~/utils/formatters';
+import { Badge } from './ui/badge';
+import { Button } from './ui/button';
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from './ui/card';
+import { Typography } from './ui/typography';
+
+export function BillPaymentsList() {
+	const billPayments = useSuspenseQuery(convexQuery(api.billPayments.listUnpaid, {}));
+
+	const mutation = useMutation({
+		mutationFn: useConvexMutation(api.billPayments.markPaid),
+	});
+
+	return (
+		<div className="flex flex-col gap-4">
+			{billPayments.data.map(payment => (
+				<Card key={payment._id}>
+					<CardHeader className="p-3">
+						<CardTitle className="flex items-center justify-between">
+							<Typography variant="h3" className="text-base">
+								{payment.bill.name}
+							</Typography>
+							{payment.bill.isAutoPay && <Badge variant="green">Auto pay</Badge>}
+						</CardTitle>
+					</CardHeader>
+					<CardContent className="px-3 py-0">
+						<Typography variant="p" className="text-sm">
+							{formatCurrency(payment.bill.amount)} is due on {format(payment.dateDue, 'EEEE, MMMM do')}
+						</Typography>
+					</CardContent>
+					<CardFooter className="p-3">
+						<Button
+							type="button"
+							size="sm"
+							variant="outline"
+							onClick={() => {
+								console.log('Marking as paid');
+								mutation.mutate({
+									billPaymentId: payment._id,
+									datePaid: new Date().toISOString(),
+								});
+							}}
+							loading={mutation.isPending}
+						>
+							Mark as paid
+						</Button>
+					</CardFooter>
+				</Card>
+			))}
+		</div>
+	);
+}
