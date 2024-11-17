@@ -11,6 +11,7 @@ import { AuthProvider } from '~/components/auth-provider';
 
 import { DefaultCatchBoundary } from '~/components/default-catch-boundary';
 import { NotFound } from '~/components/not-found';
+import { NotSignedIn } from '~/components/not-signed-in';
 import { ThemeProvider } from '~/components/theme-provider';
 import { SidebarInset, SidebarProvider } from '~/components/ui/sidebar';
 
@@ -78,7 +79,9 @@ function RootComponent() {
 										</Authenticated>
 									</SignedIn>
 								</ClerkLoaded>
-								<SignedOut>You are not signed in</SignedOut>
+								<SignedOut>
+									<NotSignedIn />
+								</SignedOut>
 							</SidebarInset>
 						</SidebarProvider>
 					</RootDocument>

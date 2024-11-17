@@ -11,10 +11,17 @@
 // Import Routes
 
 import { Route as rootRoute } from './routes/__root'
+import { Route as UnauthorizedImport } from './routes/unauthorized'
 import { Route as BillsImport } from './routes/bills'
 import { Route as IndexImport } from './routes/index'
 
 // Create/Update Routes
+
+const UnauthorizedRoute = UnauthorizedImport.update({
+  id: '/unauthorized',
+  path: '/unauthorized',
+  getParentRoute: () => rootRoute,
+} as any)
 
 const BillsRoute = BillsImport.update({
   id: '/bills',
@@ -46,6 +53,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof BillsImport
       parentRoute: typeof rootRoute
     }
+    '/unauthorized': {
+      id: '/unauthorized'
+      path: '/unauthorized'
+      fullPath: '/unauthorized'
+      preLoaderRoute: typeof UnauthorizedImport
+      parentRoute: typeof rootRoute
+    }
   }
 }
 
@@ -54,36 +68,41 @@ declare module '@tanstack/react-router' {
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/bills': typeof BillsRoute
+  '/unauthorized': typeof UnauthorizedRoute
 }
 
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/bills': typeof BillsRoute
+  '/unauthorized': typeof UnauthorizedRoute
 }
 
 export interface FileRoutesById {
   __root__: typeof rootRoute
   '/': typeof IndexRoute
   '/bills': typeof BillsRoute
+  '/unauthorized': typeof UnauthorizedRoute
 }
 
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/bills'
+  fullPaths: '/' | '/bills' | '/unauthorized'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/bills'
-  id: '__root__' | '/' | '/bills'
+  to: '/' | '/bills' | '/unauthorized'
+  id: '__root__' | '/' | '/bills' | '/unauthorized'
   fileRoutesById: FileRoutesById
 }
 
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   BillsRoute: typeof BillsRoute
+  UnauthorizedRoute: typeof UnauthorizedRoute
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   BillsRoute: BillsRoute,
+  UnauthorizedRoute: UnauthorizedRoute,
 }
 
 export const routeTree = rootRoute
@@ -97,7 +116,8 @@ export const routeTree = rootRoute
       "filePath": "__root.tsx",
       "children": [
         "/",
-        "/bills"
+        "/bills",
+        "/unauthorized"
       ]
     },
     "/": {
@@ -105,6 +125,9 @@ export const routeTree = rootRoute
     },
     "/bills": {
       "filePath": "bills.tsx"
+    },
+    "/unauthorized": {
+      "filePath": "unauthorized.tsx"
     }
   }
 }

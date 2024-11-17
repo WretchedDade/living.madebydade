@@ -10,10 +10,7 @@ export const list = query({
 			throw new Error('Not authenticated');
 		}
 
-		return await ctx.db
-			.query('bills')
-			.filter(q => q.eq(q.field('ownerId'), user.subject))
-			.collect();
+		return await ctx.db.query('bills').collect();
 	},
 });
 
@@ -49,7 +46,7 @@ export const upsertBill = mutation({
 		}
 
 		if (id == null) {
-			const billId = await ctx.db.insert('bills', { ...values, ownerId: user.subject });
+			const billId = await ctx.db.insert('bills', { ...values });
 			return billId;
 		}
 
@@ -59,11 +56,7 @@ export const upsertBill = mutation({
 			throw new Error('Bill not found');
 		}
 
-		if (bill.ownerId !== user.subject) {
-			throw new Error('Unauthorized');
-		}
-
-		await ctx.db.replace(id, { ...values, ownerId: user.subject });
+		await ctx.db.replace(id, { ...values });
 
 		return id;
 	},
@@ -84,10 +77,6 @@ export const deleteBill = mutation({
 
 		if (!bill) {
 			throw new Error('Bill not found');
-		}
-
-		if (bill.ownerId !== user.subject) {
-			throw new Error('Unauthorized');
 		}
 
 		await ctx.db.delete(id);

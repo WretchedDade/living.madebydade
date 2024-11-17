@@ -8,12 +8,12 @@ export default defineSchema({
 		dueType: v.union(v.literal('Fixed'), v.literal('EndOfMonth')),
 		isAutoPay: v.boolean(),
 		name: v.string(),
-		ownerId: v.string(),
+		ownerId: v.optional(v.string()),
 	}),
 	billPayments: defineTable({
 		dateDue: v.string(),
 		datePaid: v.optional(v.string()),
 		billId: v.id('bills'),
-		ownerId: v.string(),
+		ownerId: v.optional(v.string()),
 	}),
 });

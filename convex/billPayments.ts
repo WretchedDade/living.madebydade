@@ -20,7 +20,7 @@ export const listUnpaid = query({
 
 		const payments = await ctx.db
 			.query('billPayments')
-			.filter(q => q.and(q.eq(q.field('ownerId'), user.subject), q.eq(q.field('datePaid'), undefined)))
+			.filter(q => q.eq(q.field('datePaid'), undefined))
 			.paginate(args.paginationOpts);
 
 		payments.page.sort((a, b) => compareAsc(new Date(a.dateDue), new Date(b.dateDue)));
@@ -50,10 +50,7 @@ export const list = query({
 			throw new Error('Not authenticated');
 		}
 
-		const payments = await ctx.db
-			.query('billPayments')
-			.filter(q => q.and(q.eq(q.field('ownerId'), user.subject)))
-			.take(take);
+		const payments = await ctx.db.query('billPayments').take(take);
 
 		payments.sort((a, b) => {
 			if (a.datePaid == null && b.datePaid == null) {
@@ -96,7 +93,7 @@ export const listRecentlyPaid = query({
 
 		const payments = await ctx.db
 			.query('billPayments')
-			.filter(q => q.and(q.eq(q.field('ownerId'), user.subject), q.neq(q.field('datePaid'), undefined)))
+			.filter(q => q.neq(q.field('datePaid'), undefined))
 			.take(50);
 
 		payments.sort((a, b) => compareAsc(new Date(b.datePaid!), new Date(a.datePaid!)));
@@ -133,10 +130,6 @@ export const markPaid = mutation({
 			throw new Error('Payment not found');
 		}
 
-		if (payment.ownerId !== user.subject) {
-			throw new Error('Not authorized');
-		}
-
 		await ctx.db.patch(billPaymentId, { datePaid });
 	},
 });
@@ -162,7 +155,6 @@ export const insertBillPayment = internalMutation({
 		dateDue: v.string(),
 		datePaid: v.optional(v.string()),
 		billId: v.id('bills'),
-		ownerId: v.string(),
 	},
 	handler: (ctx, payment) => ctx.db.insert('billPayments', payment),
 });
@@ -215,7 +207,6 @@ const createUpcomingPaymentsForBills = async (ctx: GenericActionCtx<DataModel>, 
 		console.log(`Creating payment for ${bill.name} due on ${nextPaymentDate.toISOString()}`);
 		await ctx.runMutation(internal.billPayments.insertBillPayment, {
 			billId: bill._id,
-			ownerId: bill.ownerId,
 			dateDue: nextPaymentDate.toISOString(),
 		});
 	}
