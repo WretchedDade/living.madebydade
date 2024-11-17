@@ -1,13 +1,17 @@
-import { GenericActionCtx } from 'convex/server';
+import { GenericActionCtx, paginationOptsValidator, PaginationResult } from 'convex/server';
 import { v } from 'convex/values';
 import { addMonths, compareAsc, endOfMonth, getDaysInMonth, isBefore, isToday, setDate } from 'date-fns';
 import { internal } from './_generated/api';
 import { DataModel, Doc } from './_generated/dataModel';
 import { internalAction, internalMutation, mutation, query } from './_generated/server';
 
+export type BillPaymentWithBill = Doc<'billPayments'> & { bill: Doc<'bills'> };
+
 export const listUnpaid = query({
-	args: {},
-	handler: async ctx => {
+	args: {
+		paginationOpts: paginationOptsValidator,
+	},
+	handler: async (ctx, args) => {
 		const user = await ctx.auth.getUserIdentity();
 
 		if (!user) {
@@ -17,9 +21,55 @@ export const listUnpaid = query({
 		const payments = await ctx.db
 			.query('billPayments')
 			.filter(q => q.and(q.eq(q.field('ownerId'), user.subject), q.eq(q.field('datePaid'), undefined)))
-			.collect();
+			.paginate(args.paginationOpts);
 
-		payments.sort((a, b) => compareAsc(new Date(a.dateDue), new Date(b.dateDue)));
+		payments.page.sort((a, b) => compareAsc(new Date(a.dateDue), new Date(b.dateDue)));
+
+		payments.page = await Promise.all(
+			payments.page.map(async payment => {
+				const bill = await ctx.db.get(payment.billId);
+
+				if (!bill) {
+					throw new Error('Bill not found');
+				}
+
+				return { ...payment, bill };
+			}),
+		);
+
+		return payments as PaginationResult<BillPaymentWithBill>;
+	},
+});
+
+export const list = query({
+	args: { take: v.optional(v.number()) },
+	handler: async (ctx, { take = 50 }) => {
+		const user = await ctx.auth.getUserIdentity();
+
+		if (!user) {
+			throw new Error('Not authenticated');
+		}
+
+		const payments = await ctx.db
+			.query('billPayments')
+			.filter(q => q.and(q.eq(q.field('ownerId'), user.subject)))
+			.take(take);
+
+		payments.sort((a, b) => {
+			if (a.datePaid == null && b.datePaid == null) {
+				return compareAsc(new Date(b._creationTime), new Date(a._creationTime));
+			}
+
+			if (a.datePaid == null) {
+				return 1;
+			}
+
+			if (b.datePaid == null) {
+				return -1;
+			}
+
+			return compareAsc(new Date(b.datePaid), new Date(a.datePaid));
+		});
 
 		return Promise.all(
 			payments.map(async payment => {
@@ -30,6 +80,36 @@ export const listUnpaid = query({
 				}
 
 				return { ...payment, bill };
+			}),
+		);
+	},
+});
+
+export const listRecentlyPaid = query({
+	args: {},
+	handler: async ctx => {
+		const user = await ctx.auth.getUserIdentity();
+
+		if (!user) {
+			throw new Error('Not authenticated');
+		}
+
+		const payments = await ctx.db
+			.query('billPayments')
+			.filter(q => q.and(q.eq(q.field('ownerId'), user.subject), q.neq(q.field('datePaid'), undefined)))
+			.take(50);
+
+		payments.sort((a, b) => compareAsc(new Date(b.datePaid!), new Date(a.datePaid!)));
+
+		return Promise.all(
+			payments.map(async payment => {
+				const bill = await ctx.db.get(payment.billId);
+
+				if (!bill) {
+					throw new Error('Bill not found');
+				}
+
+				return { ...payment, bill, datePaid: payment.datePaid! };
 			}),
 		);
 	},

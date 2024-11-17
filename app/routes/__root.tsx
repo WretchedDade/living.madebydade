@@ -23,7 +23,15 @@ type RouterContext = {
 };
 
 export const Route = createRootRouteWithContext<RouterContext>()({
-	meta: () => [],
+	meta: () => [
+		{
+			charSet: 'utf-8',
+		},
+		{
+			name: 'viewport',
+			content: 'width=device-width, initial-scale=1',
+		},
+	],
 	links: () => [{ rel: 'stylesheet', href: appCss }],
 	scripts: () => [
 		{ src: initThemeScript },
@@ -32,9 +40,9 @@ export const Route = createRootRouteWithContext<RouterContext>()({
 					{
 						type: 'module',
 						children: `import RefreshRuntime from "/_build/@react-refresh";
-  RefreshRuntime.injectIntoGlobalHook(window)
-  window.$RefreshReg$ = () => {}
-  window.$RefreshSig$ = () => (type) => type`,
+		  RefreshRuntime.injectIntoGlobalHook(window)
+		  window.$RefreshReg$ = () => {}
+		  window.$RefreshSig$ = () => (type) => type`,
 					},
 				]
 			: []),
@@ -98,7 +106,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
 			<head>
 				<Meta />
 			</head>
-			<body>
+			<body className="lg:max-h-svh lg:overflow-hidden">
 				{children}
 				<ScrollRestoration />
 				<React.Suspense>

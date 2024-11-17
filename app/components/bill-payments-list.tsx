@@ -1,6 +1,7 @@
-import { convexQuery, useConvexMutation } from '@convex-dev/react-query';
-import { useMutation, useSuspenseQuery } from '@tanstack/react-query';
+import { useConvexMutation } from '@convex-dev/react-query';
+import { useMutation } from '@tanstack/react-query';
 import { api } from 'convex/_generated/api';
+import { usePaginatedQuery } from 'convex/react';
 import { format } from 'date-fns';
 import { formatCurrency } from '~/utils/formatters';
 import { Badge } from './ui/badge';
@@ -9,15 +10,19 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle } from './ui/card'
 import { Typography } from './ui/typography';
 
 export function BillPaymentsList() {
-	const billPayments = useSuspenseQuery(convexQuery(api.billPayments.listUnpaid, {}));
+	const {
+		status,
+		loadMore,
+		results: billPayments,
+	} = usePaginatedQuery(api.billPayments.listUnpaid, {}, { initialNumItems: 3 });
 
 	const mutation = useMutation({
 		mutationFn: useConvexMutation(api.billPayments.markPaid),
 	});
 
 	return (
-		<div className="flex flex-col gap-4">
-			{billPayments.data.map(payment => (
+		<div className="flex flex-col gap-4 pr-2 overflow-y-auto">
+			{billPayments.map(payment => (
 				<Card key={payment._id}>
 					<CardHeader className="p-3">
 						<CardTitle className="flex items-center justify-between">
@@ -37,20 +42,26 @@ export function BillPaymentsList() {
 							type="button"
 							size="sm"
 							variant="outline"
+							loading={mutation.isPending}
 							onClick={() => {
-								console.log('Marking as paid');
 								mutation.mutate({
 									billPaymentId: payment._id,
 									datePaid: new Date().toISOString(),
 								});
 							}}
-							loading={mutation.isPending}
 						>
 							Mark as paid
 						</Button>
 					</CardFooter>
 				</Card>
 			))}
+			{status === 'CanLoadMore' && (
+				<div className="flex justify-center">
+					<Button variant="ghost" onClick={() => loadMore(3)}>
+						Load More
+					</Button>
+				</div>
+			)}
 		</div>
 	);
 }

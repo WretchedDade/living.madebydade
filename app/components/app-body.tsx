@@ -1,9 +1,4 @@
-import { Separator } from '@radix-ui/react-separator';
 import { ToPathOption } from '@tanstack/react-router';
-import { Link } from 'lucide-react';
-import { Fragment } from 'react/jsx-runtime';
-import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbSeparator } from './ui/breadcrumb';
-import { SidebarTrigger } from './ui/sidebar';
 
 interface AppBodyProps {
 	breadcrumbs?: {
@@ -16,7 +11,7 @@ interface AppBodyProps {
 export function AppBody({ breadcrumbs = [], children }: AppBodyProps) {
 	return (
 		<>
-			<header className="flex h-16 shrink-0 items-center gap-2">
+			{/* <header className="flex h-16 shrink-0 items-center gap-2">
 				<div className="flex items-center gap-2 px-4">
 					<SidebarTrigger className="-ml-1" />
 					{breadcrumbs.length > 0 && (
@@ -39,8 +34,8 @@ export function AppBody({ breadcrumbs = [], children }: AppBodyProps) {
 						</>
 					)}
 				</div>
-			</header>
-			<div className="flex flex-1 flex-col gap-4 p-4 pt-0">{children}</div>
+			</header> */}
+			<div className="flex flex-1 flex-col gap-4 p-4 lg:max-h-svh lg:overflow-hidden">{children}</div>
 		</>
 	);
 }
