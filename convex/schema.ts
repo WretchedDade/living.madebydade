@@ -13,5 +13,6 @@ export default defineSchema({
 		dateDue: v.string(),
 		datePaid: v.optional(v.string()),
 		billId: v.id('bills'),
+		isAutoPay: v.boolean(),
 	}),
 });

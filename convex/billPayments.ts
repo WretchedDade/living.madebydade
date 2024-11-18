@@ -1,4 +1,4 @@
-import { GenericActionCtx, paginationOptsValidator, PaginationResult } from 'convex/server';
+import { GenericActionCtx } from 'convex/server';
 import { v } from 'convex/values';
 import { DateTime } from 'luxon';
 
@@ -11,7 +11,7 @@ export type BillPaymentWithBill = Doc<'billPayments'> & { bill: Doc<'bills'> };
 
 export const listUnpaid = query({
 	args: {
-		paginationOpts: paginationOptsValidator,
+		includeAutoPay: v.optional(v.boolean()),
 	},
 	handler: async (ctx, args) => {
 		const user = await ctx.auth.getUserIdentity();
@@ -22,13 +22,19 @@ export const listUnpaid = query({
 
 		const payments = await ctx.db
 			.query('billPayments')
-			.filter(q => q.eq(q.field('datePaid'), undefined))
-			.paginate(args.paginationOpts);
+			.filter(q => {
+				if (args.includeAutoPay) {
+					return q.eq(q.field('datePaid'), undefined);
+				}
 
-		payments.page.sort((a, b) => DateTime.fromISO(a.dateDue).toMillis() - DateTime.fromISO(b.dateDue).toMillis());
+				return q.and(q.eq(q.field('datePaid'), undefined), q.eq(q.field('isAutoPay'), false));
+			})
+			.collect();
 
-		payments.page = await Promise.all(
-			payments.page.map(async payment => {
+		payments.sort((a, b) => DateTime.fromISO(a.dateDue).toMillis() - DateTime.fromISO(b.dateDue).toMillis());
+
+		return await Promise.all(
+			payments.map(async payment => {
 				const bill = await ctx.db.get(payment.billId);
 
 				if (!bill) {
@@ -38,8 +44,6 @@ export const listUnpaid = query({
 				return { ...payment, bill };
 			}),
 		);
-
-		return payments as PaginationResult<BillPaymentWithBill>;
 	},
 });
 
@@ -157,6 +161,7 @@ export const insertBillPayment = internalMutation({
 		dateDue: v.string(),
 		datePaid: v.optional(v.string()),
 		billId: v.id('bills'),
+		isAutoPay: v.boolean(),
 	},
 	handler: (ctx, payment) => ctx.db.insert('billPayments', payment),
 });
@@ -216,6 +221,7 @@ const createUpcomingPaymentsForBills = async (ctx: GenericActionCtx<DataModel>, 
 		await ctx.runMutation(internal.billPayments.insertBillPayment, {
 			billId: bill._id,
 			dateDue: nextPaymentDate.toISO()!,
+			isAutoPay: bill.isAutoPay,
 		});
 	}
 };

@@ -1,7 +1,6 @@
-import { useConvexMutation } from '@convex-dev/react-query';
-import { useMutation } from '@tanstack/react-query';
+import { convexQuery, useConvexMutation } from '@convex-dev/react-query';
+import { useMutation, useSuspenseQuery } from '@tanstack/react-query';
 import { api } from 'convex/_generated/api';
-import { usePaginatedQuery } from 'convex/react';
 import { DateTime } from 'luxon';
 import { formatCurrency } from '~/utils/formatters';
 import { Badge } from './ui/badge';
@@ -9,12 +8,12 @@ import { Button } from './ui/button';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from './ui/card';
 import { Typography } from './ui/typography';
 
-export function BillPaymentsList() {
-	const {
-		status,
-		loadMore,
-		results: billPayments,
-	} = usePaginatedQuery(api.billPayments.listUnpaid, {}, { initialNumItems: 3 });
+interface BillPaymentsListProps {
+	includeAutoPay?: boolean;
+}
+
+export function BillPaymentsList({ includeAutoPay = false }: BillPaymentsListProps) {
+	const billPayments = useSuspenseQuery(convexQuery(api.billPayments.listUnpaid, { includeAutoPay }));
 
 	const mutation = useMutation({
 		mutationFn: useConvexMutation(api.billPayments.markPaid),
@@ -22,7 +21,7 @@ export function BillPaymentsList() {
 
 	return (
 		<div className="flex flex-col gap-4 pr-2 overflow-y-auto">
-			{billPayments.map(payment => (
+			{billPayments.data.map(payment => (
 				<Card key={payment._id}>
 					<CardHeader className="p-3">
 						<CardTitle className="flex items-center justify-between">
@@ -35,7 +34,7 @@ export function BillPaymentsList() {
 					<CardContent className="px-3 py-0">
 						<Typography variant="p" className="text-sm">
 							{formatCurrency(payment.bill.amount)} is due on{' '}
-							{DateTime.fromISO(payment.dateDue).toFormat('EEEE, MMMM d')}
+							{DateTime.fromISO(payment.dateDue, { zone: 'UTC' }).toFormat('EEEE, MMMM d')}
 						</Typography>
 					</CardContent>
 					<CardFooter className="p-3">
@@ -56,13 +55,6 @@ export function BillPaymentsList() {
 					</CardFooter>
 				</Card>
 			))}
-			{status === 'CanLoadMore' && (
-				<div className="flex justify-center">
-					<Button variant="ghost" onClick={() => loadMore(3)}>
-						Load More
-					</Button>
-				</div>
-			)}
 		</div>
 	);
 }
