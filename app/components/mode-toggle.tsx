@@ -1,6 +1,6 @@
 import { ChevronsUpDownIcon, MoonIcon, SunIcon } from 'lucide-react';
 
-import { useTheme } from '@/components/theme-provider';
+import { useTheme } from '~/components/theme-provider';
 import {
 	DropdownMenu,
 	DropdownMenuContent,
@@ -9,7 +9,7 @@ import {
 	DropdownMenuLabel,
 	DropdownMenuSeparator,
 	DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+} from '~/components/ui/dropdown-menu';
 import { useIsMobile } from '~/hooks/use-mobile';
 import { SidebarMenuButton } from './ui/sidebar';
 

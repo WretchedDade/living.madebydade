@@ -46,8 +46,8 @@
 		"class-variance-authority": "^0.7.0",
 		"clsx": "^2.1.1",
 		"convex": "^1.17.0",
-		"date-fns": "^4.1.0",
 		"lucide-react": "^0.456.0",
+		"luxon": "^3.5.0",
 		"react": "^18.3.1",
 		"react-dom": "^18.3.1",
 		"react-hook-form": "^7.53.2",
@@ -58,6 +58,7 @@
 		"zod": "^3.23.8"
 	},
 	"devDependencies": {
+		"@types/luxon": "^3.4.2",
 		"@types/react": "^18.3.12",
 		"@types/react-dom": "^18.3.1",
 		"@vitejs/plugin-react": "^4.3.3",

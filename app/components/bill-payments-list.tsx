@@ -2,7 +2,7 @@ import { useConvexMutation } from '@convex-dev/react-query';
 import { useMutation } from '@tanstack/react-query';
 import { api } from 'convex/_generated/api';
 import { usePaginatedQuery } from 'convex/react';
-import { format } from 'date-fns';
+import { DateTime } from 'luxon';
 import { formatCurrency } from '~/utils/formatters';
 import { Badge } from './ui/badge';
 import { Button } from './ui/button';
@@ -34,7 +34,8 @@ export function BillPaymentsList() {
 					</CardHeader>
 					<CardContent className="px-3 py-0">
 						<Typography variant="p" className="text-sm">
-							{formatCurrency(payment.bill.amount)} is due on {format(payment.dateDue, 'EEEE, MMMM do')}
+							{formatCurrency(payment.bill.amount)} is due on{' '}
+							{DateTime.fromISO(payment.dateDue).toFormat('EEEE, MMMM d')}
 						</Typography>
 					</CardContent>
 					<CardFooter className="p-3">
@@ -46,7 +47,7 @@ export function BillPaymentsList() {
 							onClick={() => {
 								mutation.mutate({
 									billPaymentId: payment._id,
-									datePaid: new Date().toISOString(),
+									datePaid: DateTime.utc().toISO(),
 								});
 							}}
 						>

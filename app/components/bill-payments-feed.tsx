@@ -1,10 +1,12 @@
+import { EST_TIMEZONE } from '@/constants';
 import { convexQuery } from '@convex-dev/react-query';
 import { useSuspenseQuery } from '@tanstack/react-query';
 import { api } from 'convex/_generated/api';
 import { BillPaymentWithBill } from 'convex/billPayments';
-import { format, formatDistance } from 'date-fns';
 import { ReceiptIcon } from 'lucide-react';
+import { DateTime } from 'luxon';
 import { cn } from '~/lib/utils';
+import { formatDuration } from '~/utils/formatters';
 
 export function BillPaymentsFeed() {
 	const recentPayments = useSuspenseQuery(convexQuery(api.billPayments.list, {}));
@@ -33,10 +35,12 @@ export function BillPaymentsFeed() {
 						{payment.datePaid ? 'paid' : 'created'}.
 					</p>
 					<time
-						dateTime={payment.datePaid ?? new Date(payment._creationTime).toISOString()}
+						dateTime={getDate(payment).toISO() ?? undefined}
 						className="flex-none py-0.5 text-xs/5 text-gray-500"
 					>
-						{formatDistance(new Date(), getDate(payment))}
+						{formatDuration(getDate(payment).diffNow().negate().rescale(), {
+							units: ['days', 'hours', 'minutes'],
+						})}
 					</time>
 				</li>
 			))}
@@ -46,16 +50,8 @@ export function BillPaymentsFeed() {
 
 function getDate(payment: BillPaymentWithBill) {
 	if (payment.datePaid != null) {
-		return new Date(payment.datePaid);
+		return DateTime.fromISO(payment.datePaid, { zone: EST_TIMEZONE });
 	}
 
-	return new Date(payment._creationTime);
-}
-
-function getActivityMessage(payment: BillPaymentWithBill) {
-	if (payment.datePaid != null) {
-		return `paid at ${format(payment.datePaid, 'h:mm a')} on ${format(payment.datePaid, 'EEE, MMM do')}`;
-	}
-
-	return `created`;
+	return DateTime.fromMillis(payment._creationTime, { zone: EST_TIMEZONE });
 }
