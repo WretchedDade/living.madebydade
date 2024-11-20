@@ -6,6 +6,8 @@ import { internal } from './_generated/api';
 import { DataModel, Doc } from './_generated/dataModel';
 import { internalAction, internalMutation, mutation, query } from './_generated/server';
 
+import { EST_TIMEZONE } from '../constants';
+
 export type BillWithPayments = Doc<'bills'> & { payments: Doc<'billPayments'>[] };
 export type BillPaymentWithBill = Doc<'billPayments'> & { bill: Doc<'bills'> };
 
@@ -177,10 +179,33 @@ export const createUpcomingPayments = internalAction({
 
 const createUpcomingPaymentsForBills = async (ctx: GenericActionCtx<DataModel>, bills: BillWithPayments[]) => {
 	console.log(`${bills.length} bills found`);
-	const today = DateTime.utc().startOf('day');
+	const today = DateTime.now().setZone(EST_TIMEZONE).startOf('day');
+
+	if (!today.isValid) {
+		console.log(`Today is invalid: ${today.invalidReason}. ${today.invalidExplanation}`);
+		return;
+	}
 
 	for (const bill of bills) {
 		const nextPaymentDate = getNextPaymentDate(bill, today);
+
+		// Check if Bill Payment already exists for this date
+		const existingPayment = bill.payments.find(payment => payment.datePaid == null);
+
+		if (existingPayment != null) {
+			// Check if the bill is auto-pay and is due today
+			if (bill.isAutoPay && DateTime.fromISO(existingPayment.dateDue).hasSame(today, 'day')) {
+				console.log(`${bill.name} is due today and auto-pays. Marking as paid...`);
+				await ctx.runMutation(internal.billPayments.markBillPaid, {
+					billPaymentId: existingPayment._id,
+					datePaid: DateTime.utc().toISO(),
+				});
+				continue;
+			} else {
+				console.log(`Bill ${bill.name} already has a payment scheduled for ${existingPayment.dateDue}`);
+				continue;
+			}
+		}
 
 		// Continue if next payment date could not be determined
 		if (nextPaymentDate == null) {
@@ -198,23 +223,6 @@ const createUpcomingPaymentsForBills = async (ctx: GenericActionCtx<DataModel>, 
 		if (nextPaymentDate.diff(today, 'days').days > 15) {
 			console.log(`Skipping bill ${bill.name} because it is more than 15 days away`);
 			continue;
-		}
-
-		// Check if Bill Payment already exists for this date
-		const existingPayment = bill.payments.find(payment => payment.datePaid == null);
-
-		if (existingPayment != null) {
-			// Check if the bill is auto-pay and is due today
-			if (bill.isAutoPay && nextPaymentDate.hasSame(today, 'day')) {
-				console.log(`${bill.name} is due today and auto-pays. Marking as paid...`);
-				await ctx.runMutation(internal.billPayments.markBillPaid, {
-					billPaymentId: existingPayment._id,
-					datePaid: today.toISO(),
-				});
-			} else {
-				console.log(`Bill ${bill.name} already has a payment scheduled for ${existingPayment.dateDue}`);
-				continue;
-			}
 		}
 
 		console.log(`Creating payment for ${bill.name} due on ${nextPaymentDate.toISO()}`);
