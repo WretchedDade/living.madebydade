@@ -190,7 +190,7 @@ const createUpcomingPaymentsForBills = async (ctx: GenericActionCtx<DataModel>, 
 		const nextPaymentDate = getNextPaymentDate(bill, today);
 
 		// Check if Bill Payment already exists for this date
-		const existingPayment = bill.payments.find(payment => payment.datePaid == null);
+		const existingPayment = bill.payments.find(payment => isUnpaidOrMatchesDate(payment, nextPaymentDate));
 
 		if (existingPayment != null) {
 			// Check if the bill is auto-pay and is due today
@@ -274,3 +274,15 @@ const getNextPaymentDate = (bill: BillWithPayments, today: DateTime) => {
 		return null;
 	}
 };
+
+function isUnpaidOrMatchesDate(payment: Doc<'billPayments'>, date: DateTime | null) {
+	if (payment.datePaid == null) {
+		return true;
+	}
+
+	if (date == null) {
+		return false;
+	}
+
+	return DateTime.fromISO(payment.dateDue).hasSame(date, 'month');
+}
