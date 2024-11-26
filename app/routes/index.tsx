@@ -24,7 +24,7 @@ function Home() {
 	const [showAutoPay, setShowAutoPay] = useState(false);
 
 	return (
-		<AppBody>
+		<AppBody className="lg:overflow-hidden">
 			<Typography variant="h1">Dashboard</Typography>
 			<div className="grid grid-cols-1 lg:grid-cols-2 lg:grid-rows-1 xl:grid-cols-3 gap-8 mt-4 lg:max-h-full lg:overflow-hidden">
 				{permissions.bills ? (

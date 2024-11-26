@@ -1,10 +1,12 @@
 import { Separator } from '@radix-ui/react-separator';
 import { Link, ToPathOption } from '@tanstack/react-router';
 import { Fragment } from 'react/jsx-runtime';
+import { cn } from '~/lib/utils';
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbSeparator } from './ui/breadcrumb';
 import { SidebarTrigger } from './ui/sidebar';
 
 interface AppBodyProps {
+	className?: string;
 	breadcrumbs?: {
 		label: string;
 		to: ToPathOption;
@@ -12,7 +14,7 @@ interface AppBodyProps {
 	children: React.ReactNode;
 }
 
-export function AppBody({ breadcrumbs = [], children }: AppBodyProps) {
+export function AppBody({ breadcrumbs = [], className, children }: AppBodyProps) {
 	return (
 		<>
 			<header className="flex h-16 shrink-0 items-center gap-2">
@@ -39,7 +41,9 @@ export function AppBody({ breadcrumbs = [], children }: AppBodyProps) {
 					)}
 				</div>
 			</header>
-			<div className="flex flex-1 flex-col gap-4 p-4 lg:max-h-svh lg:overflow-hidden">{children}</div>
+			<div className={cn('flex flex-1 flex-col gap-4 p-4 lg:max-h-svh overflow-y-auto', className)}>
+				{children}
+			</div>
 		</>
 	);
 }
