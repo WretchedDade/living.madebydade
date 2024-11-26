@@ -61,14 +61,14 @@ export const list = query({
 		const payments = await ctx.db.query('billPayments').take(take);
 
 		payments.sort((a, b) => {
-			let aDate = a.datePaid ?? a.dateDue;
-			let bDate = b.datePaid ?? b.dateDue;
+			let aDate = getDate(a);
+			let bDate = getDate(b);
 
-			if (aDate == null || bDate == null) {
+			if (!aDate.isValid || !bDate.isValid) {
 				return 0;
 			}
 
-			return DateTime.fromISO(bDate).toMillis() - DateTime.fromISO(aDate).toMillis();
+			return bDate.toMillis() - aDate.toMillis();
 		});
 
 		return Promise.all(
@@ -84,6 +84,14 @@ export const list = query({
 		);
 	},
 });
+
+function getDate(payment: Doc<'billPayments'>) {
+	if (payment.datePaid) {
+		return DateTime.fromISO(payment.datePaid);
+	}
+
+	return DateTime.fromMillis(payment._creationTime);
+}
 
 export const listRecentlyPaid = query({
 	args: {},
