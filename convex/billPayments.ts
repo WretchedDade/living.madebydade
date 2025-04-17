@@ -58,7 +58,7 @@ export const list = query({
 			throw new Error('Not authenticated');
 		}
 
-		const payments = await ctx.db.query('billPayments').take(take);
+		const payments = await ctx.db.query('billPayments').order('desc').take(take);
 
 		payments.sort((a, b) => {
 			let aDate = getDate(a);
