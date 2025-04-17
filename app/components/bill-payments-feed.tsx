@@ -9,7 +9,7 @@ import { cn } from '~/lib/utils';
 import { formatDuration } from '~/utils/formatters';
 
 export function BillPaymentsFeed() {
-	const recentPayments = useSuspenseQuery(convexQuery(api.billPayments.list, {}));
+	const recentPayments = useSuspenseQuery(convexQuery(api.billPayments.list, { take: 20 }));
 
 	return (
 		<ul role="list" className="space-y-6 pr-4">
@@ -21,17 +21,17 @@ export function BillPaymentsFeed() {
 							'absolute left-0 top-0 flex w-6 justify-center',
 						)}
 					>
-						<div className="w-px bg-gray-200" />
+						<div className="w-px bg-gray-200 dark:bg-gray-600" />
 					</div>
-					<div className="relative flex size-6 flex-none items-center justify-center bg-white">
+					<div className="relative flex size-6 flex-none items-center justify-center bg-white dark:bg-background">
 						{payment.datePaid != null ? (
-							<ReceiptIcon aria-hidden="true" className="size-4 text-green-600" />
+							<ReceiptIcon aria-hidden="true" className="size-4 text-green-600 dark:text-green-800" />
 						) : (
-							<div className="size-1.5 rounded-full bg-gray-100 ring-1 ring-gray-300" />
+							<div className="size-1.5 rounded-full bg-gray-100 ring-1 ring-gray-300 dark:bg-gray-500 dark:ring-gray-800" />
 						)}
 					</div>
 					<p className="flex-auto py-0.5 text-xs/5 text-gray-500">
-						<span className="font-medium text-gray-900">{payment.bill.name}</span> was{' '}
+						<span className="font-medium text-gray-900 dark:text-gray-300">{payment.bill.name}</span> was{' '}
 						{payment.datePaid ? 'paid' : 'created'}.
 					</p>
 					<time
@@ -39,7 +39,7 @@ export function BillPaymentsFeed() {
 						className="flex-none py-0.5 text-xs/5 text-gray-500"
 					>
 						{formatDuration(getDate(payment).diffNow().negate().rescale(), {
-							units: ['days', 'hours', 'minutes'],
+							units: ['years', 'months', 'weeks', 'days', 'hours'],
 						})}
 					</time>
 				</li>

@@ -40,7 +40,7 @@ export function BillGrid() {
 				<Button
 					type="button"
 					variant="outline"
-					className="h-full border-dashed border-primary text-lg [&_svg]:size-6"
+					className="h-full border-dashed border-primary border-2  text-lg [&_svg]:size-6"
 					onClick={() => setState({ drawerOpen: true, bill: null })}
 				>
 					<PlusIcon /> Add new bill
@@ -68,7 +68,7 @@ export function BillGrid() {
 								<div className="flex items-center gap-2">
 									<Button
 										size="sm"
-										variant="outline"
+										variant="secondary"
 										onClick={() => setState({ drawerOpen: true, bill })}
 									>
 										Edit

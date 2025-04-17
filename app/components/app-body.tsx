@@ -41,7 +41,12 @@ export function AppBody({ breadcrumbs = [], className, children }: AppBodyProps)
 					)}
 				</div>
 			</header>
-			<div className={cn('flex flex-1 flex-col gap-4 p-4 lg:max-h-svh overflow-y-auto', className)}>
+			<div
+				className={cn(
+					'flex flex-1 flex-col gap-4 p-4 lg:max-h-svh overflow-y-auto dark:text-gray-300',
+					className,
+				)}
+			>
 				{children}
 			</div>
 		</>
