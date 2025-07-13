@@ -3,7 +3,8 @@ import { v } from 'convex/values';
 import { DateTime } from 'luxon';
 
 import { internal } from './_generated/api';
-import { DataModel, Doc } from './_generated/dataModel';
+
+import { DataModel, Doc, Id } from './_generated/dataModel';
 import { internalAction, internalMutation, mutation, query } from './_generated/server';
 
 import { EST_TIMEZONE } from '../constants';
@@ -11,17 +12,19 @@ import { EST_TIMEZONE } from '../constants';
 export type BillWithPayments = Doc<'bills'> & { payments: Doc<'billPayments'>[] };
 export type BillPaymentWithBill = Doc<'billPayments'> & { bill: Doc<'bills'> };
 
+export const getById = query({
+	args: { id: v.id('billPayments') },
+	handler: async (ctx, { id }) => {
+		const bill = await ctx.db.get(id);
+		return bill;
+	},
+});
+
 export const listUnpaid = query({
 	args: {
 		includeAutoPay: v.optional(v.boolean()),
 	},
 	handler: async (ctx, args) => {
-		const user = await ctx.auth.getUserIdentity();
-
-		if (!user) {
-			throw new Error('Not authenticated');
-		}
-
 		const payments = await ctx.db
 			.query('billPayments')
 			.filter(q => {
@@ -52,12 +55,6 @@ export const listUnpaid = query({
 export const list = query({
 	args: { take: v.optional(v.number()) },
 	handler: async (ctx, { take = 50 }) => {
-		const user = await ctx.auth.getUserIdentity();
-
-		if (!user) {
-			throw new Error('Not authenticated');
-		}
-
 		const payments = await ctx.db.query('billPayments').order('desc').take(take);
 
 		payments.sort((a, b) => {
@@ -96,12 +93,6 @@ function getDate(payment: Doc<'billPayments'>) {
 export const listRecentlyPaid = query({
 	args: {},
 	handler: async ctx => {
-		const user = await ctx.auth.getUserIdentity();
-
-		if (!user) {
-			throw new Error('Not authenticated');
-		}
-
 		const payments = await ctx.db
 			.query('billPayments')
 			.filter(q => q.neq(q.field('datePaid'), undefined))
@@ -129,12 +120,6 @@ export const markPaid = mutation({
 		datePaid: v.string(),
 	},
 	handler: async (ctx, { billPaymentId, datePaid }) => {
-		const user = await ctx.auth.getUserIdentity();
-
-		if (!user) {
-			throw new Error('Not authenticated');
-		}
-
 		const payment = await ctx.db.get(billPaymentId);
 
 		if (!payment) {
@@ -203,6 +188,13 @@ const createUpcomingPaymentsForBills = async (ctx: GenericActionCtx<DataModel>, 
 					billPaymentId: existingPayment._id,
 					datePaid: DateTime.utc().toISO(),
 				});
+
+				await ctx.runMutation(internal.activity.logActivityInternal, {
+					type: 'billPaid',
+					targetId: existingPayment._id,
+					details: { name: bill.name, datePaid: DateTime.utc().toISO() },
+				});
+				
 				continue;
 			} else {
 				console.log(`Bill ${bill.name} already has a payment scheduled for ${existingPayment.dateDue}`);
@@ -223,16 +215,23 @@ const createUpcomingPaymentsForBills = async (ctx: GenericActionCtx<DataModel>, 
 			continue;
 		}
 
-		if (nextPaymentDate.diff(today, 'days').days > 15) {
+		const daysUntilDue = nextPaymentDate.diff(today, 'days').days;
+		if (daysUntilDue > 15) {
 			console.log(`Skipping bill ${bill.name} because it is more than 15 days away`);
 			continue;
 		}
 
 		console.log(`Creating payment for ${bill.name} due on ${nextPaymentDate.toISO()}`);
-		await ctx.runMutation(internal.billPayments.insertBillPayment, {
+		var billPaymentId: Id<'billPayments'> = await ctx.runMutation(internal.billPayments.insertBillPayment, {
 			billId: bill._id,
 			dateDue: nextPaymentDate.toISO()!,
 			isAutoPay: bill.isAutoPay,
+		});
+
+		await ctx.runMutation(internal.activity.logActivityInternal, {
+			type: 'billDue',
+			targetId: billPaymentId,
+			details: { name: bill.name, dueDate: nextPaymentDate.toISO(), daysUntilDue },
 		});
 	}
 };

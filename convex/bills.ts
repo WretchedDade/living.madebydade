@@ -4,12 +4,6 @@ import { internalQuery, mutation, query } from './_generated/server';
 export const list = query({
 	args: {},
 	handler: async ctx => {
-		const user = await ctx.auth.getUserIdentity();
-
-		if (!user) {
-			throw new Error('Not authenticated');
-		}
-
 		return await ctx.db.query('bills').collect();
 	},
 });
@@ -42,12 +36,6 @@ export const upsertBill = mutation({
 		name: v.string(),
 	},
 	handler: async (ctx, { id, ...values }) => {
-		const user = await ctx.auth.getUserIdentity();
-
-		if (!user) {
-			throw new Error('Not authenticated');
-		}
-
 		if (id == null) {
 			const billId = await ctx.db.insert('bills', { ...values });
 			return billId;
@@ -70,12 +58,6 @@ export const deleteBill = mutation({
 		id: v.id('bills'),
 	},
 	handler: async (ctx, { id }) => {
-		const user = await ctx.auth.getUserIdentity();
-
-		if (!user) {
-			throw new Error('Not authenticated');
-		}
-
 		const bill = await ctx.db.get(id);
 
 		if (!bill) {
@@ -83,5 +65,18 @@ export const deleteBill = mutation({
 		}
 
 		await ctx.db.delete(id);
+	},
+});
+
+
+// Query to get a bill by its id
+export const getBillById = query({
+	args: { id: v.optional(v.id('bills')) },
+	handler: async (ctx, { id }) => {
+		if (id == null) return undefined;
+
+		// Replace with your actual data access logic
+		const bill = await ctx.db.get(id);
+		return bill;
 	},
 });
