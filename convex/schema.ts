@@ -17,11 +17,11 @@ export default defineSchema({
 		billId: v.id('bills'),
 		isAutoPay: v.boolean(),
 	}),
-  activity: defineTable({
-	type: activityType,
-	userId: v.string(),
-	targetId: v.string(),
-	timestamp: v.number(),
-	details: activityDetails,
-  }),
+	activity: defineTable({
+		type: activityType,
+		userId: v.string(),
+		targetId: v.string(),
+		timestamp: v.number(),
+		details: activityDetails,
+	}),
 });

@@ -12,9 +12,6 @@ import { formatBillFieldValue } from '~/lib/billFieldFormatters';
 
 
 export function BillAddedActivityAccordion({ activity }: { activity: BillAddedActivity }) {
-
-    const billName = activity.details.billName;
-    const billId = activity.targetId;
     const billQuery = useQuery({ ...convexQuery(api.bills.getBillById, { id: activity.targetId as Id<"bills"> }), enabled: activity.targetId != null });
     const bill = billQuery.isSuccess ? billQuery.data : undefined;
 
@@ -32,7 +29,7 @@ export function BillAddedActivityAccordion({ activity }: { activity: BillAddedAc
     return (
         <RecentActivityAccordion
             activity={activity as ActivityDoc}
-            label={`${billName} Added`}
+            label={`${bill?.name ?? 'Bill'} Added`}
             borderClass="border-blue-500"
         >
             {bill === undefined ? (

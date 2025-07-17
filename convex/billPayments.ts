@@ -192,7 +192,7 @@ const createUpcomingPaymentsForBills = async (ctx: GenericActionCtx<DataModel>, 
 				await ctx.runMutation(internal.activity.logActivityInternal, {
 					type: 'billPaid',
 					targetId: existingPayment._id,
-					details: { name: bill.name, datePaid: DateTime.utc().toISO() },
+					details: { billName: bill.name },
 				});
 				
 				continue;
@@ -231,7 +231,7 @@ const createUpcomingPaymentsForBills = async (ctx: GenericActionCtx<DataModel>, 
 		await ctx.runMutation(internal.activity.logActivityInternal, {
 			type: 'billDue',
 			targetId: billPaymentId,
-			details: { name: bill.name, dueDate: nextPaymentDate.toISO(), daysUntilDue },
+			details: { billName: bill.name, dueDate: nextPaymentDate.toISO() ?? undefined },
 		});
 	}
 };

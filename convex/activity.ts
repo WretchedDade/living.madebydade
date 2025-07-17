@@ -9,7 +9,7 @@ export const logActivityInternal = internalMutation({
     args: {
         type: activityType,
         targetId: v.string(),
-        details: v.optional(v.any()),
+        details: activityDetails,
     },
     handler: async (ctx, args) => {
         await ctx.db.insert('activity', {
