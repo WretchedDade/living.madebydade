@@ -8,10 +8,15 @@
 // You should NOT make any changes in this file as it will be overwritten.
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
+import { createServerRootRoute } from '@tanstack/react-start/server'
+
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as UnauthorizedRouteImport } from './routes/unauthorized'
 import { Route as BillsRouteImport } from './routes/bills'
 import { Route as IndexRouteImport } from './routes/index'
+import { ServerRoute as DotwellKnownMicrosoftIdentityAssociationDotjsonServerRouteImport } from './routes/[.]well-known/microsoft-identity-association[.]json'
+
+const rootServerRouteImport = createServerRootRoute()
 
 const UnauthorizedRoute = UnauthorizedRouteImport.update({
   id: '/unauthorized',
@@ -28,6 +33,12 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const DotwellKnownMicrosoftIdentityAssociationDotjsonServerRoute =
+  DotwellKnownMicrosoftIdentityAssociationDotjsonServerRouteImport.update({
+    id: '/.well-known/microsoft-identity-association.json',
+    path: '/.well-known/microsoft-identity-association.json',
+    getParentRoute: () => rootServerRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -58,6 +69,27 @@ export interface RootRouteChildren {
   BillsRoute: typeof BillsRoute
   UnauthorizedRoute: typeof UnauthorizedRoute
 }
+export interface FileServerRoutesByFullPath {
+  '/.well-known/microsoft-identity-association.json': typeof DotwellKnownMicrosoftIdentityAssociationDotjsonServerRoute
+}
+export interface FileServerRoutesByTo {
+  '/.well-known/microsoft-identity-association.json': typeof DotwellKnownMicrosoftIdentityAssociationDotjsonServerRoute
+}
+export interface FileServerRoutesById {
+  __root__: typeof rootServerRouteImport
+  '/.well-known/microsoft-identity-association.json': typeof DotwellKnownMicrosoftIdentityAssociationDotjsonServerRoute
+}
+export interface FileServerRouteTypes {
+  fileServerRoutesByFullPath: FileServerRoutesByFullPath
+  fullPaths: '/.well-known/microsoft-identity-association.json'
+  fileServerRoutesByTo: FileServerRoutesByTo
+  to: '/.well-known/microsoft-identity-association.json'
+  id: '__root__' | '/.well-known/microsoft-identity-association.json'
+  fileServerRoutesById: FileServerRoutesById
+}
+export interface RootServerRouteChildren {
+  DotwellKnownMicrosoftIdentityAssociationDotjsonServerRoute: typeof DotwellKnownMicrosoftIdentityAssociationDotjsonServerRoute
+}
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
@@ -84,6 +116,17 @@ declare module '@tanstack/react-router' {
     }
   }
 }
+declare module '@tanstack/react-start/server' {
+  interface ServerFileRoutesByPath {
+    '/.well-known/microsoft-identity-association.json': {
+      id: '/.well-known/microsoft-identity-association.json'
+      path: '/.well-known/microsoft-identity-association.json'
+      fullPath: '/.well-known/microsoft-identity-association.json'
+      preLoaderRoute: typeof DotwellKnownMicrosoftIdentityAssociationDotjsonServerRouteImport
+      parentRoute: typeof rootServerRouteImport
+    }
+  }
+}
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
@@ -93,3 +136,10 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+const rootServerRouteChildren: RootServerRouteChildren = {
+  DotwellKnownMicrosoftIdentityAssociationDotjsonServerRoute:
+    DotwellKnownMicrosoftIdentityAssociationDotjsonServerRoute,
+}
+export const serverRouteTree = rootServerRouteImport
+  ._addFileChildren(rootServerRouteChildren)
+  ._addFileTypes<FileServerRouteTypes>()
