@@ -22,6 +22,13 @@ type RouterContext = {
 	convexClient: ConvexReactClient;
 };
 
+/*
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="manifest" href="/site.webmanifest">
+*/
+
 export const Route = createRootRouteWithContext<RouterContext>()({
 	head: () => ({
 		meta: [
@@ -34,7 +41,15 @@ export const Route = createRootRouteWithContext<RouterContext>()({
 			},
 		],
 		links: [
-			{ rel: 'stylesheet', href: appCss }
+			{ rel: 'stylesheet', href: appCss },
+			{ rel: 'apple-touch-icon', href: '/apple-touch-icon.png', sizes: '180x180' },
+			{ rel: 'icon', href: '/favicon-32x32.png', sizes: '32x32', type: 'image/png' },
+			{ rel: 'icon', href: '/favicon-16x16.png', sizes: '16x16', type: 'image/png' },
+			{ rel: 'manifest', href: '/site.webmanifest' },
+			{ rel: 'mask-icon', href: '/safari-pinned-tab.svg', color: '#5bbad5' },
+			{ rel: 'shortcut icon', href: '/favicon.ico' },
+			{ rel: 'android-chrome', href: '/android-chrome-192x192.png', sizes: '192x192', type: 'image/png' },
+			{ rel: 'android-chrome', href: '/android-chrome-512x512.png', sizes: '512x512', type: 'image/png' },
 		],
 		scripts: [
 			{ src: initThemeScript },

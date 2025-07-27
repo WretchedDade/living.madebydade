@@ -46,13 +46,26 @@ function AppHeader({ level, xp, xpMax }: AppHeaderProps) {
   return (
     <header className="bg-zinc-900 text-white py-4 px-4 sm:px-6 flex flex-col sm:flex-row items-center sm:justify-between shadow-lg border-b border-zinc-700 gap-4">
       <div className="w-full flex flex-col sm:flex-row gap-4 sm:justify-between">
-        <AppTitle />
+        <div className="flex flex-row items-center gap-3">
+          <Logo />
+          <AppTitle />
+        </div>
         <div className="flex flex-row items-center gap-3 w-full justify-between sm:w-auto relative">
           {/* {isSignedIn && <UserStats level={level} xp={xp} xpMax={xpMax} />} */}
           <UserAvatarCard />
         </div>
       </div>
     </header>
+  );
+}
+
+function Logo() {
+  return (
+    <img
+      src="/logo.png"
+      alt="App Logo"
+      className="h-8 w-8 sm:h-10 sm:w-10 rounded-full bg-zinc-700 object-cover shadow-[0_0_16px_4px_rgba(34,211,238,0.4)]"
+    />
   );
 }
 
