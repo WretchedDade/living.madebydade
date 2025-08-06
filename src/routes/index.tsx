@@ -17,7 +17,12 @@ import { BankingSection } from '~/components/BankingSection';
 function Home() {
 	const permissions = useUserPermissions();
 	const [showAutoPay, setShowAutoPay] = useState(false);
+	// Query for UI display (toggle)
 	const { data: payments, isLoading } = useQuery(convexQuery(api.billPayments.listUnpaid, { includeAutoPay: showAutoPay }));
+	
+	// Query for calculation (always include auto-pay)
+	const { data: allUnpaidPayments } = useQuery(convexQuery(api.billPayments.listUnpaid, { includeAutoPay: true }));
+
 	const { data: activities = [], isLoading: isLoadingActivity } = useQuery(convexQuery(api.activity.listRecentActivity, {}));
 	const mutation = useMutation({
 		mutationFn: useConvexMutation(api.billPayments.markPaid),
@@ -26,7 +31,6 @@ function Home() {
 	const { user } = useUser();
 
 	const accountsQuery = useQuery(convexAction(api.accounts.get, {}));
-
 
 	// Calculate total checking amount
 	const totalCheckingAmount = accountsQuery.data?.reduce((total, account) => {
@@ -43,24 +47,24 @@ function Home() {
 		return total;
 	}, 0) ?? 0;
 
-	// Calculate total unpaid bills amount
-	const totalUnpaidBillsAmount = (payments || []).reduce((sum, payment) => sum + (payment.bill?.amount || 0), 0);
+	// Calculate total unpaid bills amount (always include auto-pay)
+	const totalUnpaidBillsAmount = (allUnpaidPayments || []).reduce((sum, payment) => sum + (payment.bill?.amount || 0), 0);
 
 	// Calculate spending money
 	const spendingMoney = totalCheckingAmount - totalUnpaidBillsAmount;
-
 
 	return (
 		<AppLayout>
 			<main className="flex-1 w-full min-h-0 overflow-y-auto p-4 sm:p-10">
 				{/* Spending Money Card */}
 				<div className="mb-6">
-					<div className="bg-cyan-900/80 rounded-xl shadow-lg p-6 flex flex-col items-center justify-center">
-						<span className="text-lg font-semibold text-cyan-300 mb-1">Spending Money</span>
-						<span className="text-4xl font-extrabold text-cyan-400 tracking-wide drop-shadow sci-fi-title-glow">
+					<div className="relative bg-cyan-900/80 rounded-xl shadow-lg p-6 flex flex-col items-center justify-center overflow-hidden">
+						{/* Shimmer effect */}
+						<div className="shimmer-bg" />
+						<span className="relative z-10 text-lg font-semibold text-cyan-300 mb-1">Spending Money</span>
+						<span className="relative z-10 text-4xl font-extrabold text-cyan-400 tracking-wide drop-shadow sci-fi-title-glow">
 							{spendingMoney.toLocaleString('en-US', { style: 'currency', currency: 'USD' })}
 						</span>
-						<span className="text-xs text-cyan-200 mt-2">(Checking balance minus unpaid bills)</span>
 					</div>
 				</div>
 				<SciFiBars count={7} className="mb-6" />
@@ -107,3 +111,4 @@ export const Route = createFileRoute('/')({
 		]);
 	},
 });
+

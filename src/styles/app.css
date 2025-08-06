@@ -1,3 +1,19 @@
+/* Shimmer animation for Spending Money card */
+.shimmer-bg {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  border-radius: 0.75rem; /* matches rounded-xl */
+  background: linear-gradient(120deg, rgba(0,255,255,0.08) 0%, rgba(0,255,255,0.18) 40%, rgba(0,255,255,0.08) 80%);
+  background-size: 200% 100%;
+  animation: shimmer 10s linear infinite;
+  z-index: 0;
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
 @keyframes charging-bar {
   0% {
     background-size: 0% 100%;

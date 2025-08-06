@@ -4,6 +4,7 @@ import * as Switch from '@radix-ui/react-switch';
 import { Button } from '~/components/ui/Button';
 import { Link } from '~/components/ui/Link';
 import { BillPaymentWithBill } from '@/convex/billPayments';
+import { Skeleton } from '~/components/ui/Skeleton';
 
 interface UnpaidBillsSectionProps {
   payments: BillPaymentWithBill[];
@@ -21,7 +22,7 @@ export function UnpaidBillsSection({
   onMarkPaid,
 }: UnpaidBillsSectionProps) {
   return (
-    <div className="flex-1 bg-zinc-900 rounded-2xl p-6 shadow-lg">
+    <div className="flex-1 bg-zinc-900 rounded-2xl p-6 shadow-lg flex flex-col">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-4">
         <div className="flex items-center gap-4 whitespace-nowrap">
           <SectionHeader
@@ -45,11 +46,30 @@ export function UnpaidBillsSection({
         </div>
       </div>
       {isLoading ? (
-        <div className="text-cyan-400 text-center py-6 animate-pulse text-lg">Loading payments...</div>
+        <ul className="divide-y divide-zinc-800 overflow-y-auto grow">
+          {[...Array(4)].map((_, i) => (
+            <li key={i} className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 py-3 px-2 mb-2 min-w-0">
+              <div className="flex flex-col items-start flex-1 min-w-0">
+                <span className="w-32 h-5 mb-2">
+                  <Skeleton className="w-full h-full" />
+                </span>
+                <span className="w-24 h-3 mb-2">
+                  <Skeleton className="w-full h-full" />
+                </span>
+                <span className="w-14 h-3">
+                  <Skeleton className="w-full h-full" />
+                </span>
+              </div>
+              <div className="w-24 h-8 mt-2 sm:mt-0">
+                <Skeleton className="w-full h-full" />
+              </div>
+            </li>
+          ))}
+        </ul>
       ) : payments?.length === 0 ? (
-        <div className="text-zinc-400 text-center py-8 text-lg">🎉 All bills are paid! You're a legend!</div>
+        <div className="text-zinc-400 text-center py-8 text-lg grow">🎉 All bills are paid! You're a legend!</div>
       ) : (
-        <ul className="divide-y divide-zinc-800 overflow-y-auto">
+        <ul className="divide-y divide-zinc-800 overflow-y-auto grow">
           {payments && payments.map((payment: any) => (
             <li key={payment._id} className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 py-3 px-2 mb-2 min-w-0">
               <div className="flex flex-col items-start flex-1 min-w-0">

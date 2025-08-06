@@ -59,8 +59,8 @@ export function BankingSection() {
     return (
         <div className="flex flex-col flex-1 bg-zinc-900 rounded-2xl p-6 shadow-lg">
             <SectionHeader
-                icon={<span className="w-7 h-7 inline-block bg-cyan-700 rounded-full" />} // Replace with quest icon
-                title="Banking"
+                icon={<IdCardIcon className="w-4 h-4 sm:w-7 sm:h-7 text-yellow-400 drop-shadow-[0_0_6px_rgba(253,224,71,0.7)]" />}
+                title="Linked Accounts"
             />
             {accountsQuery.isSuccess && accountsQuery.data.length === 0 && (
                 <div className='items-center justify-center flex flex-col grow w-full'>
