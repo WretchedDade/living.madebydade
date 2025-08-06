@@ -1,4 +1,4 @@
-import { convexQuery, useConvexMutation } from '@convex-dev/react-query';
+import { convexAction, convexQuery, useConvexMutation } from '@convex-dev/react-query';
 import { useUser } from '@clerk/tanstack-react-start';
 import { useSuspenseQuery, useMutation, useQuery } from '@tanstack/react-query';
 import { createFileRoute } from '@tanstack/react-router';
@@ -7,7 +7,7 @@ import { useState } from 'react';
 import { useUserPermissions } from '~/hooks/use-user-metadata';
 import { AppLayout } from '~/components/layout/AppLayout';
 import { Button } from '~/components/ui/Button';
-import { ListBulletIcon } from '@radix-ui/react-icons';
+import { ListBulletIcon, CardStackIcon, IdCardIcon } from '@radix-ui/react-icons';
 import { Link } from '~/components/ui/Link';
 import { SciFiBars } from '~/components/ui/SciFiBars';
 import { MissionBanner } from '~/components/ui/MissionBanner';
@@ -18,6 +18,8 @@ import { UnpaidBillsSection } from '~/components/UnpaidBillsSection';
 
 import { RecentActivitySection } from '~/components/RecentActivitySection';
 import { ActivityDoc } from '~/types/activity';
+import { PlaidAccount } from 'react-plaid-link';
+import { PlaidItem } from '@/convex/schema';
 
 function Home() {
 	const permissions = useUserPermissions();
@@ -29,6 +31,8 @@ function Home() {
 	});
 	const logActivity = useConvexMutation(api.activity.logActivity);
 	const { user } = useUser();
+
+	const plaidItemsQuery = useQuery(convexAction(api.accounts.getAllAccounts, {}));
 
 	return (
 		<AppLayout>
@@ -61,12 +65,81 @@ function Home() {
 							}}
 						/>
 						{/* Daily Quests Section (placeholder) */}
-						<div className="flex-1 bg-zinc-900 rounded-2xl p-6 shadow-lg">
+						<div className="flex flex-col flex-1 bg-zinc-900 rounded-2xl p-6 shadow-lg">
 							<SectionHeader
 								icon={<span className="w-7 h-7 inline-block bg-cyan-700 rounded-full" />} // Replace with quest icon
-								title="Daily Quests"
+								title="Banking"
 							/>
-							<div className="text-zinc-400 text-center py-6 text-lg italic">Coming soon: Your daily quests will appear here!</div>
+							{plaidItemsQuery.isSuccess && plaidItemsQuery.data.length === 0 && (
+								<div className='items-center justify-center flex flex-col grow w-full'>
+									<div className="flex flex-col items-center justify-center my-auto py-8">
+										<IdCardIcon className="w-8 h-8 text-cyan-400 mb-2" />
+										<p className="text-zinc-300 text-center text-lg italic mb-2">No bank accounts linked yet</p>
+										<Link href="/bank/setup">Link your bank account</Link>
+									</div>
+								</div>
+							)}
+							{plaidItemsQuery.isSuccess && plaidItemsQuery.data.length > 0 && (
+								<div className="flex flex-col gap-4 w-full mt-4">
+									<div className="flex flex-col gap-4 w-full">
+										{plaidItemsQuery.data.map((accountsOverview: any) => (
+											<div key={accountsOverview.institution.id} className="bg-zinc-800 rounded-xl shadow p-4">
+												<div className="flex items-center gap-3 mb-2">
+													<span className="font-bold text-cyan-300 text-lg">{accountsOverview.institution.name}</span>
+													{accountsOverview.institution.logo && (
+														<img src={accountsOverview.institution.logo} alt={accountsOverview.institution.name + ' logo'} className="w-6 h-6 rounded bg-white p-1" />
+													)}
+													<span className="text-xs text-zinc-400">{accountsOverview.institution.type}</span>
+												</div>
+												<div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
+													{accountsOverview.accounts.map((account: any) => (
+														<div key={account.account_id} className="flex flex-col bg-zinc-900 rounded-lg p-3 border border-zinc-700">
+															<div className="flex items-center justify-between mb-1">
+																<span className="font-semibold text-cyan-200">{account.name}</span>
+																<span className="font-mono text-cyan-100 text-base">
+																	{typeof account.balances.current === 'number'
+																		? account.balances.current.toLocaleString(undefined, {
+																			style: 'currency',
+																			currency: account.balances.iso_currency_code || 'USD',
+																			minimumFractionDigits: 2,
+																			maximumFractionDigits: 2
+																		})
+																		: 'Balance unavailable'}
+																</span>
+															</div>
+															<div className="flex flex-wrap gap-2 text-xs text-zinc-400">
+																<span>Type: {account.type}{account.subtype ? `/${account.subtype}` : ''}</span>
+																{account.mask && <span>••••{account.mask}</span>}
+																{account.official_name && <span>{account.official_name}</span>}
+															</div>
+															{typeof account.balances.available === 'number' && account.balances.available !== account.balances.current && (
+																<div className="text-xs text-zinc-500 mt-1">
+																	Available: {account.balances.available.toLocaleString(undefined, {
+																		style: 'currency',
+																		currency: account.balances.iso_currency_code || 'USD',
+																		minimumFractionDigits: 2,
+																		maximumFractionDigits: 2
+																	})}
+																</div>
+															)}
+															{typeof account.balances.limit === 'number' && (
+																<div className="text-xs text-zinc-500 mt-1">
+																	Limit: {account.balances.limit.toLocaleString(undefined, {
+																		style: 'currency',
+																		currency: account.balances.iso_currency_code || 'USD',
+																		minimumFractionDigits: 2,
+																		maximumFractionDigits: 2
+																	})}
+																</div>
+															)}
+														</div>
+													))}
+												</div>
+											</div>
+										))}
+									</div>
+								</div>
+							)}
 						</div>
 					</div>
 				</div>
@@ -85,6 +158,7 @@ export const Route = createFileRoute('/')({
 			context.queryClient.prefetchQuery(convexQuery(api.billPayments.listUnpaid, { includeAutoPay: true })),
 			context.queryClient.prefetchQuery(convexQuery(api.billPayments.listRecentlyPaid, {})),
 			context.queryClient.prefetchQuery(convexQuery(api.activity.listRecentActivity, {})),
+			context.queryClient.prefetchQuery(convexQuery(api.plaidItems.getPlaidItems, {})),
 		]);
 	},
 });

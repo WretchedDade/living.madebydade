@@ -1,7 +1,35 @@
 import { defineSchema, defineTable } from 'convex/server';
-import { v } from 'convex/values';
+import { Infer, v } from 'convex/values';
 
 import { activityType, activityDetails } from './activitySchema';
+import { PlaidTransactionSchema } from './transactionSchema';
+
+export const PlaidInstitutionSchema = v.object({
+	id: v.string(),
+	name: v.string(),
+});
+
+export const PlaidAccountSchema = v.object({
+	id: v.string(),
+	name: v.string(),
+	mask: v.string(),
+	type: v.string(),
+	subtype: v.string(),
+	verification_status: v.union(v.null(), v.string()),
+});
+
+export const PlaidItemSchema = v.object({
+	userId: v.string(),
+	itemId: v.string(),
+	accessToken: v.string(),
+
+	institution: v.optional(PlaidInstitutionSchema),
+	accounts: v.array(PlaidAccountSchema),
+
+	transactionCursor: v.optional(v.string()),
+});
+
+export type PlaidItem = Infer<typeof PlaidItemSchema>;
 
 export default defineSchema({
 	bills: defineTable({
@@ -24,4 +52,6 @@ export default defineSchema({
 		timestamp: v.number(),
 		details: activityDetails,
 	}),
+	plaidItems: defineTable(PlaidItemSchema).index('userId', ['userId']),
+	transactions: defineTable(PlaidTransactionSchema).index('accountId', ['accountId']),
 });

@@ -14,6 +14,9 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as UnauthorizedRouteImport } from './routes/unauthorized'
 import { Route as BillsRouteImport } from './routes/bills'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as BankIndexRouteImport } from './routes/bank/index'
+import { Route as BankSetupRouteImport } from './routes/bank/setup'
+import { Route as BankSuccessItemIdRouteImport } from './routes/bank/success/$itemId'
 import { ServerRoute as DotwellKnownMicrosoftIdentityAssociationDotjsonServerRouteImport } from './routes/[.]well-known/microsoft-identity-association[.]json'
 
 const rootServerRouteImport = createServerRootRoute()
@@ -33,6 +36,21 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const BankIndexRoute = BankIndexRouteImport.update({
+  id: '/bank/',
+  path: '/bank/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BankSetupRoute = BankSetupRouteImport.update({
+  id: '/bank/setup',
+  path: '/bank/setup',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BankSuccessItemIdRoute = BankSuccessItemIdRouteImport.update({
+  id: '/bank/success/$itemId',
+  path: '/bank/success/$itemId',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const DotwellKnownMicrosoftIdentityAssociationDotjsonServerRoute =
   DotwellKnownMicrosoftIdentityAssociationDotjsonServerRouteImport.update({
     id: '/.well-known/microsoft-identity-association.json',
@@ -44,30 +62,61 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/bills': typeof BillsRoute
   '/unauthorized': typeof UnauthorizedRoute
+  '/bank/setup': typeof BankSetupRoute
+  '/bank': typeof BankIndexRoute
+  '/bank/success/$itemId': typeof BankSuccessItemIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/bills': typeof BillsRoute
   '/unauthorized': typeof UnauthorizedRoute
+  '/bank/setup': typeof BankSetupRoute
+  '/bank': typeof BankIndexRoute
+  '/bank/success/$itemId': typeof BankSuccessItemIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/bills': typeof BillsRoute
   '/unauthorized': typeof UnauthorizedRoute
+  '/bank/setup': typeof BankSetupRoute
+  '/bank/': typeof BankIndexRoute
+  '/bank/success/$itemId': typeof BankSuccessItemIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/bills' | '/unauthorized'
+  fullPaths:
+    | '/'
+    | '/bills'
+    | '/unauthorized'
+    | '/bank/setup'
+    | '/bank'
+    | '/bank/success/$itemId'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/bills' | '/unauthorized'
-  id: '__root__' | '/' | '/bills' | '/unauthorized'
+  to:
+    | '/'
+    | '/bills'
+    | '/unauthorized'
+    | '/bank/setup'
+    | '/bank'
+    | '/bank/success/$itemId'
+  id:
+    | '__root__'
+    | '/'
+    | '/bills'
+    | '/unauthorized'
+    | '/bank/setup'
+    | '/bank/'
+    | '/bank/success/$itemId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   BillsRoute: typeof BillsRoute
   UnauthorizedRoute: typeof UnauthorizedRoute
+  BankSetupRoute: typeof BankSetupRoute
+  BankIndexRoute: typeof BankIndexRoute
+  BankSuccessItemIdRoute: typeof BankSuccessItemIdRoute
 }
 export interface FileServerRoutesByFullPath {
   '/.well-known/microsoft-identity-association.json': typeof DotwellKnownMicrosoftIdentityAssociationDotjsonServerRoute
@@ -114,6 +163,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/bank/': {
+      id: '/bank/'
+      path: '/bank'
+      fullPath: '/bank'
+      preLoaderRoute: typeof BankIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/bank/setup': {
+      id: '/bank/setup'
+      path: '/bank/setup'
+      fullPath: '/bank/setup'
+      preLoaderRoute: typeof BankSetupRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/bank/success/$itemId': {
+      id: '/bank/success/$itemId'
+      path: '/bank/success/$itemId'
+      fullPath: '/bank/success/$itemId'
+      preLoaderRoute: typeof BankSuccessItemIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 declare module '@tanstack/react-start/server' {
@@ -132,6 +202,9 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   BillsRoute: BillsRoute,
   UnauthorizedRoute: UnauthorizedRoute,
+  BankSetupRoute: BankSetupRoute,
+  BankIndexRoute: BankIndexRoute,
+  BankSuccessItemIdRoute: BankSuccessItemIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

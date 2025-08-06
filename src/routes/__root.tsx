@@ -22,13 +22,6 @@ type RouterContext = {
 	convexClient: ConvexReactClient;
 };
 
-/*
-<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
-<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
-<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
-<link rel="manifest" href="/site.webmanifest">
-*/
-
 export const Route = createRootRouteWithContext<RouterContext>()({
 	head: () => ({
 		meta: [
@@ -82,19 +75,19 @@ function RootComponent() {
 		from: '__root__',
 	});
 
- return (
-   <ThemeProvider storageKey="living-madebydade-theme">
-	 <AuthProvider>
-	   <ConvexProviderWithClerk useAuth={useAuth} client={convexClient}>
-		 <RootDocument>
-		   <ClerkLoaded>
-			 <SignedIn>
-			   <Authenticated>
-				 <Outlet />
-				 <ToastProvider />
-			   </Authenticated>
-			 </SignedIn>
-		   </ClerkLoaded>
+	return (
+		<ThemeProvider storageKey="living-madebydade-theme">
+			<AuthProvider>
+				<ConvexProviderWithClerk useAuth={useAuth} client={convexClient}>
+					<RootDocument>
+						<ClerkLoaded>
+							<SignedIn>
+								<Authenticated>
+									<Outlet />
+									<ToastProvider />
+								</Authenticated>
+							</SignedIn>
+						</ClerkLoaded>
 						<SignedOut>
 							<NotSignedIn />
 						</SignedOut>
@@ -118,19 +111,19 @@ const TanStackRouterDevtools =
 		);
 
 function RootDocument({ children }: { children: React.ReactNode }) {
-  return (
-	<html className="bg-zinc-800 text-white">
-	  <head>
-		<HeadContent />
-	  </head>
-	  <body className="lg:max-h-svh lg:overflow-hidden">
-		{children}
-		<React.Suspense>
-		  {/* <TanStackRouterDevtools position="bottom-right" /> */}
-		  <ReactQueryDevtools buttonPosition="bottom-right"/>
-		</React.Suspense>
-		<Scripts />
-	  </body>
-	</html>
-  );
+	return (
+		<html className="bg-zinc-800 text-white">
+			<head>
+				<HeadContent />
+			</head>
+			<body className="lg:max-h-svh lg:overflow-hidden">
+				{children}
+				<React.Suspense>
+					{/* <TanStackRouterDevtools position="bottom-right" /> */}
+					<ReactQueryDevtools buttonPosition="bottom-right" />
+				</React.Suspense>
+				<Scripts />
+			</body>
+		</html>
+	);
 }
