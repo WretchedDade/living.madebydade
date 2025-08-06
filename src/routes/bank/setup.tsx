@@ -18,7 +18,7 @@ function BankSetup() {
     const getLinkToken = useQuery({ ...convexAction(api.plaidItems.getLinkToken, {}), refetchOnWindowFocus: false });
 
     const createItemMutation = useMutation({
-        mutationFn: useConvexAction(api.plaidItems.linkPlaidItem),
+        mutationFn: useConvexAction(api.plaidItems.link),
         onSuccess: (item: PlaidItem) => {
             navigate({ to: '/bank/success/$itemId', params: { itemId: item.itemId } });
             showToast({

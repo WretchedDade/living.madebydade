@@ -28,8 +28,6 @@ export function getPlaidConfig() {
 export function getPlaidApi() {
     const { clientId, clientSecret, env } = getPlaidConfig();
 
-    console.log(getPlaidConfig());
-
     return new PlaidApi(new Configuration({
         basePath: PlaidEnvironments[env],
         baseOptions: {

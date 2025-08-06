@@ -3,14 +3,14 @@ import { ClockIcon, ListBulletIcon } from '@radix-ui/react-icons';
 import * as Switch from '@radix-ui/react-switch';
 import { Button } from '~/components/ui/Button';
 import { Link } from '~/components/ui/Link';
-import React from 'react';
+import { BillPaymentWithBill } from '@/convex/billPayments';
 
 interface UnpaidBillsSectionProps {
-  payments: any[];
+  payments: BillPaymentWithBill[];
   isLoading: boolean;
   showAutoPay: boolean;
   setShowAutoPay: (checked: boolean) => void;
-  onMarkPaid: (payment: any) => Promise<void>;
+  onMarkPaid: (payment: BillPaymentWithBill) => Promise<void>;
 }
 
 export function UnpaidBillsSection({

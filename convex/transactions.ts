@@ -131,7 +131,7 @@ export const syncTransactionData = internalAction({
     },
     handler: async (ctx, { itemId }) => {
         // Step 1: Retrieve our access token and cursor from the database
-        const item = await ctx.runQuery(internal.plaidItems.getPlaidItem_internal, { itemId });
+        const item = await ctx.runQuery(internal.plaidItems.internalGetById, { itemId });
 
         if (!item) {
             throw new Error(`Item with ID ${itemId} not found`);

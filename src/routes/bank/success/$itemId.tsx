@@ -20,7 +20,7 @@ export const Route = createFileRoute('/bank/success/$itemId')({
 
 function RouteComponent() {
     const { itemId } = Route.useParams();
-    const query = useQuery(convexAction(api.accounts.getAccounts, { itemId }));
+    const query = useQuery(convexAction(api.accounts.getById, { itemId }));
 
     if (query.isLoading) return <BankAccountsSkeleton />;
     if (query.isError) return <BankAccountsError error={query.error} />;
