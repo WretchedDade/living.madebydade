@@ -13,6 +13,7 @@ import { UnpaidBillsSection } from '~/components/UnpaidBillsSection';
 import { RecentActivitySection } from '~/components/RecentActivitySection';
 import { ActivityDoc } from '~/types/activity';
 import { BankingSection } from '~/components/BankingSection';
+import { SpendingMoneyCard } from '~/components/SpendingMoneyCard';
 
 function Home() {
 	const permissions = useUserPermissions();
@@ -30,43 +31,12 @@ function Home() {
 	const logActivity = useConvexMutation(api.activity.logActivity);
 	const { user } = useUser();
 
-	const accountsQuery = useQuery(convexAction(api.accounts.get, {}));
-
-	// Calculate total checking amount
-	const totalCheckingAmount = accountsQuery.data?.reduce((total, account) => {
-		if (account.subtype === "checking") {
-			if (account.balances.available) {
-				return total + account.balances.available;
-			} else if (account.balances.current) {
-				return total + account.balances.current;
-			} else {
-				console.warn(`Encountered checking account (${account.name} ${account.mask}) with no balance information when calculating total checking amount.`);
-				return total;
-			}
-		}
-		return total;
-	}, 0) ?? 0;
-
-	// Calculate total unpaid bills amount (always include auto-pay)
-	const totalUnpaidBillsAmount = (allUnpaidPayments || []).reduce((sum, payment) => sum + (payment.bill?.amount || 0), 0);
-
-	// Calculate spending money
-	const spendingMoney = totalCheckingAmount - totalUnpaidBillsAmount;
+	// Spending money display moved into its own component
 
 	return (
 		<AppLayout>
 			<main className="flex-1 w-full min-h-0 overflow-y-auto p-4 sm:p-10">
-				{/* Spending Money Card */}
-				<div className="mb-6">
-					<div className="relative bg-cyan-900/80 rounded-xl shadow-lg p-6 flex flex-col items-center justify-center overflow-hidden">
-						{/* Shimmer effect */}
-						<div className="shimmer-bg" />
-						<span className="relative z-10 text-lg font-semibold text-cyan-300 mb-1">Spending Money</span>
-						<span className="relative z-10 text-4xl font-extrabold text-cyan-400 tracking-wide drop-shadow sci-fi-title-glow">
-							{spendingMoney.toLocaleString('en-US', { style: 'currency', currency: 'USD' })}
-						</span>
-					</div>
-				</div>
+				<SpendingMoneyCard />
 				<SciFiBars count={7} className="mb-6" />
 				<div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
 					{/* Row: Unpaid Bills & Daily Quests */}
