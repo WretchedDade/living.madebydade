@@ -59,24 +59,19 @@ export const deleteOldTransactionsByPostedDate = (() => {
 export const dedupeTransactionsByTransactionId = migrations.define({
 	table: "transactions",
 	batchSize: 200,
-	// Process in transactionId groups by scanning per-doc; safe since it's one-time and datasets are moderate.
+	// For each document, fetch the newest doc for its transactionId via the index and delete self if not newest.
+	// This uses 1 indexed read per doc instead of scanning whole groups, preventing read limit overflows.
 	migrateOne: async (ctx, txn) => {
-		const txns = await ctx.db
+		const txid = (txn as { transactionId: string }).transactionId;
+		if (!txid) return;
+		const newest = await ctx.db
 			.query("transactions")
-			.withIndex("byTransactionId", q => q.eq("transactionId", (txn as { transactionId: string }).transactionId))
-			.collect();
-		if (txns.length <= 1) return;
-
-		// Keep the most recently created document (largest _creationTime)
-		let keeper = txns[0];
-		for (const t of txns) {
-			if ((t._creationTime as number) > (keeper._creationTime as number)) keeper = t;
-		}
-
-		for (const t of txns) {
-			if (t._id !== keeper._id) {
-				await ctx.db.delete(t._id);
-			}
+			.withIndex("byTransactionId", q => q.eq("transactionId", txid))
+			.order("desc")
+			.first();
+		if (!newest) return;
+		if (newest._id !== txn._id) {
+			await ctx.db.delete(txn._id);
 		}
 	},
 });
