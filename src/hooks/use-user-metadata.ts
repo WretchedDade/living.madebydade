@@ -1,5 +1,5 @@
-import { useUser } from '@clerk/tanstack-react-start';
-import { z } from 'zod';
+import { useUser } from "@clerk/tanstack-react-start";
+import { z } from "zod";
 
 export function useUserMetadata(): UserMetadata | null {
 	const { user } = useUser();
@@ -18,7 +18,7 @@ export function useUserMetadata(): UserMetadata | null {
 	}
 }
 
-export function useUserPermissions(): UserMetadata['permissions'] {
+export function useUserPermissions(): UserMetadata["permissions"] {
 	const userMetadata = useUserMetadata();
 
 	if (userMetadata == null) {

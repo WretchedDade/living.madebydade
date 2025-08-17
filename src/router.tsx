@@ -1,10 +1,10 @@
-import { ConvexQueryClient } from '@convex-dev/react-query';
-import { QueryClient } from '@tanstack/react-query';
-import { createRouter as createTanStackRouter } from '@tanstack/react-router';
-import { routerWithQueryClient } from '@tanstack/react-router-with-query';
-import { routeTree } from './routeTree.gen';
-import { DefaultCatchBoundary } from './components/feedback/DefaultCatchBoundary';
-import { NotFound } from './components/feedback/NotFound';
+import { ConvexQueryClient } from "@convex-dev/react-query";
+import { QueryClient } from "@tanstack/react-query";
+import { createRouter as createTanStackRouter } from "@tanstack/react-router";
+import { routerWithQueryClient } from "@tanstack/react-router-with-query";
+import { routeTree } from "./routeTree.gen";
+import { DefaultCatchBoundary } from "./components/feedback/DefaultCatchBoundary";
+import { NotFound } from "./components/feedback/NotFound";
 
 export function createRouter() {
 	const CONVEX_URL = import.meta.env.VITE_CONVEX_URL;
@@ -30,7 +30,7 @@ export function createRouter() {
 		createTanStackRouter({
 			routeTree,
 			context: { queryClient, convexClient: convexQueryClient.convexClient },
-			defaultPreload: 'intent',
+			defaultPreload: "intent",
 			defaultErrorComponent: DefaultCatchBoundary,
 			defaultNotFoundComponent: () => <NotFound />,
 			scrollRestoration: true,
@@ -41,7 +41,7 @@ export function createRouter() {
 	return router;
 }
 
-declare module '@tanstack/react-router' {
+declare module "@tanstack/react-router" {
 	interface Register {
 		router: ReturnType<typeof createRouter>;
 	}

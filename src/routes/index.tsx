@@ -1,30 +1,34 @@
-import { convexAction, convexQuery, useConvexMutation } from '@convex-dev/react-query';
-import { useUser } from '@clerk/tanstack-react-start';
-import { useMutation, useQuery } from '@tanstack/react-query';
-import { createFileRoute } from '@tanstack/react-router';
-import { api } from 'convex/_generated/api';
-import { useState } from 'react';
-import { useUserPermissions } from '~/hooks/use-user-metadata';
-import { AppLayout } from '~/components/layout/AppLayout';
-import { SciFiBars } from '~/components/ui/SciFiBars';
+import { convexAction, convexQuery, useConvexMutation } from "@convex-dev/react-query";
+import { useUser } from "@clerk/tanstack-react-start";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import { createFileRoute } from "@tanstack/react-router";
+import { api } from "convex/_generated/api";
+import { useState } from "react";
+import { useUserPermissions } from "~/hooks/use-user-metadata";
+import { AppLayout } from "~/components/layout/AppLayout";
+import { SciFiBars } from "~/components/ui/SciFiBars";
 
-import { UnpaidBillsSection } from '~/components/UnpaidBillsSection';
+import { UnpaidBillsSection } from "~/components/UnpaidBillsSection";
 
-import { RecentActivitySection } from '~/components/RecentActivitySection';
-import { ActivityDoc } from '~/types/activity';
-import { BankingSection } from '~/components/BankingSection';
-import { SpendingMoneyCard } from '~/components/SpendingMoneyCard';
+import { RecentActivitySection } from "~/components/RecentActivitySection";
+import { ActivityDoc } from "~/types/activity";
+import { BankingSection } from "~/components/BankingSection";
+import { SpendingMoneyCard } from "~/components/SpendingMoneyCard";
 
 function Home() {
 	const permissions = useUserPermissions();
 	const [showAutoPay, setShowAutoPay] = useState(false);
 	// Query for UI display (toggle)
-	const { data: payments, isLoading } = useQuery(convexQuery(api.billPayments.listUnpaid, { includeAutoPay: showAutoPay }));
-	
+	const { data: payments, isLoading } = useQuery(
+		convexQuery(api.billPayments.listUnpaid, { includeAutoPay: showAutoPay }),
+	);
+
 	// Query for calculation (always include auto-pay)
 	const { data: allUnpaidPayments } = useQuery(convexQuery(api.billPayments.listUnpaid, { includeAutoPay: true }));
 
-	const { data: activities = [], isLoading: isLoadingActivity } = useQuery(convexQuery(api.activity.listRecentActivity, {}));
+	const { data: activities = [], isLoading: isLoadingActivity } = useQuery(
+		convexQuery(api.activity.listRecentActivity, {}),
+	);
 	const mutation = useMutation({
 		mutationFn: useConvexMutation(api.billPayments.markPaid),
 	});
@@ -46,11 +50,14 @@ function Home() {
 							isLoading={isLoading}
 							showAutoPay={showAutoPay}
 							setShowAutoPay={setShowAutoPay}
-							onMarkPaid={async (payment) => {
-								await mutation.mutateAsync({ billPaymentId: payment._id, datePaid: new Date().toISOString() });
+							onMarkPaid={async payment => {
+								await mutation.mutateAsync({
+									billPaymentId: payment._id,
+									datePaid: new Date().toISOString(),
+								});
 								await logActivity({
-									type: 'billPaid',
-									userId: user?.id ?? 'unknown',
+									type: "billPaid",
+									userId: user?.id ?? "unknown",
 									targetId: payment._id,
 									details: {
 										description: `Paid bill: ${payment.bill?.name}`,
@@ -70,7 +77,7 @@ function Home() {
 	);
 }
 
-export const Route = createFileRoute('/')({
+export const Route = createFileRoute("/")({
 	component: Home,
 	loader: async ({ context }) => {
 		await Promise.all([
@@ -81,4 +88,3 @@ export const Route = createFileRoute('/')({
 		]);
 	},
 });
-

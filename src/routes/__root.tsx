@@ -1,21 +1,21 @@
-import { ClerkLoaded, SignedIn, SignedOut, useAuth } from '@clerk/tanstack-react-start';
-import { QueryClient } from '@tanstack/react-query';
-import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
-import { Outlet, createRootRouteWithContext, useRouteContext } from '@tanstack/react-router';
-import { HeadContent, Scripts } from '@tanstack/react-router';
-import { Authenticated, ConvexReactClient } from 'convex/react';
-import { ConvexProviderWithClerk } from 'convex/react-clerk';
-import * as React from 'react';
-import { AuthProvider } from '~/components/provider/AuthProvider';
+import { ClerkLoaded, SignedIn, SignedOut, useAuth } from "@clerk/tanstack-react-start";
+import { QueryClient } from "@tanstack/react-query";
+import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
+import { Outlet, createRootRouteWithContext, useRouteContext } from "@tanstack/react-router";
+import { HeadContent, Scripts } from "@tanstack/react-router";
+import { Authenticated, ConvexReactClient } from "convex/react";
+import { ConvexProviderWithClerk } from "convex/react-clerk";
+import * as React from "react";
+import { AuthProvider } from "~/components/provider/AuthProvider";
 
-import { DefaultCatchBoundary } from '~/components/feedback/DefaultCatchBoundary';
-import { NotFound } from '~/components/feedback/NotFound';
-import { NotSignedIn } from '~/components/feedback/NotSignedIn';
-import { ThemeProvider } from '~/components/provider/ThemeProvider';
-import { ToastProvider } from '~/components/provider/ToastProvider';
+import { DefaultCatchBoundary } from "~/components/feedback/DefaultCatchBoundary";
+import { NotFound } from "~/components/feedback/NotFound";
+import { NotSignedIn } from "~/components/feedback/NotSignedIn";
+import { ThemeProvider } from "~/components/provider/ThemeProvider";
+import { ToastProvider } from "~/components/provider/ToastProvider";
 
-import initThemeScript from '~/scripts/init-theme?url';
-import appCss from '~/styles/app.css?url';
+import initThemeScript from "~/scripts/init-theme?url";
+import appCss from "~/styles/app.css?url";
 
 type RouterContext = {
 	queryClient: QueryClient;
@@ -26,38 +26,38 @@ export const Route = createRootRouteWithContext<RouterContext>()({
 	head: () => ({
 		meta: [
 			{
-				charSet: 'utf-8',
+				charSet: "utf-8",
 			},
 			{
-				name: 'viewport',
-				content: 'width=device-width, initial-scale=1',
+				name: "viewport",
+				content: "width=device-width, initial-scale=1",
 			},
 		],
 		links: [
-			{ rel: 'stylesheet', href: appCss },
-			{ rel: 'apple-touch-icon', href: '/apple-touch-icon.png', sizes: '180x180' },
-			{ rel: 'icon', href: '/favicon-32x32.png', sizes: '32x32', type: 'image/png' },
-			{ rel: 'icon', href: '/favicon-16x16.png', sizes: '16x16', type: 'image/png' },
-			{ rel: 'manifest', href: '/site.webmanifest' },
-			{ rel: 'mask-icon', href: '/safari-pinned-tab.svg', color: '#5bbad5' },
-			{ rel: 'shortcut icon', href: '/favicon.ico' },
-			{ rel: 'android-chrome', href: '/android-chrome-192x192.png', sizes: '192x192', type: 'image/png' },
-			{ rel: 'android-chrome', href: '/android-chrome-512x512.png', sizes: '512x512', type: 'image/png' },
+			{ rel: "stylesheet", href: appCss },
+			{ rel: "apple-touch-icon", href: "/apple-touch-icon.png", sizes: "180x180" },
+			{ rel: "icon", href: "/favicon-32x32.png", sizes: "32x32", type: "image/png" },
+			{ rel: "icon", href: "/favicon-16x16.png", sizes: "16x16", type: "image/png" },
+			{ rel: "manifest", href: "/site.webmanifest" },
+			{ rel: "mask-icon", href: "/safari-pinned-tab.svg", color: "#5bbad5" },
+			{ rel: "shortcut icon", href: "/favicon.ico" },
+			{ rel: "android-chrome", href: "/android-chrome-192x192.png", sizes: "192x192", type: "image/png" },
+			{ rel: "android-chrome", href: "/android-chrome-512x512.png", sizes: "512x512", type: "image/png" },
 		],
 		scripts: [
 			{ src: initThemeScript },
 			...(import.meta.env.DEV
 				? [
-					{
-						type: 'module',
-						children: `import RefreshRuntime from "/_build/@react-refresh";
+						{
+							type: "module",
+							children: `import RefreshRuntime from "/_build/@react-refresh";
   RefreshRuntime.injectIntoGlobalHook(window)
   window.$RefreshReg$ = () => {}
-  window.$RefreshSig$ = () => (type) => type`
-					}
-				]
-				: [])
-		]
+  window.$RefreshSig$ = () => (type) => type`,
+						},
+					]
+				: []),
+		],
 	}),
 	errorComponent: props => {
 		return (
@@ -72,7 +72,7 @@ export const Route = createRootRouteWithContext<RouterContext>()({
 
 function RootComponent() {
 	const { convexClient } = useRouteContext({
-		from: '__root__',
+		from: "__root__",
 	});
 
 	return (
@@ -99,16 +99,16 @@ function RootComponent() {
 }
 
 const TanStackRouterDevtools =
-	process.env.NODE_ENV === 'production'
+	process.env.NODE_ENV === "production"
 		? () => null // Render nothing in production
 		: React.lazy(() =>
-			// Lazy load in development
-			import('@tanstack/react-router-devtools').then(res => ({
-				default: res.TanStackRouterDevtools,
-				// For Embedded Mode
-				// default: res.TanStackRouterDevtoolsPanel
-			})),
-		);
+				// Lazy load in development
+				import("@tanstack/react-router-devtools").then(res => ({
+					default: res.TanStackRouterDevtools,
+					// For Embedded Mode
+					// default: res.TanStackRouterDevtoolsPanel
+				})),
+			);
 
 function RootDocument({ children }: { children: React.ReactNode }) {
 	return (

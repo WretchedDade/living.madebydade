@@ -1,8 +1,8 @@
-import { createFileRoute, useNavigate } from '@tanstack/react-router';
-import { AppLayout } from '~/components/layout/AppLayout';
-import { Button } from '~/components/ui/Button';
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { AppLayout } from "~/components/layout/AppLayout";
+import { Button } from "~/components/ui/Button";
 
-export const Route = createFileRoute('/unauthorized')({
+export const Route = createFileRoute("/unauthorized")({
 	component: RouteComponent,
 });
 
@@ -18,7 +18,7 @@ function RouteComponent() {
 						You tried to access a part of the application that you are not authorized to view.
 					</p>
 					<div className="mt-4 sm:mt-8">
-						<Button variant="outline" onClick={() => navigate({ to: '/' })}>
+						<Button variant="outline" onClick={() => navigate({ to: "/" })}>
 							Go Home
 						</Button>
 					</div>

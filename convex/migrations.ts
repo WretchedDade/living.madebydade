@@ -1,13 +1,13 @@
-import { Migrations } from '@convex-dev/migrations';
-import { components, internal } from './_generated/api';
-import { internalMutation } from './_generated/server';
-import { DateTime } from 'luxon';
-import { EST_TIMEZONE } from '../constants';
-import { DataModel } from './_generated/dataModel';
+import { Migrations } from "@convex-dev/migrations";
+import { components, internal } from "./_generated/api";
+import { internalMutation } from "./_generated/server";
+import { DateTime } from "luxon";
+import { EST_TIMEZONE } from "../constants";
+import { DataModel } from "./_generated/dataModel";
 
 export const migrations = new Migrations<DataModel>(components.migrations);
 
-function periodStart(dateIso: string, period: 'day' | 'week' | 'month') {
+function periodStart(dateIso: string, period: "day" | "week" | "month") {
 	const d = DateTime.fromISO(dateIso, { zone: EST_TIMEZONE });
 	const start = d.startOf(period);
 	const end = d.endOf(period);
@@ -20,7 +20,7 @@ function splitAmount(amount: number) {
 }
 
 export const clearTransactionSummaries = migrations.define({
-	table: 'transactionSummaries',
+	table: "transactionSummaries",
 	migrateOne: async (ctx, doc) => {
 		await ctx.db.delete(doc._id);
 	},
@@ -28,11 +28,11 @@ export const clearTransactionSummaries = migrations.define({
 
 // Delete transactions older than 6 months based on authorizedDate using index
 export const deleteOldTransactionsByAuthorizedDate = (() => {
-	const thresholdISO = DateTime.now().setZone(EST_TIMEZONE).minus({ months: 6 }).startOf('day').toISODate()!;
+	const thresholdISO = DateTime.now().setZone(EST_TIMEZONE).minus({ months: 6 }).startOf("day").toISODate()!;
 	return migrations.define({
-		table: 'transactions',
+		table: "transactions",
 		batchSize: 500,
-		customRange: query => query.withIndex('authorizedDate', q => q.lt('authorizedDate', thresholdISO)),
+		customRange: query => query.withIndex("authorizedDate", q => q.lt("authorizedDate", thresholdISO)),
 		migrateOne: async (ctx, txn) => {
 			// Defense in depth: ensure auth date is indeed older than threshold
 			const authDate = txn.authorizedDate as string | null;
@@ -45,9 +45,9 @@ export const deleteOldTransactionsByAuthorizedDate = (() => {
 
 // Delete any remaining transactions older than 6 months when authorizedDate is null (fallback to date)
 export const deleteOldTransactionsByPostedDate = (() => {
-	const thresholdISO = DateTime.now().setZone(EST_TIMEZONE).minus({ months: 6 }).startOf('day').toISODate()!;
+	const thresholdISO = DateTime.now().setZone(EST_TIMEZONE).minus({ months: 6 }).startOf("day").toISODate()!;
 	return migrations.define({
-		table: 'transactions',
+		table: "transactions",
 		batchSize: 300,
 		migrateOne: async (ctx, txn) => {
 			const authDate = txn.authorizedDate as string | null;
@@ -61,13 +61,13 @@ export const deleteOldTransactionsByPostedDate = (() => {
 })();
 
 export const buildTransactionSummaries = migrations.define({
-	table: 'transactions',
+	table: "transactions",
 	batchSize: 200, // safe and fast
 	migrateOne: async (ctx, txn) => {
 		// Fast lookup owning user by accountId via plaidAccounts table
 		const acct = await ctx.db
-			.query('plaidAccounts')
-			.withIndex('byAccountId', q => q.eq('accountId', txn.accountId as string))
+			.query("plaidAccounts")
+			.withIndex("byAccountId", q => q.eq("accountId", txn.accountId as string))
 			.first();
 		const userId = acct?.userId;
 		if (!userId) return;
@@ -75,16 +75,16 @@ export const buildTransactionSummaries = migrations.define({
 		const dateIso = txn.authorizedDate ?? txn.date;
 		const { inflow, outflow, net } = splitAmount(txn.amount);
 
-		for (const period of ['day', 'week', 'month'] as const) {
+		for (const period of ["day", "week", "month"] as const) {
 			const { start, end } = periodStart(dateIso, period);
 			// Upsert summary doc
 			let doc = await ctx.db
-				.query('transactionSummaries')
-				.withIndex('byUserPeriodStart', q => q.eq('userId', userId).eq('period', period).eq('startDate', start))
+				.query("transactionSummaries")
+				.withIndex("byUserPeriodStart", q => q.eq("userId", userId).eq("period", period).eq("startDate", start))
 				.first();
 
 			if (!doc) {
-				await ctx.db.insert('transactionSummaries', {
+				await ctx.db.insert("transactionSummaries", {
 					userId,
 					period,
 					startDate: start,

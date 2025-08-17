@@ -1,4 +1,4 @@
-import { v, Infer } from 'convex/values';
+import { v, Infer } from "convex/values";
 
 export const LocationSchema = v.object({
 	address: v.optional(v.union(v.null(), v.string())),

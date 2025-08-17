@@ -1,12 +1,12 @@
-import { RemovedTransaction, SyncUpdatesAvailableWebhook, Transaction, TransactionsSyncResponse } from 'plaid';
-import { getPlaidApi, toTransactionSchema, toLeanTransaction } from './plaidHelpers';
-import { httpAction, internalAction, internalMutation, internalQuery } from './_generated/server';
-import { api, internal } from './_generated/api';
-import { PlaidTransaction, PlaidTransactionSchema, LeanTransactionSchema } from './transactionSchema';
-import { v } from 'convex/values';
-import { internal as internalApi } from './_generated/api';
-import { DateTime } from 'luxon';
-import { EST_TIMEZONE } from '../constants';
+import { RemovedTransaction, SyncUpdatesAvailableWebhook, Transaction, TransactionsSyncResponse } from "plaid";
+import { getPlaidApi, toTransactionSchema, toLeanTransaction } from "./plaidHelpers";
+import { httpAction, internalAction, internalMutation, internalQuery } from "./_generated/server";
+import { api, internal } from "./_generated/api";
+import { PlaidTransaction, PlaidTransactionSchema, LeanTransactionSchema } from "./transactionSchema";
+import { v } from "convex/values";
+import { internal as internalApi } from "./_generated/api";
+import { DateTime } from "luxon";
+import { EST_TIMEZONE } from "../constants";
 
 async function fetchNewTransactionSyncData(accessToken: string, initialCursor: string | undefined, retriesLeft = 3) {
 	const plaidApi = getPlaidApi();
@@ -20,7 +20,7 @@ async function fetchNewTransactionSyncData(accessToken: string, initialCursor: s
 	let cursor = initialCursor;
 
 	if (retriesLeft <= 0) {
-		console.error('No retries left, returning current transactions and cursor.');
+		console.error("No retries left, returning current transactions and cursor.");
 
 		// We're just going to return no data and keep our original cursor. We can try again later.
 		return { transactions, cursor };
@@ -55,7 +55,7 @@ async function fetchNewTransactionSyncData(accessToken: string, initialCursor: s
 
 		return { transactions, cursor };
 	} catch (error) {
-		console.error('Error fetching transactions:', error);
+		console.error("Error fetching transactions:", error);
 
 		await new Promise(resolve => setTimeout(resolve, 1000)); // Wait a second before retrying
 
@@ -93,8 +93,8 @@ export const createTransaction = internalMutation({
 	handler: async (ctx, transaction) => {
 		// Guard: skip inserting transactions older than 1 year
 		const effectiveDateStr = transaction.authorizedDate ?? transaction.date;
-		const cutoff = DateTime.now().setZone(EST_TIMEZONE).minus({ months: 6 }).startOf('day');
-		const effective = DateTime.fromISO(effectiveDateStr, { zone: EST_TIMEZONE }).startOf('day');
+		const cutoff = DateTime.now().setZone(EST_TIMEZONE).minus({ months: 6 }).startOf("day");
+		const effective = DateTime.fromISO(effectiveDateStr, { zone: EST_TIMEZONE }).startOf("day");
 		if (effective.isValid && effective < cutoff) {
 			console.log(
 				`[transactions] Skipping txn ${transaction.transactionId} dated ${effectiveDateStr} (older than 1 year)`,
@@ -102,7 +102,7 @@ export const createTransaction = internalMutation({
 			return null as any;
 		}
 
-		const id = await ctx.db.insert('transactions', {
+		const id = await ctx.db.insert("transactions", {
 			...transaction,
 			// Add any additional fields or transformations needed
 		});
@@ -129,8 +129,8 @@ export const updateTransaction = internalMutation({
 	args: LeanTransactionSchema,
 	handler: async (ctx, updatedTransaction) => {
 		const transaction = await ctx.db
-			.query('transactions')
-			.withIndex('byTransactionId', q => q.eq('transactionId', updatedTransaction.transactionId))
+			.query("transactions")
+			.withIndex("byTransactionId", q => q.eq("transactionId", updatedTransaction.transactionId))
 			.first();
 
 		if (!transaction) {
@@ -193,8 +193,8 @@ export const deleteTransaction = internalMutation({
 	args: { transactionId: v.string() },
 	handler: async (ctx, { transactionId }) => {
 		const transaction = await ctx.db
-			.query('transactions')
-			.withIndex('byTransactionId', q => q.eq('transactionId', transactionId))
+			.query("transactions")
+			.withIndex("byTransactionId", q => q.eq("transactionId", transactionId))
 			.first();
 
 		if (!transaction) {
@@ -226,7 +226,7 @@ export const deleteTransaction = internalMutation({
 export const internalListAll = internalQuery({
 	args: {},
 	handler: async ctx => {
-		return ctx.db.query('transactions').collect();
+		return ctx.db.query("transactions").collect();
 	},
 });
 
@@ -234,8 +234,8 @@ export const internalGetByTransactionId = internalQuery({
 	args: { transactionId: v.string() },
 	handler: async (ctx, { transactionId }) => {
 		return ctx.db
-			.query('transactions')
-			.withIndex('byTransactionId', q => q.eq('transactionId', transactionId))
+			.query("transactions")
+			.withIndex("byTransactionId", q => q.eq("transactionId", transactionId))
 			.first();
 	},
 });
@@ -243,23 +243,23 @@ export const internalGetByTransactionId = internalQuery({
 export const internalPaginateAll = internalQuery({
 	args: { cursor: v.optional(v.union(v.string(), v.null())), pageSize: v.optional(v.number()) },
 	handler: async (ctx, { cursor = null, pageSize = 2000 }) => {
-		return await ctx.db.query('transactions').order('asc').paginate({ cursor, numItems: pageSize });
+		return await ctx.db.query("transactions").order("asc").paginate({ cursor, numItems: pageSize });
 	},
 });
 
 // Prune any transactions older than 6 months (authorizedDate if present, else date)
 export const pruneOldTransactions = internalMutation({
 	args: {},
-	handler: async (ctx) => {
-		const thresholdISO = DateTime.now().setZone(EST_TIMEZONE).minus({ months: 6 }).startOf('day').toISODate()!;
+	handler: async ctx => {
+		const thresholdISO = DateTime.now().setZone(EST_TIMEZONE).minus({ months: 6 }).startOf("day").toISODate()!;
 
 		// First: delete by authorizedDate using index
 		let cursor: string | null = null;
 		do {
 			const page = await ctx.db
-				.query('transactions')
-				.withIndex('authorizedDate', q => q.lt('authorizedDate', thresholdISO))
-				.order('asc')
+				.query("transactions")
+				.withIndex("authorizedDate", q => q.lt("authorizedDate", thresholdISO))
+				.order("asc")
 				.paginate({ cursor, numItems: 500 });
 
 			for (const txn of page.page) {
@@ -272,9 +272,9 @@ export const pruneOldTransactions = internalMutation({
 		cursor = null;
 		do {
 			const page = await ctx.db
-				.query('transactions')
-				.withIndex('date', q => q.lt('date', thresholdISO))
-				.order('asc')
+				.query("transactions")
+				.withIndex("date", q => q.lt("date", thresholdISO))
+				.order("asc")
 				.paginate({ cursor, numItems: 500 });
 
 			for (const txn of page.page) {
@@ -286,7 +286,7 @@ export const pruneOldTransactions = internalMutation({
 		} while (cursor);
 
 		return null;
-	}
+	},
 });
 
 export const syncTransactionData = internalAction({

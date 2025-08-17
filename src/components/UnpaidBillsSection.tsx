@@ -1,10 +1,10 @@
-import { SectionHeader } from '~/components/layout/SectionHeader';
-import { ClockIcon, ListBulletIcon } from '@radix-ui/react-icons';
-import * as Switch from '@radix-ui/react-switch';
-import { Button } from '~/components/ui/Button';
-import { Link } from '~/components/ui/Link';
-import { BillPaymentWithBill } from '@/convex/billPayments';
-import { Skeleton } from '~/components/ui/Skeleton';
+import { SectionHeader } from "~/components/layout/SectionHeader";
+import { ClockIcon, ListBulletIcon } from "@radix-ui/react-icons";
+import * as Switch from "@radix-ui/react-switch";
+import { Button } from "~/components/ui/Button";
+import { Link } from "~/components/ui/Link";
+import { BillPaymentWithBill } from "@/convex/billPayments";
+import { Skeleton } from "~/components/ui/Skeleton";
 
 interface UnpaidBillsSectionProps {
 	payments: BillPaymentWithBill[];
@@ -46,7 +46,7 @@ export function UnpaidBillsSection({
 					>
 						<Switch.Thumb
 							className="block w-4 h-4 bg-white rounded-full shadow absolute left-1 top-1 transition-transform data-[state=checked]:translate-x-4 data-[state=checked]:bg-cyan-400"
-							style={{ transition: 'transform 0.2s' }}
+							style={{ transition: "transform 0.2s" }}
 						/>
 					</Switch.Root>
 				</div>
@@ -98,10 +98,10 @@ export function UnpaidBillsSection({
 										Due: {new Date(payment.dateDue).toLocaleDateString()}
 									</span>
 									<span className="text-zinc-400 text-xs">
-										Amount:{' '}
-										{(payment.bill?.amount ?? 0).toLocaleString('en-US', {
-											style: 'currency',
-											currency: 'USD',
+										Amount:{" "}
+										{(payment.bill?.amount ?? 0).toLocaleString("en-US", {
+											style: "currency",
+											currency: "USD",
 										})}
 									</span>
 									{payment.isAutoPay && (

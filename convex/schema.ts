@@ -1,9 +1,9 @@
-import { defineSchema, defineTable } from 'convex/server';
-import { Infer, v } from 'convex/values';
+import { defineSchema, defineTable } from "convex/server";
+import { Infer, v } from "convex/values";
 
-import { activityType, activityDetails } from './activitySchema';
-import { LeanTransactionSchema } from './transactionSchema';
-import { v as values } from 'convex/values';
+import { activityType, activityDetails } from "./activitySchema";
+import { LeanTransactionSchema } from "./transactionSchema";
+import { v as values } from "convex/values";
 
 export const PlaidInstitutionSchema = v.object({
 	id: v.string(),
@@ -36,20 +36,20 @@ export default defineSchema({
 	bills: defineTable({
 		amount: v.float64(),
 		dayDue: v.optional(v.float64()),
-		dueType: v.union(v.literal('Fixed'), v.literal('EndOfMonth')),
+		dueType: v.union(v.literal("Fixed"), v.literal("EndOfMonth")),
 		isAutoPay: v.boolean(),
 		name: v.string(),
 	}),
 	billPayments: defineTable({
 		dateDue: v.string(),
 		datePaid: v.optional(v.string()),
-		billId: v.id('bills'),
+		billId: v.id("bills"),
 		isAutoPay: v.boolean(),
 	})
-		.index('byBillId', ['billId'])
-		.index('byDatePaid', ['datePaid'])
-		.index('byUnpaidDue', ['datePaid', 'dateDue'])
-		.index('byUnpaidAutoDue', ['datePaid', 'isAutoPay', 'dateDue']),
+		.index("byBillId", ["billId"])
+		.index("byDatePaid", ["datePaid"])
+		.index("byUnpaidDue", ["datePaid", "dateDue"])
+		.index("byUnpaidAutoDue", ["datePaid", "isAutoPay", "dateDue"]),
 	activity: defineTable({
 		type: activityType,
 		userId: v.string(),
@@ -57,25 +57,25 @@ export default defineSchema({
 		timestamp: v.number(),
 		details: activityDetails,
 	})
-		.index('byUserIdTimestamp', ['userId', 'timestamp'])
-		.index('byTargetIdTimestamp', ['targetId', 'timestamp'])
-		.index('byTimestamp', ['timestamp']),
-	plaidItems: defineTable(PlaidItemSchema).index('byUserId', ['userId']).index('byItemId', ['itemId']),
+		.index("byUserIdTimestamp", ["userId", "timestamp"])
+		.index("byTargetIdTimestamp", ["targetId", "timestamp"])
+		.index("byTimestamp", ["timestamp"]),
+	plaidItems: defineTable(PlaidItemSchema).index("byUserId", ["userId"]).index("byItemId", ["itemId"]),
 	plaidAccounts: defineTable({
 		accountId: v.string(),
 		itemId: v.string(),
 		userId: v.string(),
 	})
-		.index('byAccountId', ['accountId'])
-		.index('byItemId', ['itemId'])
-		.index('byUserId', ['userId']),
+		.index("byAccountId", ["accountId"])
+		.index("byItemId", ["itemId"])
+		.index("byUserId", ["userId"]),
 	transactions: defineTable(LeanTransactionSchema)
-		.index('authorizedDate', ['authorizedDate'])
-		.index('date', ['date'])
-		.index('byTransactionId', ['transactionId']),
+		.index("authorizedDate", ["authorizedDate"])
+		.index("date", ["date"])
+		.index("byTransactionId", ["transactionId"]),
 	transactionSummaries: defineTable({
 		userId: v.string(),
-		period: v.union(v.literal('day'), v.literal('week'), v.literal('month')),
+		period: v.union(v.literal("day"), v.literal("week"), v.literal("month")),
 		startDate: v.string(), // ISO date for start of period in app timezone
 		endDate: v.string(), // ISO date for end of period in app timezone
 		currency: v.optional(v.string()),
@@ -83,5 +83,5 @@ export default defineSchema({
 		outflow: v.float64(), // sum of debits (money out)
 		net: v.float64(), // inflow - outflow OR sum of signed amounts
 		count: v.number(),
-	}).index('byUserPeriodStart', ['userId', 'period', 'startDate']),
+	}).index("byUserPeriodStart", ["userId", "period", "startDate"]),
 });

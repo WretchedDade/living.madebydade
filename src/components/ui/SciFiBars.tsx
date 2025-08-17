@@ -7,41 +7,41 @@
 // Widths:
 // w-3 w-4 w-6 w-8 w-10
 // To support dynamic color/shade/width combinations, add more as needed.
-import React from 'react';
-import type { TailwindColor } from '../../utils/tailwind-types';
+import React from "react";
+import type { TailwindColor } from "../../utils/tailwind-types";
 
 interface SciFiBarsProps {
-  count?: number;
-  className?: string;
-  color?: TailwindColor;
+	count?: number;
+	className?: string;
+	color?: TailwindColor;
 }
 
 function getBarWidths(count: number) {
-  const widths = [3, 4, 6, 8, 10];
-  const result: number[] = [];
-  let prev: number | null = null;
-  for (let i = 0; i < count; i++) {
-    let choices = widths.filter(w => w !== prev);
-    let w = choices[Math.floor(Math.random() * choices.length)];
-    result.push(w);
-    prev = w;
-  }
-  return result;
+	const widths = [3, 4, 6, 8, 10];
+	const result: number[] = [];
+	let prev: number | null = null;
+	for (let i = 0; i < count; i++) {
+		let choices = widths.filter(w => w !== prev);
+		let w = choices[Math.floor(Math.random() * choices.length)];
+		result.push(w);
+		prev = w;
+	}
+	return result;
 }
 
-function getRandomColor(color: TailwindColor = 'cyan') {
-  const shades = [200, 300, 400, 500, 600, 700, 800, 900];
-  const shade = shades[Math.floor(Math.random() * shades.length)];
-  return `bg-${color}-${shade}`;
+function getRandomColor(color: TailwindColor = "cyan") {
+	const shades = [200, 300, 400, 500, 600, 700, 800, 900];
+	const shade = shades[Math.floor(Math.random() * shades.length)];
+	return `bg-${color}-${shade}`;
 }
 
-export const SciFiBars: React.FC<SciFiBarsProps> = ({ count = 5, className = '', color = 'cyan' }) => {
-  const barWidths = getBarWidths(count);
-  return (
-    <div className={`flex gap-2 ${className}`}>
-      {barWidths.map((w, i) => (
-        <span key={i} className={`w-${w} h-2 rounded-full ${getRandomColor(color)}`} />
-      ))}
-    </div>
-  );
+export const SciFiBars: React.FC<SciFiBarsProps> = ({ count = 5, className = "", color = "cyan" }) => {
+	const barWidths = getBarWidths(count);
+	return (
+		<div className={`flex gap-2 ${className}`}>
+			{barWidths.map((w, i) => (
+				<span key={i} className={`w-${w} h-2 rounded-full ${getRandomColor(color)}`} />
+			))}
+		</div>
+	);
 };

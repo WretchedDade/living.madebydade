@@ -1,5 +1,5 @@
-import { Duration, ToHumanDurationOptions } from 'luxon';
-import { IsNotNull } from './guards';
+import { Duration, ToHumanDurationOptions } from "luxon";
+import { IsNotNull } from "./guards";
 
 // Formats a timestamp as relative time (e.g., "2 hours ago")
 export function formatRelativeTime(date: string | number | Date): string {
@@ -12,44 +12,44 @@ export function formatRelativeTime(date: string | number | Date): string {
 	const days = Math.floor(hours / 24);
 
 	if (days > 0) {
-		return `${days} day${days > 1 ? 's' : ''} ago`;
+		return `${days} day${days > 1 ? "s" : ""} ago`;
 	} else if (hours > 0) {
-		return `${hours} hour${hours > 1 ? 's' : ''} ago`;
+		return `${hours} hour${hours > 1 ? "s" : ""} ago`;
 	} else if (minutes > 0) {
-		return `${minutes} minute${minutes > 1 ? 's' : ''} ago`;
+		return `${minutes} minute${minutes > 1 ? "s" : ""} ago`;
 	} else {
 		return `just now`;
 	}
 }
 
 export function formatCurrency(value: number) {
-	const formatter = new Intl.NumberFormat('en-US', {
-		style: 'currency',
-		currency: 'USD',
+	const formatter = new Intl.NumberFormat("en-US", {
+		style: "currency",
+		currency: "USD",
 
 		minimumFractionDigits: 2,
 		maximumFractionDigits: 2,
-		currencySign: 'standard',
+		currencySign: "standard",
 	});
 
 	return formatter.format(value);
 }
 
 const suffixes: Record<Intl.LDMLPluralRule, string> = {
-	one: 'st',
-	two: 'nd',
-	few: 'rd',
-	other: 'th',
-	many: 'th',
-	zero: 'th',
+	one: "st",
+	two: "nd",
+	few: "rd",
+	other: "th",
+	many: "th",
+	zero: "th",
 };
 
 export function formatOrdinal(value: number | null | undefined) {
 	if (value == null) {
-		return '';
+		return "";
 	}
 
-	const rules = new Intl.PluralRules('en', { type: 'ordinal' });
+	const rules = new Intl.PluralRules("en", { type: "ordinal" });
 
 	const category = rules.select(value);
 	const suffix = suffixes[category];
@@ -59,15 +59,15 @@ export function formatOrdinal(value: number | null | undefined) {
 
 type Unit = (typeof orderedUnits)[number];
 const orderedUnits = [
-	'years',
-	'quarters',
-	'months',
-	'weeks',
-	'days',
-	'hours',
-	'minutes',
-	'seconds',
-	'milliseconds',
+	"years",
+	"quarters",
+	"months",
+	"weeks",
+	"days",
+	"hours",
+	"minutes",
+	"seconds",
+	"milliseconds",
 ] as const;
 
 interface FormatDurationOptions extends ToHumanDurationOptions {
@@ -82,7 +82,7 @@ export function formatDuration(
 	duration: Duration,
 	{ units, listStyle, ...opts }: FormatDurationOptions = { units: orderedUnits },
 ) {
-	if (!duration.isValid) return '';
+	if (!duration.isValid) return "";
 
 	const values = units
 		.map(unit => {
@@ -91,9 +91,9 @@ export function formatDuration(
 				return null;
 			}
 
-			return new Intl.NumberFormat('en-US', {
-				style: 'unit',
-				unitDisplay: 'long',
+			return new Intl.NumberFormat("en-US", {
+				style: "unit",
+				unitDisplay: "long",
 
 				minimumFractionDigits: 0,
 				maximumFractionDigits: 0,
@@ -105,12 +105,12 @@ export function formatDuration(
 		.filter(IsNotNull);
 
 	if (values.length === 0) {
-		return 'just now';
+		return "just now";
 	}
 
-	const list = new Intl.ListFormat('en-US', {
-		type: 'conjunction',
-		style: listStyle || 'narrow',
+	const list = new Intl.ListFormat("en-US", {
+		type: "conjunction",
+		style: listStyle || "narrow",
 	}).format(values);
 
 	return `${list} ago`;
