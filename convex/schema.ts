@@ -2,7 +2,7 @@ import { defineSchema, defineTable } from "convex/server";
 import { Infer, v } from "convex/values";
 
 import { activityType, activityDetails } from "./activitySchema";
-import { LeanTransactionSchema } from "./transactionSchema";
+import { LeanTransactionSchema, AccountType } from "./transactionSchema";
 import { v as values } from "convex/values";
 
 export const PlaidInstitutionSchema = v.object({
@@ -65,23 +65,39 @@ export default defineSchema({
 		accountId: v.string(),
 		itemId: v.string(),
 		userId: v.string(),
+		type: v.optional(v.string()), // Plaid type (e.g., depository, credit)
+		subtype: v.optional(v.string()), // Plaid subtype (e.g., checking, savings)
+		accountType: v.optional(AccountType), // Derived: checking | savings | credit
 	})
 		.index("byAccountId", ["accountId"])
 		.index("byItemId", ["itemId"])
-		.index("byUserId", ["userId"]),
+		.index("byUserId", ["userId"])
+		.index("byUserIdAccountType", ["userId", "accountType"]),
 	transactions: defineTable(LeanTransactionSchema)
 		.index("authorizedDate", ["authorizedDate"])
 		.index("date", ["date"])
 		.index("byTransactionId", ["transactionId"]),
-	transactionSummaries: defineTable({
+
+	// Cash vs Credit per-period summary
+	cashCreditSummaries: defineTable({
 		userId: v.string(),
 		period: v.union(v.literal("day"), v.literal("week"), v.literal("month")),
-		startDate: v.string(), // ISO date for start of period in app timezone
-		endDate: v.string(), // ISO date for end of period in app timezone
+		startDate: v.string(),
+		endDate: v.string(),
 		currency: v.optional(v.string()),
-		inflow: v.float64(), // absolute sum of credits (money in)
-		outflow: v.float64(), // sum of debits (money out)
-		net: v.float64(), // inflow - outflow OR sum of signed amounts
-		count: v.number(),
+		// Cash
+		cashIncomeExternal: v.float64(),
+		cashSpending: v.float64(),
+		cashSavingsContributions: v.float64(),
+		cashNetChange: v.optional(v.float64()),
+		// Credit
+		ccPurchases: v.float64(),
+		ccPayments: v.float64(),
+		ccInterestFees: v.float64(),
+		ccRefunds: v.float64(),
+		ccPrincipalDelta: v.float64(),
+		// Meta
+		extNetFlow: v.optional(v.float64()),
+		buildVersion: v.optional(v.string()),
 	}).index("byUserPeriodStart", ["userId", "period", "startDate"]),
 });

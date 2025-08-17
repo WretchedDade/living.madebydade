@@ -1,0 +1,20 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "Typecheck project",
+			"type": "shell",
+			"command": "npm run -s build",
+			"args": [],
+			"problemMatcher": [
+				"$tsc"
+			]
+		},
+		{
+			"label": "Typecheck project",
+			"type": "shell",
+			"command": "npm run -s build",
+			"args": []
+		}
+	]
+}

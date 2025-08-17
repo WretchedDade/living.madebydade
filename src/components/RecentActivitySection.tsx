@@ -10,8 +10,7 @@ import { BillAddedActivityAccordion } from "./RecentActivityViews/BillAddedActiv
 import { BillUpdatedActivityAccordion } from "./RecentActivityViews/BillUpdatedActivityAccordion";
 import { BillRemovedActivityAccordion } from "./RecentActivityViews/BillRemovedActivityAccordion";
 import { BillDueActivityAccordion } from "./RecentActivityViews/BillDueActivityAccordion";
-import { ChevronDownIcon } from "@radix-ui/react-icons";
-import { LightningBoltIcon } from "@radix-ui/react-icons";
+import { BoltIcon } from "@heroicons/react/24/solid";
 import * as Accordion from "@radix-ui/react-accordion";
 import React from "react";
 import { ActivityDoc } from "~/types/activity";
@@ -26,7 +25,7 @@ export function RecentActivitySection({ activities = [], isLoading = false }: Re
 		<div className="bg-zinc-900 rounded-2xl p-4 md:p-6 shadow-lg">
 			<SectionHeader
 				icon={
-					<LightningBoltIcon className="w-4 h-4 sm:w-7 sm:h-7 text-yellow-300 drop-shadow-[0_0_6px_rgba(253,224,71,0.7)]" />
+					<BoltIcon className="w-4 h-4 sm:w-7 sm:h-7 text-yellow-300 drop-shadow-[0_0_6px_rgba(253,224,71,0.7)]" />
 				}
 				title="Recent Activity"
 			/>

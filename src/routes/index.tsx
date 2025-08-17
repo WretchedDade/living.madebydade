@@ -13,6 +13,7 @@ import { UnpaidBillsSection } from "~/components/UnpaidBillsSection";
 import { RecentActivitySection } from "~/components/RecentActivitySection";
 import { ActivityDoc } from "~/types/activity";
 import { BankingSection } from "~/components/BankingSection";
+import { Link } from "~/components/ui/Link";
 import { SpendingMoneyCard } from "~/components/SpendingMoneyCard";
 
 function Home() {
@@ -40,6 +41,11 @@ function Home() {
 	return (
 		<AppLayout>
 			<main className="flex-1 w-full min-h-0 overflow-y-auto p-4 sm:p-10">
+				<div className="flex justify-end mb-4">
+					<Link to="/summaries" variant="outline">
+						View Transaction Summaries
+					</Link>
+				</div>
 				<SpendingMoneyCard />
 				<SciFiBars count={7} className="mb-6" />
 				<div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">

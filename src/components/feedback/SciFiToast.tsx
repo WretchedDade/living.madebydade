@@ -1,6 +1,6 @@
 import React from "react";
 import { toast } from "sonner";
-import { CheckIcon, Cross2Icon, ExclamationTriangleIcon } from "@radix-ui/react-icons";
+import { CheckIcon, XMarkIcon, ExclamationTriangleIcon } from "@heroicons/react/24/solid";
 import { SciFiBars } from "../ui/SciFiBars";
 import { TailwindColor } from "~/utils/tailwind-types";
 
@@ -31,7 +31,7 @@ const variantStyles = {
 	error: {
 		borderColor: "border-rose-500",
 		shadowColor: "shadow-rose-500/20",
-		icon: <Cross2Icon className="w-6 h-6 text-rose-400" />,
+		icon: <XMarkIcon className="w-6 h-6 text-rose-400" />,
 		iconColor: "text-rose-400",
 		titleColor: "text-rose-300",
 		descColor: "text-rose-200",
@@ -61,7 +61,7 @@ export function CustomToast({ title, description, action, variant = "success", t
 				className={`absolute -top-3 -right-3 p-1 rounded-full shadow-md border-2 ${styles.borderColor} bg-zinc-900 hover:bg-zinc-800 focus:outline-none focus:ring-2 ${styles.shadowColor} cursor-pointer`}
 				onClick={() => t && toast.dismiss(t)}
 			>
-				<Cross2Icon width={18} height={18} className={`${styles.iconColor} hover:opacity-80`} />
+				<XMarkIcon width={18} height={18} className={`${styles.iconColor} hover:opacity-80`} />
 			</button>
 			<div className="flex justify-center mb-2">
 				<SciFiBars count={7} className="max-w-xs" color={styles.barsColor as TailwindColor} />

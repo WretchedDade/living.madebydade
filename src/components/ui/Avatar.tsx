@@ -1,6 +1,6 @@
 import React from "react";
 import * as RadixAvatar from "@radix-ui/react-avatar";
-import { UserIcon } from "lucide-react";
+import { UserIcon } from "@heroicons/react/24/solid";
 
 interface AvatarProps {
 	avatarUrl?: string;

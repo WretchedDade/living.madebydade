@@ -84,6 +84,9 @@ export type PlaidTransaction = Infer<typeof PlaidTransactionSchema>;
 
 // A leaner transaction shape for storage in Convex to reduce document size.
 // Keep only fields needed for summaries, recurring detection, and UI display.
+export const AccountType = v.union(v.literal("checking"), v.literal("savings"), v.literal("credit"));
+export type TAccountType = Infer<typeof AccountType>;
+
 export const LeanTransactionSchema = v.object({
 	transactionId: v.string(),
 	accountId: v.string(),
@@ -100,6 +103,16 @@ export const LeanTransactionSchema = v.object({
 	pendingTransactionId: v.union(v.null(), v.string()),
 	paymentChannel: v.union(v.null(), v.string()),
 	transactionCode: v.union(v.null(), v.string()),
+
+	// Augmented fields for cash vs credit pipeline
+	userId: v.optional(v.string()),
+	accountType: v.optional(AccountType),
+	transferGroup: v.optional(v.string()),
+	matchesTransactionId: v.optional(v.string()),
+	isInternalTransfer: v.optional(v.boolean()),
+	isCreditCardPayment: v.optional(v.boolean()),
+	isRefundOrReversal: v.optional(v.boolean()),
+	isInterestOrFee: v.optional(v.boolean()),
 });
 
 export type LeanTransaction = Infer<typeof LeanTransactionSchema>;

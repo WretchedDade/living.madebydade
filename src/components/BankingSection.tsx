@@ -1,5 +1,5 @@
 import { SectionHeader } from "~/components/layout/SectionHeader";
-import { IdCardIcon } from "@radix-ui/react-icons";
+import { IdentificationIcon } from "@heroicons/react/24/solid";
 import { Link } from "~/components/ui/Link";
 import { useQuery } from "@tanstack/react-query";
 import { convexAction } from "@convex-dev/react-query";
@@ -61,14 +61,14 @@ export function BankingSection() {
 		<div className="flex flex-col flex-1 bg-zinc-900 rounded-2xl p-6 shadow-lg">
 			<SectionHeader
 				icon={
-					<IdCardIcon className="w-4 h-4 sm:w-7 sm:h-7 text-yellow-400 drop-shadow-[0_0_6px_rgba(253,224,71,0.7)]" />
+					<IdentificationIcon className="w-4 h-4 sm:w-7 sm:h-7 text-yellow-400 drop-shadow-[0_0_6px_rgba(253,224,71,0.7)]" />
 				}
 				title="Linked Accounts"
 			/>
 			{accountsQuery.isSuccess && accountsQuery.data.length === 0 && (
 				<div className="items-center justify-center flex flex-col grow w-full">
 					<div className="flex flex-col items-center justify-center my-auto py-8">
-						<IdCardIcon className="w-8 h-8 text-cyan-400 mb-2" />
+						<IdentificationIcon className="w-8 h-8 text-cyan-400 mb-2" />
 						<p className="text-zinc-300 text-center text-lg italic mb-2">No bank accounts linked yet</p>
 						<Link href="/bank/setup">Link your bank account</Link>
 					</div>

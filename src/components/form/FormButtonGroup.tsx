@@ -1,6 +1,6 @@
 import React, { JSX } from "react";
 import { Button } from "~/components/ui/Button";
-import { CheckIcon } from "@radix-ui/react-icons";
+import { CheckIcon } from "@heroicons/react/24/solid";
 
 interface FormButtonGroupProps {
 	onCancel?: () => void;

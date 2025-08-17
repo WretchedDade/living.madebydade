@@ -1,5 +1,5 @@
 import React from "react";
-import { ChevronDownIcon } from "@radix-ui/react-icons";
+import { ChevronDownIcon } from "@heroicons/react/24/solid";
 import * as Accordion from "@radix-ui/react-accordion";
 import { formatRelativeTime } from "../../utils/formatters";
 import { ActivityDoc } from "~/types/activity";

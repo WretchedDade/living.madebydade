@@ -1,12 +1,13 @@
 import { RemovedTransaction, SyncUpdatesAvailableWebhook, Transaction, TransactionsSyncResponse } from "plaid";
 import { getPlaidApi, toTransactionSchema, toLeanTransaction } from "./plaidHelpers";
-import { httpAction, internalAction, internalMutation, internalQuery } from "./_generated/server";
+import { httpAction, internalAction, internalMutation, internalQuery, query } from "./_generated/server";
 import { api, internal } from "./_generated/api";
-import { PlaidTransaction, PlaidTransactionSchema, LeanTransactionSchema } from "./transactionSchema";
+import { PlaidTransaction, PlaidTransactionSchema, LeanTransactionSchema, TAccountType } from "./transactionSchema";
 import { v } from "convex/values";
 import { internal as internalApi } from "./_generated/api";
 import { DateTime } from "luxon";
 import { EST_TIMEZONE } from "../constants";
+import type { Doc, Id } from "./_generated/dataModel";
 
 async function fetchNewTransactionSyncData(accessToken: string, initialCursor: string | undefined, retriesLeft = 3) {
 	const plaidApi = getPlaidApi();
@@ -91,33 +92,56 @@ async function fetchNewTransactionSyncData(accessToken: string, initialCursor: s
 export const createTransaction = internalMutation({
 	args: LeanTransactionSchema,
 	handler: async (ctx, transaction) => {
+		// Idempotency guard: if this transactionId already exists, update it instead of inserting a duplicate
+		const existing = await ctx.db
+			.query("transactions")
+			.withIndex("byTransactionId", q => q.eq("transactionId", transaction.transactionId))
+			.first();
+		if (existing) {
+			// Delegate to update path for proper summary deltas
+			await ctx.runMutation(internal.transactions.updateTransaction, transaction);
+			return existing._id;
+		}
+
 		// Guard: skip inserting transactions older than 1 year
 		const effectiveDateStr = transaction.authorizedDate ?? transaction.date;
 		const cutoff = DateTime.now().setZone(EST_TIMEZONE).minus({ months: 6 }).startOf("day");
 		const effective = DateTime.fromISO(effectiveDateStr, { zone: EST_TIMEZONE }).startOf("day");
 		if (effective.isValid && effective < cutoff) {
 			console.log(
-				`[transactions] Skipping txn ${transaction.transactionId} dated ${effectiveDateStr} (older than 1 year)`,
+				`[transactions] Skipping txn ${transaction.transactionId} dated ${effectiveDateStr} (older than 6 months)`,
 			);
-			return null as any;
+			return null;
 		}
+
+		// Lookup owning user and accountType
+		const acct = await ctx.db
+			.query("plaidAccounts")
+			.withIndex("byAccountId", q => q.eq("accountId", transaction.accountId))
+			.first();
+		const userId = acct?.userId as string | undefined;
+		const accountType = (acct?.accountType as TAccountType | undefined) ?? undefined;
 
 		const id = await ctx.db.insert("transactions", {
 			...transaction,
-			// Add any additional fields or transformations needed
+			userId,
+			accountType,
 		});
 		// Update summaries
-		const userId = await ctx.runQuery(internal.plaidItems.getUserIdByAccountId, {
-			accountId: transaction.accountId,
-		});
 		if (userId) {
 			const dateIso = transaction.authorizedDate ?? transaction.date;
-			await ctx.runMutation(internal.transactionSummaries.applyDelta, {
+
+			// Also apply to cash vs credit summaries
+			await ctx.runMutation(internal.cashCreditSummaries.applyTxn, {
 				userId,
+				amount: transaction.amount,
 				dateIso,
-				amountDelta: transaction.amount,
-				countDelta: 1,
 				currency: transaction.isoCurrencyCode ?? undefined,
+				accountType: accountType ?? undefined,
+				name: transaction.name,
+				categoryPrimary: transaction.categoryPrimary,
+				categoryDetailed: transaction.categoryDetailed,
+				paymentChannel: transaction.paymentChannel,
 			});
 			console.log(`[summary] create txn ${transaction.transactionId} applied to ${userId} ${dateIso}`);
 		}
@@ -134,7 +158,9 @@ export const updateTransaction = internalMutation({
 			.first();
 
 		if (!transaction) {
-			throw new Error(`Transaction with ID ${updatedTransaction.transactionId} not found`);
+			// If we don't have the transaction locally (e.g., pruned or missed), no-op to avoid breaking sync.
+			console.warn(`[transactions] update skipped; transaction ${updatedTransaction.transactionId} not found`);
+			return null;
 		}
 
 		// Calculate deltas for summaries
@@ -143,41 +169,53 @@ export const updateTransaction = internalMutation({
 		const newAmount = updatedTransaction.amount;
 		const newDate = updatedTransaction.authorizedDate ?? updatedTransaction.date;
 
-		const userId = await ctx.runQuery(internal.plaidItems.getUserIdByAccountId, {
-			accountId: transaction.accountId,
-		});
+		const userId =
+			transaction.userId ??
+			(await ctx.runQuery(internal.plaidItems.getUserIdByAccountId, { accountId: transaction.accountId }));
 
 		// Persist update
-		await ctx.db.patch(transaction._id, updatedTransaction);
+		await ctx.db.patch(transaction._id, { ...updatedTransaction });
 
 		if (userId) {
 			if (oldDate === newDate) {
 				// Same bucket: apply amount delta only
-				await ctx.runMutation(internal.transactionSummaries.applyDelta, {
+				await ctx.runMutation(internal.cashCreditSummaries.applyTxn, {
 					userId,
+					amount: newAmount - oldAmount,
 					dateIso: newDate,
-					amountDelta: newAmount - oldAmount,
-					countDelta: 0,
 					currency: updatedTransaction.isoCurrencyCode ?? undefined,
+					accountType: (transaction.accountType as TAccountType | undefined) ?? undefined,
+					name: updatedTransaction.name,
+					categoryPrimary: updatedTransaction.categoryPrimary,
+					categoryDetailed: updatedTransaction.categoryDetailed,
+					paymentChannel: updatedTransaction.paymentChannel,
 				});
 				console.log(
 					`[summary] update txn ${updatedTransaction.transactionId} adjusted amount in-place on ${newDate}`,
 				);
 			} else {
-				// Move between buckets: remove from old, add to new
-				await ctx.runMutation(internal.transactionSummaries.applyDelta, {
+				// cash/credit summaries: remove old, add new
+				await ctx.runMutation(internal.cashCreditSummaries.applyTxn, {
 					userId,
+					amount: -oldAmount,
 					dateIso: oldDate,
-					amountDelta: -oldAmount,
-					countDelta: -1,
 					currency: transaction.isoCurrencyCode ?? undefined,
+					accountType: (transaction.accountType as TAccountType | undefined) ?? undefined,
+					name: transaction.name,
+					categoryPrimary: transaction.categoryPrimary,
+					categoryDetailed: transaction.categoryDetailed,
+					paymentChannel: transaction.paymentChannel,
 				});
-				await ctx.runMutation(internal.transactionSummaries.applyDelta, {
+				await ctx.runMutation(internal.cashCreditSummaries.applyTxn, {
 					userId,
+					amount: newAmount,
 					dateIso: newDate,
-					amountDelta: newAmount,
-					countDelta: 1,
 					currency: updatedTransaction.isoCurrencyCode ?? undefined,
+					accountType: (transaction.accountType as TAccountType | undefined) ?? undefined,
+					name: updatedTransaction.name,
+					categoryPrimary: updatedTransaction.categoryPrimary,
+					categoryDetailed: updatedTransaction.categoryDetailed,
+					paymentChannel: updatedTransaction.paymentChannel,
 				});
 				console.log(
 					`[summary] update txn ${updatedTransaction.transactionId} moved from ${oldDate} to ${newDate}`,
@@ -198,7 +236,9 @@ export const deleteTransaction = internalMutation({
 			.first();
 
 		if (!transaction) {
-			throw new Error(`Transaction with ID ${transactionId} not found`);
+			// It's okay if we never had this locally (e.g., pending never stored). No-op for idempotency.
+			console.warn(`[transactions] delete skipped; transaction ${transactionId} not found`);
+			return null;
 		}
 		const userId = await ctx.runQuery(internal.plaidItems.getUserIdByAccountId, {
 			accountId: transaction.accountId,
@@ -208,17 +248,57 @@ export const deleteTransaction = internalMutation({
 
 		if (userId) {
 			const dateIso = transaction.authorizedDate ?? transaction.date;
-			await ctx.runMutation(internal.transactionSummaries.applyDelta, {
+			await ctx.runMutation(internal.cashCreditSummaries.applyTxn, {
 				userId,
+				amount: -transaction.amount,
 				dateIso,
-				amountDelta: -transaction.amount,
-				countDelta: -1,
 				currency: transaction.isoCurrencyCode ?? undefined,
+				accountType: (transaction.accountType as TAccountType | undefined) ?? undefined,
+				name: transaction.name,
+				categoryPrimary: transaction.categoryPrimary,
+				categoryDetailed: transaction.categoryDetailed,
+				paymentChannel: transaction.paymentChannel,
 			});
 			console.log(`[summary] delete txn ${transaction.transactionId} removed from ${dateIso}`);
 		}
 
 		return;
+	},
+});
+
+// Delete by document id while adjusting summaries (used by maintenance tasks like dedupe)
+export const deleteTransactionById = internalMutation({
+	args: { id: v.id("transactions") },
+	handler: async (ctx, { id }) => {
+		const transaction = await ctx.db.get(id);
+		if (!transaction) {
+			console.warn(`[transactions] deleteById skipped; id ${id} not found`);
+			return null;
+		}
+
+		const userId = await ctx.runQuery(internal.plaidItems.getUserIdByAccountId, {
+			accountId: transaction.accountId,
+		});
+
+		await ctx.db.delete(id);
+
+		if (userId) {
+			const dateIso = transaction.authorizedDate ?? transaction.date;
+			await ctx.runMutation(internal.cashCreditSummaries.applyTxn, {
+				userId,
+				amount: -transaction.amount,
+				dateIso,
+				currency: transaction.isoCurrencyCode ?? undefined,
+				accountType: (transaction.accountType as TAccountType | undefined) ?? undefined,
+				name: transaction.name,
+				categoryPrimary: transaction.categoryPrimary,
+				categoryDetailed: transaction.categoryDetailed,
+				paymentChannel: transaction.paymentChannel,
+			});
+			console.log(`[summary] deleteById txn ${transaction.transactionId} removed from ${dateIso}`);
+		}
+
+		return null;
 	},
 });
 
@@ -305,24 +385,9 @@ export const syncTransactionData = internalAction({
 		const summary = { added: 0, removed: 0, modified: 0 };
 		const { transactions, cursor } = await fetchNewTransactionSyncData(item.accessToken, item.transactionCursor);
 
-		// STEP 3: Save new transactions to the database
-		await Promise.all(
-			transactions.added.map(toLeanTransaction).map(async transaction => {
-				await ctx.runMutation(internal.transactions.createTransaction, transaction);
-				summary.added += 1;
-			}),
-		);
-
-		// Step 4: Update the modified transactions in the database
-		await Promise.all(
-			transactions.modified.map(toLeanTransaction).map(async transaction => {
-				await ctx.runMutation(internal.transactions.updateTransaction, transaction);
-				summary.modified += 1;
-			}),
-		);
-
-		// Step 5: Remove transactions from the database
-		await Promise.all(
+		// Process in safer order and tolerate individual failures to avoid aborting cursor update.
+		// 1) Removed first (clear pending when posting replaces it)
+		const removedResults = await Promise.allSettled(
 			transactions.removed.map(async removedTransaction => {
 				await ctx.runMutation(internal.transactions.deleteTransaction, {
 					transactionId: removedTransaction.transaction_id,
@@ -330,14 +395,43 @@ export const syncTransactionData = internalAction({
 				summary.removed += 1;
 			}),
 		);
+		removedResults.forEach(r => {
+			if (r.status === "rejected") console.error("[sync] remove failed:", r.reason);
+		});
+
+		// 2) Added
+		const addedResults = await Promise.allSettled(
+			transactions.added.map(toLeanTransaction).map(async transaction => {
+				await ctx.runMutation(internal.transactions.createTransaction, transaction);
+				summary.added += 1;
+			}),
+		);
+		addedResults.forEach(r => {
+			if (r.status === "rejected") console.error("[sync] add failed:", r.reason);
+		});
+
+		// 3) Modified
+		const modifiedResults = await Promise.allSettled(
+			transactions.modified.map(toLeanTransaction).map(async transaction => {
+				await ctx.runMutation(internal.transactions.updateTransaction, transaction);
+				summary.modified += 1;
+			}),
+		);
+		modifiedResults.forEach(r => {
+			if (r.status === "rejected") console.error("[sync] modify failed:", r.reason);
+		});
 
 		console.log(
 			`Sync complete. Added: ${summary.added}, Modified: ${summary.modified}, Removed: ${summary.removed}`,
 		);
 		console.log(`New cursor: ${cursor}`);
 
-		// Step 6: Update the transaction cursor in the database
-		if (cursor != null) {
+		// Step 4: Update the transaction cursor only if no failures occurred
+		const hadFailures =
+			removedResults.some(r => r.status === "rejected") ||
+			addedResults.some(r => r.status === "rejected") ||
+			modifiedResults.some(r => r.status === "rejected");
+		if (cursor != null && !hadFailures) {
 			console.log(`Saving new cursor to database for item ID ${itemId}`);
 			await ctx.runMutation(internal.plaidItems.updateTransactionCursor, { itemId, cursor });
 		}
@@ -345,5 +439,60 @@ export const syncTransactionData = internalAction({
 		console.log(summary);
 
 		return summary;
+	},
+});
+
+// Public query: list transactions for the current user by effective date range (authorizedDate || date)
+export const listByDateRange = query({
+	args: {
+		startDate: v.optional(v.string()), // inclusive ISO date (YYYY-MM-DD)
+		endDate: v.optional(v.string()), // inclusive ISO date (YYYY-MM-DD)
+		limit: v.optional(v.number()),
+	},
+	handler: async (ctx, { startDate, endDate, limit = 500 }) => {
+		const user = await ctx.auth.getUserIdentity();
+		if (!user) throw new Error("User not authenticated");
+
+		// Failfast if startDate or endDate was not provided
+		if (!startDate || !endDate) {
+			return { items: [] };
+		}
+
+		// Fetch account IDs for this user
+		const accounts = await ctx.db
+			.query("plaidAccounts")
+			.withIndex("byUserId", q => q.eq("userId", user.subject))
+			.collect();
+		const accountIds = new Set(accounts.map(a => a.accountId));
+
+		if (accountIds.size === 0) return { items: [] };
+
+		// Use end date exclusive bound by adding 1 day
+		const endExclusive = DateTime.fromISO(endDate, { zone: EST_TIMEZONE }).plus({ days: 1 }).toISODate()!;
+
+		// 1) Get transactions whose authorizedDate is in range
+		const authTxns = await ctx.db
+			.query("transactions")
+			.withIndex("authorizedDate", q => q.gte("authorizedDate", startDate).lt("authorizedDate", endExclusive))
+			.order("asc")
+			.collect();
+
+		// 2) Get transactions with no authorizedDate and date in range
+		const dateTxnsRaw = await ctx.db
+			.query("transactions")
+			.withIndex("date", q => q.gte("date", startDate).lt("date", endExclusive))
+			.order("asc")
+			.collect();
+		const dateTxns = dateTxnsRaw.filter(t => t.authorizedDate == null);
+
+		// Merge, filter to user's accounts, and sort by effective date desc
+		const merged = [...authTxns, ...dateTxns].filter(t => accountIds.has(t.accountId));
+		merged.sort((a, b) => {
+			const aEff = a.authorizedDate ?? a.date;
+			const bEff = b.authorizedDate ?? b.date;
+			return aEff < bEff ? 1 : aEff > bEff ? -1 : 0;
+		});
+
+		return { items: merged.slice(0, limit) };
 	},
 });

@@ -7,15 +7,7 @@ import { useUser } from "@clerk/tanstack-react-start";
 import { useState } from "react";
 import { AddBillForm } from "~/components/AddBillForm";
 import * as Dialog from "@radix-ui/react-dialog";
-import {
-	ListBulletIcon,
-	Pencil2Icon,
-	TrashIcon,
-	Pencil1Icon,
-	Cross2Icon,
-	PlusIcon,
-	ArrowLeftIcon,
-} from "@radix-ui/react-icons";
+import { ListBulletIcon, PencilSquareIcon, TrashIcon, PlusIcon, ArrowUturnLeftIcon } from "@heroicons/react/24/solid";
 import { SectionHeader } from "~/components/layout/SectionHeader";
 import { Badge } from "~/components/ui/Badge";
 import { formatOrdinal } from "~/utils/formatters";
@@ -49,7 +41,7 @@ function BillsPage() {
 							variant="subtle"
 							className="text-zinc-300 hover:text-white bg-zinc-800 border border-zinc-700"
 						>
-							<ArrowLeftIcon className="w-4 h-4" />
+							<ArrowUturnLeftIcon className="w-4 h-4" />
 							Back to Home
 						</Link>
 						<hr className="my-4 border-zinc-500" />
@@ -79,7 +71,7 @@ function BillsPage() {
 							{bills.data?.map((bill: any) => (
 								<div
 									key={bill._id}
-									className="relative bg-zinc-900 rounded-xl shadow-lg p-4 flex flex-row border border-cyan-900/40 hover:border-cyan-400 hover:shadow-[0_0_16px_0_rgba(34,211,238,0.4)] transition-colors transition-shadow duration-300 min-h-[120px] overflow-hidden"
+									className="relative bg-zinc-900 rounded-xl shadow-lg p-4 flex flex-row border border-cyan-900/40 hover:border-cyan-400 hover:shadow-[0_0_16px_0_rgba(34,211,238,0.4)] transition-shadow duration-300 min-h-[120px] overflow-hidden"
 								>
 									<div className="flex flex-col flex-1 relative z-10 gap-3">
 										<div className="flex items-center justify-between mb-1">
@@ -92,7 +84,7 @@ function BillsPage() {
 													title="Edit"
 													onClick={() => setBillToEdit(bill)}
 												>
-													<Pencil1Icon className="w-5 h-5" />
+													<PencilSquareIcon className="w-5 h-5" />
 												</Button>
 												<Button
 													variant="subtle"

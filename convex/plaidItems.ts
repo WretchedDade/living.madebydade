@@ -2,6 +2,7 @@ import { v } from "convex/values";
 import { action, internalMutation, internalQuery, mutation, query } from "./_generated/server";
 import { getPlaidApi, getPlaidConfig } from "./plaidHelpers";
 import { PlaidAccountSchema, PlaidInstitutionSchema, PlaidItem, PlaidItemSchema } from "./schema";
+import { TAccountType } from "./transactionSchema";
 import { api, internal } from "./_generated/api";
 
 export const getLinkToken = action({
@@ -30,7 +31,8 @@ export const getLinkToken = action({
 
 			return response.data;
 		} catch (error) {
-			console.error((error as any).response);
+			const err = error as { response?: unknown };
+			console.error(err.response);
 			throw new Error("Failed to create Plaid link token");
 		}
 	},
@@ -120,10 +122,22 @@ export const create = mutation({
 		// Insert plaidAccounts rows
 		const accounts = item.accounts ?? [];
 		for (const acct of accounts) {
+			// Map Plaid type/subtype to derived accountType
+			let accountType: TAccountType | undefined;
+			const type = acct.type;
+			const subtype = acct.subtype;
+			if (type === "credit") accountType = "credit";
+			else if (type === "depository" && (subtype === "checking" || subtype === "prepaid"))
+				accountType = "checking";
+			else if (type === "depository" && subtype === "savings") accountType = "savings";
+
 			await ctx.db.insert("plaidAccounts", {
 				accountId: acct.id,
 				itemId: item.itemId,
 				userId: item.userId,
+				type,
+				subtype,
+				accountType,
 			});
 		}
 

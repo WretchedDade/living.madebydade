@@ -7,7 +7,7 @@ import { usePlaidLink } from "react-plaid-link";
 import { AppLayout } from "~/components/layout/AppLayout";
 import { showToast } from "~/components/feedback/SciFiToast";
 import { Button } from "~/components/ui/Button";
-import { ReloadIcon } from "@radix-ui/react-icons";
+import { ArrowPathIcon } from "@heroicons/react/24/solid";
 import { MissionBanner } from "~/components/ui/MissionBanner";
 import { SciFiBars } from "~/components/ui/SciFiBars";
 import { PlaidItem } from "@/convex/schema";
@@ -94,7 +94,7 @@ function BankSetup() {
 					<SciFiBars count={7} className="mb-8" />
 					{!ready ? (
 						<div className="flex flex-col items-center justify-center h-48">
-							<ReloadIcon className="w-8 h-8 animate-spin text-cyan-400 mb-3" />
+							<ArrowPathIcon className="w-8 h-8 animate-spin text-cyan-400 mb-3" />
 							<span className="text-cyan-300 text-base">Preparing Plaid Link...</span>
 						</div>
 					) : (

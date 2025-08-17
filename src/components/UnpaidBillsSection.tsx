@@ -1,5 +1,5 @@
 import { SectionHeader } from "~/components/layout/SectionHeader";
-import { ClockIcon, ListBulletIcon } from "@radix-ui/react-icons";
+import { ClockIcon, ListBulletIcon } from "@heroicons/react/24/solid";
 import * as Switch from "@radix-ui/react-switch";
 import { Button } from "~/components/ui/Button";
 import { Link } from "~/components/ui/Link";

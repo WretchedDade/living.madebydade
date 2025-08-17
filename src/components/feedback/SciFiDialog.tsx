@@ -1,6 +1,6 @@
 import * as Dialog from "@radix-ui/react-dialog";
 import { Button } from "../ui/Button";
-import { Cross2Icon } from "@radix-ui/react-icons";
+import { XMarkIcon } from "@heroicons/react/24/solid";
 import React from "react";
 
 interface SciFiDialogProps {
@@ -25,7 +25,7 @@ export const SciFiDialog: React.FC<SciFiDialogProps> = ({ open, onOpenChange, ti
 							className="absolute top-3 right-3 text-cyan-300 hover:text-cyan-400 w-9 h-9 flex items-center justify-center"
 							aria-label="Close"
 						>
-							<Cross2Icon className="w-6 h-6" />
+							<XMarkIcon className="w-6 h-6" />
 						</Button>
 					</Dialog.Close>
 				)}
