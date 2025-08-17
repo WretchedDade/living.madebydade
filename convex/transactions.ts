@@ -385,41 +385,48 @@ export const syncTransactionData = internalAction({
 		const summary = { added: 0, removed: 0, modified: 0 };
 		const { transactions, cursor } = await fetchNewTransactionSyncData(item.accessToken, item.transactionCursor);
 
-		// Process in safer order and tolerate individual failures to avoid aborting cursor update.
+		// Process in safer order and strictly sequentially to avoid high-contention writes
+		// to summary documents which cause persistent Convex retries.
 		// 1) Removed first (clear pending when posting replaces it)
-		const removedResults = await Promise.allSettled(
-			transactions.removed.map(async removedTransaction => {
+		const removedResults: Array<{ status: "fulfilled" } | { status: "rejected"; reason: unknown }> = [];
+		for (const removedTransaction of transactions.removed) {
+			try {
 				await ctx.runMutation(internal.transactions.deleteTransaction, {
 					transactionId: removedTransaction.transaction_id,
 				});
 				summary.removed += 1;
-			}),
-		);
-		removedResults.forEach(r => {
-			if (r.status === "rejected") console.error("[sync] remove failed:", r.reason);
-		});
+				removedResults.push({ status: "fulfilled" });
+			} catch (err) {
+				console.error("[sync] remove failed:", err);
+				removedResults.push({ status: "rejected", reason: err });
+			}
+		}
 
 		// 2) Added
-		const addedResults = await Promise.allSettled(
-			transactions.added.map(toLeanTransaction).map(async transaction => {
+		const addedResults: Array<{ status: "fulfilled" } | { status: "rejected"; reason: unknown }> = [];
+		for (const transaction of transactions.added.map(toLeanTransaction)) {
+			try {
 				await ctx.runMutation(internal.transactions.createTransaction, transaction);
 				summary.added += 1;
-			}),
-		);
-		addedResults.forEach(r => {
-			if (r.status === "rejected") console.error("[sync] add failed:", r.reason);
-		});
+				addedResults.push({ status: "fulfilled" });
+			} catch (err) {
+				console.error("[sync] add failed:", err);
+				addedResults.push({ status: "rejected", reason: err });
+			}
+		}
 
 		// 3) Modified
-		const modifiedResults = await Promise.allSettled(
-			transactions.modified.map(toLeanTransaction).map(async transaction => {
+		const modifiedResults: Array<{ status: "fulfilled" } | { status: "rejected"; reason: unknown }> = [];
+		for (const transaction of transactions.modified.map(toLeanTransaction)) {
+			try {
 				await ctx.runMutation(internal.transactions.updateTransaction, transaction);
 				summary.modified += 1;
-			}),
-		);
-		modifiedResults.forEach(r => {
-			if (r.status === "rejected") console.error("[sync] modify failed:", r.reason);
-		});
+				modifiedResults.push({ status: "fulfilled" });
+			} catch (err) {
+				console.error("[sync] modify failed:", err);
+				modifiedResults.push({ status: "rejected", reason: err });
+			}
+		}
 
 		console.log(
 			`Sync complete. Added: ${summary.added}, Modified: ${summary.modified}, Removed: ${summary.removed}`,
