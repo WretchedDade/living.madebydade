@@ -27,6 +27,7 @@
 		"@clerk/tanstack-react-start": "^0.19.0",
 		"@clerk/themes": "^2.2.55",
 		"@convex-dev/action-cache": "^0.2.11",
+		"@convex-dev/migrations": "^0.2.9",
 		"@convex-dev/react-query": "^0.0.0-alpha.11",
 		"@hookform/resolvers": "^5.1.1",
 		"@radix-ui/react-accordion": "^1.2.11",

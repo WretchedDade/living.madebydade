@@ -1,7 +1,7 @@
 import { GenericActionCtx } from 'convex/server';
 import { Configuration, CountryCode, PlaidApi, PlaidEnvironments, Products, RemovedTransaction, Transaction, TransactionsSyncResponse } from 'plaid';
 import { internal } from './_generated/api';
-import { PlaidTransaction } from './transactionSchema';
+import { LeanTransaction, PlaidTransaction } from './transactionSchema';
 
 export function getPlaidConfig() {
     return {
@@ -174,5 +174,26 @@ export function toTransactionSchema(transaction: Transaction): PlaidTransaction 
         personalFinanceCategory,
         businessFinanceCategory,
         counterparties,
+    };
+}
+
+// Map Plaid Transaction to a lean storage shape
+export function toLeanTransaction(transaction: Transaction): LeanTransaction {
+    return {
+        transactionId: transaction.transaction_id,
+        accountId: transaction.account_id,
+        date: transaction.date,
+        authorizedDate: transaction.authorized_date ?? null,
+        amount: transaction.amount,
+        isoCurrencyCode: transaction.iso_currency_code ?? null,
+        pending: transaction.pending,
+        name: transaction.name,
+        merchantName: transaction.merchant_name ?? null,
+        merchantEntityId: transaction.merchant_entity_id ?? null,
+        categoryPrimary: transaction.personal_finance_category?.primary ?? null,
+        categoryDetailed: transaction.personal_finance_category?.detailed ?? null,
+        pendingTransactionId: transaction.pending_transaction_id ?? null,
+        paymentChannel: transaction.payment_channel ?? null,
+        transactionCode: transaction.transaction_code ?? null,
     };
 }
