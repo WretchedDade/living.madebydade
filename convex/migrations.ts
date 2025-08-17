@@ -337,5 +337,23 @@ export const runAll = migrations.runner([
 	internal.migrations.buildCashCreditSummaries,
 ]);
 
+export const runDeleteOldTransactionsByAuthorizedDate = migrations.runner(
+	internal.migrations.deleteOldTransactionsByAuthorizedDate,
+);
+export const runDeleteOldTransactionsByPostedDate = migrations.runner(
+	internal.migrations.deleteOldTransactionsByPostedDate,
+);
+
+export const runDedupeTransactionsByTransactionId = migrations.runner(
+	internal.migrations.dedupeTransactionsByTransactionId,
+);
+
+export const runBackfillPlaidAccountTypeFields = migrations.runner(internal.migrations.backfillPlaidAccountTypeFields);
+
+export const runBackfillTransactionUserAndType = migrations.runner(internal.migrations.backfillTransactionUserAndType);
+export const runBackfillTransactionDetectionFlags = migrations.runner(
+	internal.migrations.backfillTransactionDetectionFlags,
+);
+
 export const runClearCashCreditSummaries = migrations.runner([internal.migrations.clearCashCreditSummaries]);
 export const runBuildCashCreditSummaries = migrations.runner([internal.migrations.buildCashCreditSummaries]);
