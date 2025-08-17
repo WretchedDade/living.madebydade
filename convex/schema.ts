@@ -45,18 +45,34 @@ export default defineSchema({
 		datePaid: v.optional(v.string()),
 		billId: v.id('bills'),
 		isAutoPay: v.boolean(),
-	}),
+	})
+		.index('byBillId', ['billId'])
+		.index('byDatePaid', ['datePaid'])
+		.index('byUnpaidDue', ['datePaid', 'dateDue'])
+		.index('byUnpaidAutoDue', ['datePaid', 'isAutoPay', 'dateDue']),
 	activity: defineTable({
 		type: activityType,
 		userId: v.string(),
 		targetId: v.string(),
 		timestamp: v.number(),
 		details: activityDetails,
-	}),
-	plaidItems: defineTable(PlaidItemSchema),
+	})
+		.index('byUserIdTimestamp', ['userId', 'timestamp'])
+		.index('byTargetIdTimestamp', ['targetId', 'timestamp'])
+		.index('byTimestamp', ['timestamp']),
+	plaidItems: defineTable(PlaidItemSchema).index('byUserId', ['userId']).index('byItemId', ['itemId']),
+	plaidAccounts: defineTable({
+		accountId: v.string(),
+		itemId: v.string(),
+		userId: v.string(),
+	})
+		.index('byAccountId', ['accountId'])
+		.index('byItemId', ['itemId'])
+		.index('byUserId', ['userId']),
 	transactions: defineTable(LeanTransactionSchema)
 		.index('authorizedDate', ['authorizedDate'])
-		.index('date', ['date']),
+		.index('date', ['date'])
+		.index('byTransactionId', ['transactionId']),
 	transactionSummaries: defineTable({
 		userId: v.string(),
 		period: v.union(v.literal('day'), v.literal('week'), v.literal('month')),

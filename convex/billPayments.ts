@@ -25,18 +25,21 @@ export const listUnpaid = query({
 		includeAutoPay: v.optional(v.boolean()),
 	},
 	handler: async (ctx, args) => {
-		const payments = await ctx.db
-			.query('billPayments')
-			.filter(q => {
-				if (args.includeAutoPay) {
-					return q.eq(q.field('datePaid'), undefined);
-				}
-
-				return q.and(q.eq(q.field('datePaid'), undefined), q.eq(q.field('isAutoPay'), false));
-			})
-			.collect();
-
-		payments.sort((a, b) => DateTime.fromISO(a.dateDue).toMillis() - DateTime.fromISO(b.dateDue).toMillis());
+		const payments = await (async () => {
+			if (args.includeAutoPay) {
+				return ctx.db
+					.query('billPayments')
+					.withIndex('byUnpaidDue', q => q.eq('datePaid', undefined))
+					.order('asc')
+					.collect();
+			} else {
+				return ctx.db
+					.query('billPayments')
+					.withIndex('byUnpaidAutoDue', q => q.eq('datePaid', undefined).eq('isAutoPay', false))
+					.order('asc')
+					.collect();
+			}
+		})();
 
 		return await Promise.all(
 			payments.map(async payment => {
@@ -56,17 +59,6 @@ export const list = query({
 	args: { take: v.optional(v.number()) },
 	handler: async (ctx, { take = 50 }) => {
 		const payments = await ctx.db.query('billPayments').order('desc').take(take);
-
-		payments.sort((a, b) => {
-			let aDate = getDate(a);
-			let bDate = getDate(b);
-
-			if (!aDate.isValid || !bDate.isValid) {
-				return 0;
-			}
-
-			return bDate.toMillis() - aDate.toMillis();
-		});
 
 		return Promise.all(
 			payments.map(async payment => {
@@ -95,10 +87,9 @@ export const listRecentlyPaid = query({
 	handler: async ctx => {
 		const payments = await ctx.db
 			.query('billPayments')
-			.filter(q => q.neq(q.field('datePaid'), undefined))
+			.withIndex('byDatePaid', q => q.gte('datePaid', '0'))
+			.order('desc')
 			.take(50);
-
-		payments.sort((a, b) => DateTime.fromISO(b.datePaid!).toMillis() - DateTime.fromISO(a.datePaid!).toMillis());
 
 		return Promise.all(
 			payments.map(async payment => {

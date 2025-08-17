@@ -47,9 +47,10 @@ export const get = query({
         if (userIdentity?.subject == null)
             throw new Error("User not authenticated");
 
-        return ctx.db.query('plaidItems').filter((q) =>
-            q.eq(q.field('userId'), userIdentity.subject)
-        ).collect();
+        return ctx.db
+            .query('plaidItems')
+            .withIndex('byUserId', q => q.eq('userId', userIdentity.subject))
+            .collect();
     },
 })
 
@@ -61,9 +62,11 @@ export const getById = query({
         if (userIdentity?.subject == null)
             throw new Error("User not authenticated");
 
-        const item = await ctx.db.query('plaidItems').filter((q) =>
-            q.and(q.eq(q.field('itemId'), itemId), q.eq(q.field('userId'), userIdentity.subject))
-        ).first();
+        const item = await ctx.db
+            .query('plaidItems')
+            .withIndex('byItemId', q => q.eq('itemId', itemId))
+            .filter(q => q.eq(q.field('userId'), userIdentity.subject))
+            .first();
 
         if (!item) {
             throw new Error("Item not found or does not belong to the user");
@@ -76,9 +79,10 @@ export const getById = query({
 export const internalGetById = internalQuery({
     args: { itemId: v.string() },
     handler: async (ctx, { itemId }) => {
-        const item = await ctx.db.query('plaidItems').filter((q) =>
-            q.eq(q.field('itemId'), itemId)
-        ).first();
+        const item = await ctx.db
+            .query('plaidItems')
+            .withIndex('byItemId', q => q.eq('itemId', itemId))
+            .first();
 
         if (!item) {
             throw new Error("Item not found or does not belong to the user");
@@ -92,20 +96,18 @@ export const internalGetById = internalQuery({
 export const internalListAll = internalQuery({
     args: {},
     handler: async (ctx) => {
-        return ctx.db.query('plaidItems').collect();
+    return ctx.db.query('plaidItems').collect();
     },
 })
 
 export const getUserIdByAccountId = internalQuery({
     args: { accountId: v.string() },
     handler: async (ctx, { accountId }) => {
-        const items = await ctx.db.query('plaidItems').collect();
-        for (const item of items) {
-            if ((item.accounts ?? []).some((a: any) => a.id === accountId)) {
-                return item.userId as string;
-            }
-        }
-        return undefined as unknown as string | undefined;
+        const row = await ctx.db
+            .query('plaidAccounts')
+            .withIndex('byAccountId', q => q.eq('accountId', accountId))
+            .first();
+        return row?.userId as string | undefined;
     },
 })
 
@@ -120,7 +122,17 @@ export const create = mutation({
         if (item.userId !== userIdentity.subject)
             throw new Error("User ID does not match authenticated user");
 
-        ctx.db.insert('plaidItems', item);
+        await ctx.db.insert('plaidItems', item);
+
+        // Insert plaidAccounts rows
+        const accounts = item.accounts ?? [];
+        for (const acct of accounts) {
+            await ctx.db.insert('plaidAccounts', {
+                accountId: acct.id,
+                itemId: item.itemId,
+                userId: item.userId,
+            });
+        }
 
         return item;
     }
@@ -138,9 +150,10 @@ export const link = action({
 
         const response = await plaidApi.itemPublicTokenExchange({ public_token: publicToken, });
 
-        await ctx.scheduler.runAfter(0, internal.transactions.syncTransactionData, { itemId: response.data.item_id });
+    await ctx.scheduler.runAfter(0, internal.transactions.syncTransactionData, { itemId: response.data.item_id });
 
-        return await ctx.runMutation(api.plaidItems.create, {
+    // Persist plaid item and its accounts
+    return await ctx.runMutation(api.plaidItems.create, {
             userId: userIdentity.subject,
             itemId: response.data.item_id,
             accessToken: response.data.access_token,
@@ -155,7 +168,10 @@ export const updateTransactionCursor = internalMutation({
     args: { itemId: v.string(), cursor: v.string() },
     handler: async (ctx, { itemId, cursor }) => {
 
-        const item = await ctx.db.query('plaidItems').filter((q) => q.eq(q.field('itemId'), itemId)).first();
+        const item = await ctx.db
+            .query('plaidItems')
+            .withIndex('byItemId', q => q.eq('itemId', itemId))
+            .first();
 
         if (!item) {
             throw new Error("Item not found or does not belong to the user");
@@ -163,4 +179,32 @@ export const updateTransactionCursor = internalMutation({
 
         return ctx.db.patch(item._id, { transactionCursor: cursor });
     }
+})
+
+// Follow-up 1: Fast lookup of userId by accountId via normalized table
+// (definition moved above)
+
+// Backfill helper: create plaidAccounts entries for existing plaidItems
+export const backfillPlaidAccounts = internalMutation({
+    args: {},
+    handler: async (ctx, _) => {
+        const items = await ctx.db.query('plaidItems').collect();
+        for (const item of items) {
+            const accounts = (item.accounts ?? []) as Array<{ id: string }>;
+            for (const acct of accounts) {
+                const exists = await ctx.db
+                    .query('plaidAccounts')
+                    .withIndex('byAccountId', q => q.eq('accountId', acct.id))
+                    .first();
+                if (!exists) {
+                    await ctx.db.insert('plaidAccounts', {
+                        accountId: acct.id,
+                        itemId: item.itemId,
+                        userId: item.userId,
+                    });
+                }
+            }
+        }
+        return null;
+    },
 })

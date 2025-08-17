@@ -46,16 +46,19 @@ export const listRecentActivity = query({
         limit: v.optional(v.number()),
     },
     handler: async (ctx, args) => {
-        let q = ctx.db.query('activity');
+        const limit = args.limit ?? 50;
         if (args.userId) {
-            q = q.filter(q => q.eq(q.field('userId'), args.userId));
+            return await ctx.db
+                .query('activity')
+                .withIndex('byUserIdTimestamp', q => q.eq('userId', args.userId!))
+                .order('desc')
+                .take(limit);
         }
-        let results = await q.collect();
-        results.sort((a, b) => b.timestamp - a.timestamp);
-        if (args.limit) {
-            results = results.slice(0, args.limit);
-        }
-        return results;
+        return await ctx.db
+            .query('activity')
+            .withIndex('byTimestamp')
+            .order('desc')
+            .take(limit);
     },
 });
 
@@ -66,13 +69,12 @@ export const listActivityForTarget = query({
         limit: v.optional(v.number()),
     },
     handler: async (ctx, args) => {
-        let q = ctx.db.query('activity').filter(q => q.eq(q.field('targetId'), args.targetId));
-        let results = await q.collect();
-        results.sort((a, b) => b.timestamp - a.timestamp);
-        if (args.limit) {
-            results = results.slice(0, args.limit);
-        }
-        return results;
+        const limit = args.limit ?? 50;
+        return await ctx.db
+            .query('activity')
+            .withIndex('byTargetIdTimestamp', q => q.eq('targetId', args.targetId))
+            .order('desc')
+            .take(limit);
     },
 });
 

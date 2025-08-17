@@ -64,10 +64,12 @@ export const buildTransactionSummaries = migrations.define({
 	table: 'transactions',
 	batchSize: 200, // safe and fast
 	migrateOne: async (ctx, txn) => {
-		// Find owning user by accountId (plaidItems typically small)
-		const items = await ctx.db.query('plaidItems').collect();
-		const item = items.find(i => (i.accounts ?? []).some((a: any) => a.id === txn.accountId));
-		const userId = item?.userId;
+		// Fast lookup owning user by accountId via plaidAccounts table
+		const acct = await ctx.db
+			.query('plaidAccounts')
+			.withIndex('byAccountId', q => q.eq('accountId', txn.accountId as string))
+			.first();
+		const userId = acct?.userId;
 		if (!userId) return;
 
 		const dateIso = txn.authorizedDate ?? txn.date;

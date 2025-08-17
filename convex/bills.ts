@@ -15,10 +15,10 @@ export const listWithPayments = internalQuery({
 
 		return Promise.all(
 			bills.map(async bill => {
-				const billPayments = await ctx.db
-					.query('billPayments')
-					.filter(q => q.eq(q.field('billId'), bill._id))
-					.collect();
+					const billPayments = await ctx.db
+						.query('billPayments')
+						.withIndex('byBillId', q => q.eq('billId', bill._id))
+						.collect();
 
 				return { ...bill, payments: billPayments };
 			}),

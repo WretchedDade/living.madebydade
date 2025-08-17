@@ -130,7 +130,7 @@ export const updateTransaction = internalMutation({
 	handler: async (ctx, updatedTransaction) => {
 		const transaction = await ctx.db
 			.query('transactions')
-			.filter(q => q.eq(q.field('transactionId'), updatedTransaction.transactionId))
+			.withIndex('byTransactionId', q => q.eq('transactionId', updatedTransaction.transactionId))
 			.first();
 
 		if (!transaction) {
@@ -194,7 +194,7 @@ export const deleteTransaction = internalMutation({
 	handler: async (ctx, { transactionId }) => {
 		const transaction = await ctx.db
 			.query('transactions')
-			.filter(q => q.eq(q.field('transactionId'), transactionId))
+			.withIndex('byTransactionId', q => q.eq('transactionId', transactionId))
 			.first();
 
 		if (!transaction) {
@@ -235,7 +235,7 @@ export const internalGetByTransactionId = internalQuery({
 	handler: async (ctx, { transactionId }) => {
 		return ctx.db
 			.query('transactions')
-			.filter(q => q.eq(q.field('transactionId'), transactionId))
+			.withIndex('byTransactionId', q => q.eq('transactionId', transactionId))
 			.first();
 	},
 });
