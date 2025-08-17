@@ -2,7 +2,7 @@ import { defineSchema, defineTable } from 'convex/server';
 import { Infer, v } from 'convex/values';
 
 import { activityType, activityDetails } from './activitySchema';
-import { LeanTransactionCompatSchema } from './transactionSchema';
+import { LeanTransactionCompatSchema, LeanTransactionSchema } from './transactionSchema';
 
 export const PlaidInstitutionSchema = v.object({
 	id: v.string(),
@@ -53,5 +53,5 @@ export default defineSchema({
 		details: activityDetails,
 	}),
 	plaidItems: defineTable(PlaidItemSchema),
-	transactions: defineTable(LeanTransactionCompatSchema).index('authorizedDate', ['authorizedDate']),
+	transactions: defineTable(LeanTransactionSchema).index('authorizedDate', ['authorizedDate']),
 });
