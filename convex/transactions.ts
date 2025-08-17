@@ -1,9 +1,12 @@
 import { RemovedTransaction, SyncUpdatesAvailableWebhook, Transaction, TransactionsSyncResponse } from 'plaid';
 import { getPlaidApi, toTransactionSchema, toLeanTransaction } from './plaidHelpers';
-import { httpAction, internalAction, internalMutation } from './_generated/server';
+import { httpAction, internalAction, internalMutation, internalQuery } from './_generated/server';
 import { api, internal } from './_generated/api';
 import { PlaidTransaction, PlaidTransactionSchema, LeanTransactionSchema } from './transactionSchema';
 import { v } from 'convex/values';
+import { internal as internalApi } from './_generated/api';
+import { DateTime } from 'luxon';
+import { EST_TIMEZONE } from '../constants';
 
 async function fetchNewTransactionSyncData(accessToken: string, initialCursor: string | undefined, retriesLeft = 3) {
 	const plaidApi = getPlaidApi();
@@ -88,10 +91,37 @@ async function fetchNewTransactionSyncData(accessToken: string, initialCursor: s
 export const createTransaction = internalMutation({
 	args: LeanTransactionSchema,
 	handler: async (ctx, transaction) => {
-		return ctx.db.insert('transactions', {
+		// Guard: skip inserting transactions older than 1 year
+		const effectiveDateStr = transaction.authorizedDate ?? transaction.date;
+		const cutoff = DateTime.now().setZone(EST_TIMEZONE).minus({ months: 6 }).startOf('day');
+		const effective = DateTime.fromISO(effectiveDateStr, { zone: EST_TIMEZONE }).startOf('day');
+		if (effective.isValid && effective < cutoff) {
+			console.log(
+				`[transactions] Skipping txn ${transaction.transactionId} dated ${effectiveDateStr} (older than 1 year)`,
+			);
+			return null as any;
+		}
+
+		const id = await ctx.db.insert('transactions', {
 			...transaction,
 			// Add any additional fields or transformations needed
 		});
+		// Update summaries
+		const userId = await ctx.runQuery(internal.plaidItems.getUserIdByAccountId, {
+			accountId: transaction.accountId,
+		});
+		if (userId) {
+			const dateIso = transaction.authorizedDate ?? transaction.date;
+			await ctx.runMutation(internal.transactionSummaries.applyDelta, {
+				userId,
+				dateIso,
+				amountDelta: transaction.amount,
+				countDelta: 1,
+				currency: transaction.isoCurrencyCode ?? undefined,
+			});
+			console.log(`[summary] create txn ${transaction.transactionId} applied to ${userId} ${dateIso}`);
+		}
+		return id;
 	},
 });
 
@@ -107,7 +137,55 @@ export const updateTransaction = internalMutation({
 			throw new Error(`Transaction with ID ${updatedTransaction.transactionId} not found`);
 		}
 
-		return ctx.db.patch(transaction._id, updatedTransaction);
+		// Calculate deltas for summaries
+		const oldAmount = transaction.amount;
+		const oldDate = transaction.authorizedDate ?? transaction.date;
+		const newAmount = updatedTransaction.amount;
+		const newDate = updatedTransaction.authorizedDate ?? updatedTransaction.date;
+
+		const userId = await ctx.runQuery(internal.plaidItems.getUserIdByAccountId, {
+			accountId: transaction.accountId,
+		});
+
+		// Persist update
+		await ctx.db.patch(transaction._id, updatedTransaction);
+
+		if (userId) {
+			if (oldDate === newDate) {
+				// Same bucket: apply amount delta only
+				await ctx.runMutation(internal.transactionSummaries.applyDelta, {
+					userId,
+					dateIso: newDate,
+					amountDelta: newAmount - oldAmount,
+					countDelta: 0,
+					currency: updatedTransaction.isoCurrencyCode ?? undefined,
+				});
+				console.log(
+					`[summary] update txn ${updatedTransaction.transactionId} adjusted amount in-place on ${newDate}`,
+				);
+			} else {
+				// Move between buckets: remove from old, add to new
+				await ctx.runMutation(internal.transactionSummaries.applyDelta, {
+					userId,
+					dateIso: oldDate,
+					amountDelta: -oldAmount,
+					countDelta: -1,
+					currency: transaction.isoCurrencyCode ?? undefined,
+				});
+				await ctx.runMutation(internal.transactionSummaries.applyDelta, {
+					userId,
+					dateIso: newDate,
+					amountDelta: newAmount,
+					countDelta: 1,
+					currency: updatedTransaction.isoCurrencyCode ?? undefined,
+				});
+				console.log(
+					`[summary] update txn ${updatedTransaction.transactionId} moved from ${oldDate} to ${newDate}`,
+				);
+			}
+		}
+
+		return;
 	},
 });
 
@@ -122,8 +200,50 @@ export const deleteTransaction = internalMutation({
 		if (!transaction) {
 			throw new Error(`Transaction with ID ${transactionId} not found`);
 		}
+		const userId = await ctx.runQuery(internal.plaidItems.getUserIdByAccountId, {
+			accountId: transaction.accountId,
+		});
 
-		return ctx.db.delete(transaction._id);
+		await ctx.db.delete(transaction._id);
+
+		if (userId) {
+			const dateIso = transaction.authorizedDate ?? transaction.date;
+			await ctx.runMutation(internal.transactionSummaries.applyDelta, {
+				userId,
+				dateIso,
+				amountDelta: -transaction.amount,
+				countDelta: -1,
+				currency: transaction.isoCurrencyCode ?? undefined,
+			});
+			console.log(`[summary] delete txn ${transaction.transactionId} removed from ${dateIso}`);
+		}
+
+		return;
+	},
+});
+
+// Internal utility queries for jobs/backfills
+export const internalListAll = internalQuery({
+	args: {},
+	handler: async ctx => {
+		return ctx.db.query('transactions').collect();
+	},
+});
+
+export const internalGetByTransactionId = internalQuery({
+	args: { transactionId: v.string() },
+	handler: async (ctx, { transactionId }) => {
+		return ctx.db
+			.query('transactions')
+			.filter(q => q.eq(q.field('transactionId'), transactionId))
+			.first();
+	},
+});
+
+export const internalPaginateAll = internalQuery({
+	args: { cursor: v.optional(v.union(v.string(), v.null())), pageSize: v.optional(v.number()) },
+	handler: async (ctx, { cursor = null, pageSize = 2000 }) => {
+		return await ctx.db.query('transactions').order('asc').paginate({ cursor, numItems: pageSize });
 	},
 });
 

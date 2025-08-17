@@ -88,6 +88,27 @@ export const internalGetById = internalQuery({
     },
 })
 
+// Internal: list all plaid items without auth (for system jobs)
+export const internalListAll = internalQuery({
+    args: {},
+    handler: async (ctx) => {
+        return ctx.db.query('plaidItems').collect();
+    },
+})
+
+export const getUserIdByAccountId = internalQuery({
+    args: { accountId: v.string() },
+    handler: async (ctx, { accountId }) => {
+        const items = await ctx.db.query('plaidItems').collect();
+        for (const item of items) {
+            if ((item.accounts ?? []).some((a: any) => a.id === accountId)) {
+                return item.userId as string;
+            }
+        }
+        return undefined as unknown as string | undefined;
+    },
+})
+
 export const create = mutation({
     args: PlaidItemSchema,
     handler: async (ctx, item) => {

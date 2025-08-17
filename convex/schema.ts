@@ -3,6 +3,7 @@ import { Infer, v } from 'convex/values';
 
 import { activityType, activityDetails } from './activitySchema';
 import { LeanTransactionSchema } from './transactionSchema';
+import { v as values } from 'convex/values';
 
 export const PlaidInstitutionSchema = v.object({
 	id: v.string(),
@@ -54,4 +55,15 @@ export default defineSchema({
 	}),
 	plaidItems: defineTable(PlaidItemSchema),
 	transactions: defineTable(LeanTransactionSchema).index('authorizedDate', ['authorizedDate']),
+	transactionSummaries: defineTable({
+		userId: v.string(),
+		period: v.union(v.literal('day'), v.literal('week'), v.literal('month')),
+		startDate: v.string(), // ISO date for start of period in app timezone
+		endDate: v.string(), // ISO date for end of period in app timezone
+		currency: v.optional(v.string()),
+		inflow: v.float64(), // absolute sum of credits (money in)
+		outflow: v.float64(), // sum of debits (money out)
+		net: v.float64(), // inflow - outflow OR sum of signed amounts
+		count: v.number(),
+	}).index('byUserPeriodStart', ['userId', 'period', 'startDate']),
 });
