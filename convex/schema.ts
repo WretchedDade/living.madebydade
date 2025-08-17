@@ -54,7 +54,9 @@ export default defineSchema({
 		details: activityDetails,
 	}),
 	plaidItems: defineTable(PlaidItemSchema),
-	transactions: defineTable(LeanTransactionSchema).index('authorizedDate', ['authorizedDate']),
+	transactions: defineTable(LeanTransactionSchema)
+		.index('authorizedDate', ['authorizedDate'])
+		.index('date', ['date']),
 	transactionSummaries: defineTable({
 		userId: v.string(),
 		period: v.union(v.literal('day'), v.literal('week'), v.literal('month')),

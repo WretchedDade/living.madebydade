@@ -247,6 +247,48 @@ export const internalPaginateAll = internalQuery({
 	},
 });
 
+// Prune any transactions older than 6 months (authorizedDate if present, else date)
+export const pruneOldTransactions = internalMutation({
+	args: {},
+	handler: async (ctx) => {
+		const thresholdISO = DateTime.now().setZone(EST_TIMEZONE).minus({ months: 6 }).startOf('day').toISODate()!;
+
+		// First: delete by authorizedDate using index
+		let cursor: string | null = null;
+		do {
+			const page = await ctx.db
+				.query('transactions')
+				.withIndex('authorizedDate', q => q.lt('authorizedDate', thresholdISO))
+				.order('asc')
+				.paginate({ cursor, numItems: 500 });
+
+			for (const txn of page.page) {
+				await ctx.db.delete(txn._id);
+			}
+			cursor = page.isDone ? null : page.continueCursor;
+		} while (cursor);
+
+		// Second: delete where authorizedDate is null and date < threshold (use date index)
+		cursor = null;
+		do {
+			const page = await ctx.db
+				.query('transactions')
+				.withIndex('date', q => q.lt('date', thresholdISO))
+				.order('asc')
+				.paginate({ cursor, numItems: 500 });
+
+			for (const txn of page.page) {
+				// Skip ones that had authorizedDate (already pruned above)
+				if (txn.authorizedDate != null) continue;
+				await ctx.db.delete(txn._id);
+			}
+			cursor = page.isDone ? null : page.continueCursor;
+		} while (cursor);
+
+		return null;
+	}
+});
+
 export const syncTransactionData = internalAction({
 	args: {
 		itemId: v.string(),
