@@ -2,7 +2,7 @@ import { defineSchema, defineTable } from 'convex/server';
 import { Infer, v } from 'convex/values';
 
 import { activityType, activityDetails } from './activitySchema';
-import { LeanTransactionCompatSchema, LeanTransactionSchema } from './transactionSchema';
+import { LeanTransactionSchema } from './transactionSchema';
 
 export const PlaidInstitutionSchema = v.object({
 	id: v.string(),

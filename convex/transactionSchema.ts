@@ -106,42 +106,4 @@ export type LeanTransaction = Infer<typeof LeanTransactionSchema>;
 
 // Temporary compat schema: superset of LeanTransactionSchema plus legacy heavy fields as optional.
 // Use this in the table during migration so existing docs validate; later switch to LeanTransactionSchema.
-export const LeanTransactionCompatSchema = v.object({
-	// Lean required/nullable fields
-	transactionId: v.string(),
-	accountId: v.string(),
-	date: v.string(),
-	authorizedDate: v.union(v.null(), v.string()),
-	amount: v.number(),
-	isoCurrencyCode: v.union(v.null(), v.string()),
-	pending: v.boolean(),
-	name: v.string(),
-	merchantName: v.optional(v.union(v.null(), v.string())),
-	merchantEntityId: v.optional(v.union(v.null(), v.string())),
-	categoryPrimary: v.optional(v.union(v.null(), v.string())),
-	categoryDetailed: v.optional(v.union(v.null(), v.string())),
-	pendingTransactionId: v.union(v.null(), v.string()),
-	paymentChannel: v.union(v.null(), v.string()),
-	transactionCode: v.union(v.null(), v.string()),
-
-	// Legacy heavy fields kept optional for compatibility during migration
-	location: v.optional(LocationSchema),
-	paymentMeta: v.optional(PaymentMetaSchema),
-	personalFinanceCategory: v.optional(PersonalFinanceCategorySchema),
-	businessFinanceCategory: v.optional(BusinessFinanceCategorySchema),
-	counterparties: v.optional(v.array(TransactionCounterpartySchema)),
-	website: v.optional(v.union(v.null(), v.string())),
-	logoUrl: v.optional(v.union(v.null(), v.string())),
-	personalFinanceCategoryIconUrl: v.optional(v.string()),
-	originalDescription: v.optional(v.union(v.null(), v.string())),
-	unofficialCurrencyCode: v.optional(v.union(v.null(), v.string())),
-	checkNumber: v.optional(v.union(v.null(), v.string())),
-	accountOwner: v.optional(v.union(v.null(), v.string())),
-	authorizedDatetime: v.optional(v.union(v.null(), v.string())),
-	datetime: v.optional(v.union(v.null(), v.string())),
-
-	// Migration marker
-	migratedToLean: v.optional(v.boolean()),
-});
-
-export type LeanTransactionCompat = Infer<typeof LeanTransactionCompatSchema>;
+// Note: legacy compat schema removed after migration cleanup.
