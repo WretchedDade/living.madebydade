@@ -2,6 +2,8 @@ import { convexAction, convexQuery } from "@convex-dev/react-query";
 import { useQuery } from "@tanstack/react-query";
 import { DateTime } from "luxon";
 import { api } from "convex/_generated/api";
+import type { Account } from "convex/accounts";
+import type { BillPaymentWithBill } from "convex/billPayments";
 import { EST_TIMEZONE } from "@/constants";
 
 /**
@@ -38,8 +40,13 @@ export function useSpendingMoney() {
 		return today.endOf("month").startOf("day");
 	})();
 
+	// Special-case: if the upcoming paycheck is end-of-month, also include bills due on the 1st (day after EOM).
+	// This covers scenarios like a 1st-of-month mortgage intentionally paid from the 15th's paycheck,
+	// ensuring it's accounted for before the EOM paycheck is spent.
+	const includeDayAfter = today.day >= 15 ? nextPaycheckDate.plus({ days: 1 }) : null;
+
 	// Sum checking balances (available preferred, fallback current)
-	const totalCheckingAmount = (accountsQuery.data || []).reduce((total, account: any) => {
+	const totalCheckingAmount = ((accountsQuery.data as Account[] | undefined) ?? []).reduce((total, account) => {
 		if (account.subtype === "checking") {
 			if (account.balances?.available != null) return total + account.balances.available;
 			if (account.balances?.current != null) return total + account.balances.current;
@@ -51,13 +58,19 @@ export function useSpendingMoney() {
 	}, 0);
 
 	// Determine obligations before next paycheck
-	const totalBillsBeforeNextPaycheck = (unpaidPaymentsQuery.data || []).reduce((sum, payment: any) => {
-		const due = DateTime.fromISO(payment.dateDue).setZone(EST_TIMEZONE).startOf("day");
-		if (due < nextPaycheckDate) {
-			return sum + (payment.bill?.amount || 0);
-		}
-		return sum;
-	}, 0);
+	const totalBillsBeforeNextPaycheck = ((unpaidPaymentsQuery.data as BillPaymentWithBill[] | undefined) ?? []).reduce(
+		(sum, payment) => {
+			const due = DateTime.fromISO(payment.dateDue).setZone(EST_TIMEZONE).startOf("day");
+			const isBeforeNextPaycheck = due < nextPaycheckDate;
+			const isDayAfterEomPaycheck = includeDayAfter != null && due.hasSame(includeDayAfter, "day");
+
+			if (isBeforeNextPaycheck || isDayAfterEomPaycheck) {
+				return sum + (payment.bill.amount ?? 0);
+			}
+			return sum;
+		},
+		0,
+	);
 
 	const spendingMoney = totalCheckingAmount - totalBillsBeforeNextPaycheck;
 
