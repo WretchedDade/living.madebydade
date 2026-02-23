@@ -1,0 +1,6 @@
+{
+  "version": 1,
+  "universes_allowed": ["oceans-eleven"],
+  "max_capacity_per_universe": 11,
+  "overflow_strategy": "diegetic-expansion"
+}
