@@ -16,8 +16,8 @@ export type Account = AccountBase & {
 };
 
 export const get = action({
-	args: {},
-	handler: async (ctx, _): Promise<Account[]> => {
+	args: { bypassCache: v.optional(v.boolean()) },
+	handler: async (ctx, { bypassCache }): Promise<Account[]> => {
 		const userIdentity = await ctx.auth.getUserIdentity();
 
 		if (userIdentity?.subject == null) throw new Error("User not authenticated");
@@ -25,7 +25,11 @@ export const get = action({
 		const items: PlaidItem[] = await ctx.runQuery(api.plaidItems.get, {});
 
 		const allAccounts = await Promise.all(
-			items.map(item => accountsCache.fetch(ctx, { access_token: item.accessToken })),
+			items.map(item =>
+				bypassCache
+					? ctx.runAction(internal.accounts.getAccountsFromPlaid, { access_token: item.accessToken })
+					: accountsCache.fetch(ctx, { access_token: item.accessToken }),
+			),
 		);
 
 		return allAccounts.flat();
@@ -57,7 +61,7 @@ const accountsCache = new ActionCache(components.actionCache, {
 export const getAccountsFromPlaid = internalAction({
 	args: { access_token: v.string() },
 	handler: async (__dirname, { access_token }): Promise<Account[]> => {
-		const response = await getPlaidApi().accountsGet({ access_token });
+		const response = await getPlaidApi().accountsBalanceGet({ access_token });
 		return response.data.accounts.map((account: AccountBase) => ({
 			...account,
 			itemId: response.data.item.item_id,

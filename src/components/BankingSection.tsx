@@ -1,10 +1,12 @@
 import { SectionHeader } from "~/components/layout/SectionHeader";
-import { IdentificationIcon } from "@heroicons/react/24/solid";
+import { IdentificationIcon, ArrowPathIcon } from "@heroicons/react/24/solid";
 import { Link } from "~/components/ui/Link";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { convexAction } from "@convex-dev/react-query";
 import { api } from "@/convex/_generated/api";
 import { Account } from "@/convex/accounts";
+import { Button } from "~/components/ui/Button";
+import { useEffect, useState } from "react";
 
 function formatBalance(amount: number | null | undefined, currency: string | undefined = "USD") {
 	if (typeof amount !== "number") return "Balance unavailable";
@@ -56,14 +58,37 @@ function AccountCard({ account }: { account: Account }) {
 }
 
 export function BankingSection() {
-	const accountsQuery = useQuery(convexAction(api.accounts.get, {}));
+	const queryClient = useQueryClient();
+	const [bypassCache, setBypassCache] = useState(false);
+	const accountsQuery = useQuery(convexAction(api.accounts.get, { bypassCache }));
+
+	useEffect(() => {
+		setBypassCache(false);
+	}, [accountsQuery.dataUpdatedAt]);
+
 	return (
 		<div className="flex flex-col flex-1 bg-zinc-900 rounded-2xl p-6 shadow-lg">
 			<SectionHeader
 				icon={
 					<IdentificationIcon className="w-4 h-4 sm:w-7 sm:h-7 text-yellow-400 drop-shadow-[0_0_6px_rgba(253,224,71,0.7)]" />
 				}
-				title="Linked Accounts"
+				title={
+					<div className="flex items-center gap-3">
+						<span>Linked Accounts</span>
+						<Button
+							type="button"
+							variant="subtle"
+							size="sm"
+							icon
+							aria-label="Refresh accounts"
+							title="Refresh accounts"
+							onClick={() => setBypassCache(true)}
+							disabled={bypassCache}
+						>
+							<ArrowPathIcon className={`w-5 h-5 ${bypassCache ? "animate-spin" : ""}`} />
+						</Button>
+					</div>
+				}
 			/>
 			{accountsQuery.isSuccess && accountsQuery.data.length === 0 && (
 				<div className="items-center justify-center flex flex-col grow w-full">
