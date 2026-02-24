@@ -160,7 +160,7 @@ export function toTransactionSchema(transaction: Transaction): PlaidTransaction 
 		accountId: transaction.account_id,
 		date: transaction.date,
 		authorizedDate: transaction.authorized_date,
-		amount: transaction.amount,
+		amount: Math.round(transaction.amount * 100), // Convert dollars to integer cents at ingestion boundary
 		isoCurrencyCode: transaction.iso_currency_code,
 		checkNumber: transaction.check_number ?? null,
 		accountOwner: transaction.account_owner ?? null,
@@ -194,7 +194,7 @@ export function toLeanTransaction(transaction: Transaction): LeanTransaction {
 		accountId: transaction.account_id,
 		date: transaction.date,
 		authorizedDate: transaction.authorized_date ?? null,
-		amount: transaction.amount,
+		amount: Math.round(transaction.amount * 100), // Convert dollars to integer cents at ingestion boundary
 		isoCurrencyCode: transaction.iso_currency_code ?? null,
 		pending: transaction.pending,
 		name: transaction.name,

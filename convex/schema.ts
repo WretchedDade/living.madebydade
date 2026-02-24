@@ -34,8 +34,8 @@ export type PlaidItem = Infer<typeof PlaidItemSchema>;
 
 export default defineSchema({
 	bills: defineTable({
-		amount: v.float64(),
-		dayDue: v.optional(v.float64()),
+		amount: v.number(), // integer cents (e.g. 1200 = $12.00)
+		dayDue: v.optional(v.number()),
 		dueType: v.union(v.literal("Fixed"), v.literal("EndOfMonth")),
 		isAutoPay: v.boolean(),
 		name: v.string(),
@@ -85,19 +85,19 @@ export default defineSchema({
 		startDate: v.string(),
 		endDate: v.string(),
 		currency: v.optional(v.string()),
-		// Cash
-		cashIncomeExternal: v.float64(),
-		cashSpending: v.float64(),
-		cashSavingsContributions: v.float64(),
-		cashNetChange: v.optional(v.float64()),
-		// Credit
-		ccPurchases: v.float64(),
-		ccPayments: v.float64(),
-		ccInterestFees: v.float64(),
-		ccRefunds: v.float64(),
-		ccPrincipalDelta: v.float64(),
+		// Cash (integer cents)
+		cashIncomeExternal: v.number(),
+		cashSpending: v.number(),
+		cashSavingsContributions: v.number(),
+		cashNetChange: v.optional(v.number()),
+		// Credit (integer cents)
+		ccPurchases: v.number(),
+		ccPayments: v.number(),
+		ccInterestFees: v.number(),
+		ccRefunds: v.number(),
+		ccPrincipalDelta: v.number(),
 		// Meta
-		extNetFlow: v.optional(v.float64()),
+		extNetFlow: v.optional(v.number()),
 		buildVersion: v.optional(v.string()),
 	}).index("byUserPeriodStart", ["userId", "period", "startDate"]),
 });
