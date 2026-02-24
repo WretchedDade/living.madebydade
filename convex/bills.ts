@@ -4,7 +4,13 @@ import { internalQuery, mutation, query } from "./_generated/server";
 export const list = query({
 	args: {},
 	handler: async ctx => {
-		return await ctx.db.query("bills").collect();
+		const identity = await ctx.auth.getUserIdentity();
+		if (!identity?.subject) throw new Error("User not authenticated");
+
+		return await ctx.db
+			.query("bills")
+			.withIndex("byUserId", q => q.eq("userId", identity.subject))
+			.collect();
 	},
 });
 
@@ -36,8 +42,11 @@ export const upsertBill = mutation({
 		name: v.string(),
 	},
 	handler: async (ctx, { id, ...values }) => {
+		const identity = await ctx.auth.getUserIdentity();
+		if (!identity?.subject) throw new Error("User not authenticated");
+
 		if (id == null) {
-			const billId = await ctx.db.insert("bills", { ...values });
+			const billId = await ctx.db.insert("bills", { ...values, userId: identity.subject });
 			return billId;
 		}
 
@@ -47,7 +56,11 @@ export const upsertBill = mutation({
 			throw new Error("Bill not found");
 		}
 
-		await ctx.db.replace(id, { ...values });
+		if (bill.userId !== identity.subject) {
+			throw new Error("Not authorized to modify this bill");
+		}
+
+		await ctx.db.replace(id, { ...values, userId: identity.subject });
 
 		return id;
 	},
@@ -58,10 +71,17 @@ export const deleteBill = mutation({
 		id: v.id("bills"),
 	},
 	handler: async (ctx, { id }) => {
+		const identity = await ctx.auth.getUserIdentity();
+		if (!identity?.subject) throw new Error("User not authenticated");
+
 		const bill = await ctx.db.get(id);
 
 		if (!bill) {
 			throw new Error("Bill not found");
+		}
+
+		if (bill.userId !== identity.subject) {
+			throw new Error("Not authorized to delete this bill");
 		}
 
 		await ctx.db.delete(id);
@@ -74,8 +94,15 @@ export const getBillById = query({
 	handler: async (ctx, { id }) => {
 		if (id == null) return undefined;
 
-		// Replace with your actual data access logic
+		const identity = await ctx.auth.getUserIdentity();
+		if (!identity?.subject) throw new Error("User not authenticated");
+
 		const bill = await ctx.db.get(id);
+
+		if (bill && bill.userId !== identity.subject) {
+			throw new Error("Not authorized to view this bill");
+		}
+
 		return bill;
 	},
 });
