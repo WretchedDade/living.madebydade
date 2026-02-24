@@ -1,5 +1,6 @@
 import { BillForm, BillFormValues } from "./BillForm";
 import { api } from "convex/_generated/api";
+import { Doc } from "convex/_generated/dataModel";
 import { useConvexMutation } from "@convex-dev/react-query";
 import { showToast } from "./feedback/SciFiToast";
 import { useUser } from "@clerk/tanstack-react-start";

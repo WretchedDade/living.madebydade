@@ -82,7 +82,7 @@ export type Activity =
 	| BillDueActivity;
 
 // Type for Convex backend results (includes _id, _creationTime, etc.)
-export type ActivityDoc = Activity & { _id: string; _creationTime?: number; [key: string]: any };
+export type ActivityDoc = Activity & { _id: string; _creationTime?: number };
 
 // Type guard functions
 export function isBillPaidActivity(activity: Activity): activity is BillPaidActivity {

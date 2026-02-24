@@ -2,6 +2,7 @@ import { convexQuery, useConvexMutation } from "@convex-dev/react-query";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 import { api } from "convex/_generated/api";
+import { Doc } from "convex/_generated/dataModel";
 import { AppLayout } from "~/components/layout/AppLayout";
 import { useUser } from "@clerk/tanstack-react-start";
 import { useState } from "react";
@@ -18,7 +19,6 @@ import { MissionBanner } from "~/components/ui/MissionBanner";
 import { SciFiDialog } from "~/components/feedback/SciFiDialog";
 import { showToast } from "~/components/feedback/SciFiToast";
 import { EditBillForm } from "~/components/EditBillForm";
-import { Doc } from "convex/_generated/dataModel";
 import { formatCentsAsDollars } from "~/lib/currency";
 
 function BillsPage() {
