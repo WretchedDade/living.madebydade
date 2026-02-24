@@ -9,6 +9,7 @@ import {
 	Transaction,
 	TransactionsSyncResponse,
 } from "plaid";
+import { decodeProtectedHeader, importJWK, jwtVerify } from "jose";
 import { internal } from "./_generated/api";
 import { LeanTransaction, PlaidTransaction } from "./transactionSchema";
 
@@ -205,4 +206,49 @@ export function toLeanTransaction(transaction: Transaction): LeanTransaction {
 		paymentChannel: transaction.payment_channel ?? null,
 		transactionCode: transaction.transaction_code ?? null,
 	};
+}
+
+async function computeSha256Hex(message: string): Promise<string> {
+	const data = new TextEncoder().encode(message);
+	const hashBuffer = await crypto.subtle.digest("SHA-256", data);
+	const hashArray = Array.from(new Uint8Array(hashBuffer));
+	return hashArray.map(b => b.toString(16).padStart(2, "0")).join("");
+}
+
+/**
+ * Verify a Plaid webhook using JWT-based signature verification.
+ * 1. Decode the JWT header to extract the key ID (kid)
+ * 2. Fetch the verification key from Plaid via webhookVerificationKeyGet
+ * 3. Verify the JWT signature and max age (5 minutes)
+ * 4. Compare the request_body_sha256 claim against the actual body hash
+ */
+export async function verifyPlaidWebhook(body: string, plaidVerificationHeader: string): Promise<boolean> {
+	try {
+		const header = decodeProtectedHeader(plaidVerificationHeader);
+
+		if (!header.kid) {
+			console.error("Plaid webhook JWT missing kid in header");
+			return false;
+		}
+
+		const plaidApi = getPlaidApi();
+		const keyResponse = await plaidApi.webhookVerificationKeyGet({ key_id: header.kid });
+		const { alg, crv, kid, kty, use, x, y } = keyResponse.data.key;
+		const key = await importJWK({ alg, crv, kid, kty, use, x, y });
+
+		const { payload } = await jwtVerify(plaidVerificationHeader, key, {
+			maxTokenAge: 300,
+		});
+
+		if (typeof payload.request_body_sha256 !== "string") {
+			console.error("Plaid webhook JWT missing request_body_sha256 claim");
+			return false;
+		}
+
+		const actualHash = await computeSha256Hex(body);
+		return payload.request_body_sha256 === actualHash;
+	} catch (error) {
+		console.error("Plaid webhook verification failed:", error);
+		return false;
+	}
 }
