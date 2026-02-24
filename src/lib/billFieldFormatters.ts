@@ -2,10 +2,10 @@
 
 import { formatCurrency, formatOrdinal } from "~/utils/formatters";
 
-export function formatBillFieldValue(field: string, value: any) {
+export function formatBillFieldValue(field: string, value: string | number | boolean | undefined | null) {
 	if (field === "amount") {
 		const num = typeof value === "number" ? value : Number(value?.toString().replace(/,/g, ""));
-		return isNaN(num) ? value : formatCurrency(num);
+		return isNaN(num) ? String(value) : formatCurrency(num / 100);
 	}
 	if (field === "dayDue") {
 		const num = typeof value === "number" ? value : Number(value);
