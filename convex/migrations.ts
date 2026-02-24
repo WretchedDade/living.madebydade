@@ -310,6 +310,39 @@ export const backfillPlaidAccountTypeFields = migrations.define({
 	},
 });
 
+// --- Bills/BillPayments userId backfills ---
+
+export const backfillBillsUserId = migrations.define({
+	table: "bills",
+	batchSize: 200,
+	migrateOne: async (ctx, bill) => {
+		if ((bill as { userId?: string }).userId) return;
+
+		// Get first plaidItem's userId as the owner (single-user app)
+		const item = await ctx.db.query("plaidItems").first();
+		if (!item) return;
+
+		await ctx.db.patch(bill._id, {
+			userId: item.userId as string,
+		});
+	},
+});
+
+export const backfillBillPaymentsUserId = migrations.define({
+	table: "billPayments",
+	batchSize: 200,
+	migrateOne: async (ctx, payment) => {
+		if ((payment as { userId?: string }).userId) return;
+
+		const bill = await ctx.db.get(payment.billId);
+		if (!bill) return;
+
+		await ctx.db.patch(payment._id, {
+			userId: (bill as { userId?: string }).userId ?? "",
+		});
+	},
+});
+
 // --- Integer cents migrations ---
 
 // Convert bills.amount from float dollars to integer cents
@@ -337,7 +370,7 @@ export const convertTransactionAmountsToCents = migrations.define({
 });
 
 // Runners
-export const runAll = migrations.runner([
+export const runAll= migrations.runner([
 	// First prune old transactions
 	internal.migrations.deleteOldTransactionsByAuthorizedDate,
 	internal.migrations.deleteOldTransactionsByPostedDate,
@@ -351,6 +384,10 @@ export const runAll = migrations.runner([
 	// Then backfill any missing user and type information
 	internal.migrations.backfillTransactionUserAndType,
 	internal.migrations.backfillTransactionDetectionFlags,
+
+	// Backfill userId on bills and billPayments
+	internal.migrations.backfillBillsUserId,
+	internal.migrations.backfillBillPaymentsUserId,
 
 	// Convert existing dollar amounts to integer cents
 	internal.migrations.convertBillAmountsToCents,
@@ -378,6 +415,9 @@ export const runBackfillTransactionUserAndType = migrations.runner(internal.migr
 export const runBackfillTransactionDetectionFlags = migrations.runner(
 	internal.migrations.backfillTransactionDetectionFlags,
 );
+
+export const runBackfillBillsUserId = migrations.runner(internal.migrations.backfillBillsUserId);
+export const runBackfillBillPaymentsUserId = migrations.runner(internal.migrations.backfillBillPaymentsUserId);
 
 export const runClearCashCreditSummaries = migrations.runner([internal.migrations.clearCashCreditSummaries]);
 export const runBuildCashCreditSummaries = migrations.runner([internal.migrations.buildCashCreditSummaries]);

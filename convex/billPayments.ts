@@ -15,8 +15,16 @@ export type BillPaymentWithBill = Doc<"billPayments"> & { bill: Doc<"bills"> };
 export const getById = query({
 	args: { id: v.id("billPayments") },
 	handler: async (ctx, { id }) => {
-		const bill = await ctx.db.get(id);
-		return bill;
+		const identity = await ctx.auth.getUserIdentity();
+		if (!identity?.subject) throw new Error("User not authenticated");
+
+		const payment = await ctx.db.get(id);
+
+		if (payment && payment.userId !== identity.subject) {
+			throw new Error("Not authorized to view this payment");
+		}
+
+		return payment;
 	},
 });
 
@@ -25,6 +33,9 @@ export const listUnpaid = query({
 		includeAutoPay: v.optional(v.boolean()),
 	},
 	handler: async (ctx, args) => {
+		const identity = await ctx.auth.getUserIdentity();
+		if (!identity?.subject) throw new Error("User not authenticated");
+
 		const payments = await (async () => {
 			if (args.includeAutoPay) {
 				return ctx.db
@@ -41,8 +52,10 @@ export const listUnpaid = query({
 			}
 		})();
 
+		const userPayments = payments.filter(p => p.userId === identity.subject);
+
 		return await Promise.all(
-			payments.map(async payment => {
+			userPayments.map(async payment => {
 				const bill = await ctx.db.get(payment.billId);
 
 				if (!bill) {
@@ -58,7 +71,14 @@ export const listUnpaid = query({
 export const list = query({
 	args: { take: v.optional(v.number()) },
 	handler: async (ctx, { take = 50 }) => {
-		const payments = await ctx.db.query("billPayments").order("desc").take(take);
+		const identity = await ctx.auth.getUserIdentity();
+		if (!identity?.subject) throw new Error("User not authenticated");
+
+		const payments = await ctx.db
+			.query("billPayments")
+			.withIndex("byUserId", q => q.eq("userId", identity.subject))
+			.order("desc")
+			.take(take);
 
 		return Promise.all(
 			payments.map(async payment => {
@@ -85,14 +105,19 @@ function getDate(payment: Doc<"billPayments">) {
 export const listRecentlyPaid = query({
 	args: {},
 	handler: async ctx => {
+		const identity = await ctx.auth.getUserIdentity();
+		if (!identity?.subject) throw new Error("User not authenticated");
+
 		const payments = await ctx.db
 			.query("billPayments")
 			.withIndex("byDatePaid", q => q.gte("datePaid", "0"))
 			.order("desc")
 			.take(50);
 
+		const userPayments = payments.filter(p => p.userId === identity.subject);
+
 		return Promise.all(
-			payments.map(async payment => {
+			userPayments.map(async payment => {
 				const bill = await ctx.db.get(payment.billId);
 
 				if (!bill) {
@@ -111,10 +136,25 @@ export const markPaid = mutation({
 		datePaid: v.string(),
 	},
 	handler: async (ctx, { billPaymentId, datePaid }) => {
+		const identity = await ctx.auth.getUserIdentity();
+		if (!identity?.subject) throw new Error("User not authenticated");
+
 		const payment = await ctx.db.get(billPaymentId);
 
 		if (!payment) {
 			throw new Error("Payment not found");
+		}
+
+		if (payment.userId !== identity.subject) {
+			throw new Error("Not authorized to modify this payment");
+		}
+
+		const bill = await ctx.db.get(payment.billId);
+		if (!bill) {
+			throw new Error("Bill not found");
+		}
+		if ((bill as { userId?: string }).userId !== identity.subject) {
+			throw new Error("Not authorized to modify this bill payment");
 		}
 
 		await ctx.db.patch(billPaymentId, { datePaid });
@@ -139,6 +179,7 @@ export const markBillPaid = internalMutation({
 
 export const insertBillPayment = internalMutation({
 	args: {
+		userId: v.string(),
 		dateDue: v.string(),
 		datePaid: v.optional(v.string()),
 		billId: v.id("bills"),
@@ -215,6 +256,7 @@ const createUpcomingPaymentsForBills = async (ctx: GenericActionCtx<DataModel>, 
 
 		console.log(`Creating payment for ${bill.name} due on ${nextPaymentDate.toISO()}`);
 		const billPaymentId: Id<"billPayments"> = await ctx.runMutation(internal.billPayments.insertBillPayment, {
+			userId: bill.userId ?? "",
 			billId: bill._id,
 			dateDue: nextPaymentDate.toISO()!,
 			isAutoPay: bill.isAutoPay,

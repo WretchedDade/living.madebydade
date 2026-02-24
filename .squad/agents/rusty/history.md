@@ -34,3 +34,10 @@
 **Issue:** `parseFloat("1,200.00")` stops at comma, saves as "1.00". Destroys amounts >$1,000.
 
 **Fix:** Strip commas before parsing: `parseFloat(value.amount.replace(/,/g, ""))`
+
+### Cleanup — Stale app-layout.tsx Deleted (2026-02-24)
+
+**Issue:** #21 — `src/components/app-layout.tsx` was a stale duplicate layout component.
+**Active layout:** `src/components/layout/AppLayout.tsx` is the canonical layout file.
+**Verification:** Grep confirmed zero imports of the stale file across the codebase.
+**PR:** #26 on branch `squad/21-delete-stale-layout`.

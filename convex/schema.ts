@@ -33,22 +33,27 @@ export type PlaidItem = Infer<typeof PlaidItemSchema>;
 
 export default defineSchema({
 	bills: defineTable({
+		userId: v.optional(v.string()),
 		amount: v.number(), // integer cents (e.g. 1200 = $12.00)
 		dayDue: v.optional(v.number()),
 		dueType: v.union(v.literal("Fixed"), v.literal("EndOfMonth")),
 		isAutoPay: v.boolean(),
 		name: v.string(),
-	}),
+	}).index("byUserId", ["userId"]),
 	billPayments: defineTable({
+		userId: v.optional(v.string()),
 		dateDue: v.string(),
 		datePaid: v.optional(v.string()),
 		billId: v.id("bills"),
 		isAutoPay: v.boolean(),
 	})
+		.index("byUserId", ["userId"])
 		.index("byBillId", ["billId"])
 		.index("byDatePaid", ["datePaid"])
 		.index("byUnpaidDue", ["datePaid", "dateDue"])
-		.index("byUnpaidAutoDue", ["datePaid", "isAutoPay", "dateDue"]),
+		.index("byUnpaidAutoDue", ["datePaid", "isAutoPay", "dateDue"])
+		.index("byUserUnpaidDue", ["userId", "datePaid", "dateDue"])
+		.index("byUserDatePaid", ["userId", "datePaid"]),
 	activity: defineTable({
 		type: activityType,
 		userId: v.string(),

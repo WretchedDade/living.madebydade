@@ -58,3 +58,28 @@
 5. `convex/transactions.ts:12-65` duplicate `fetchNewTransactionSyncData` (also in plaidHelpers.ts) — remove unused copy
 
 **Severity:** Important/Minor — code quality and maintainability.
+
+### Implemented — Plaid Webhook Signature Verification (2026-02-23)
+
+**Issue:** #2 — R1: Plaid Webhook Signature Verification
+**PR:** #27 — `squad/2-plaid-webhook` → `squad-ini`
+
+**What was done:**
+- Added `jose` npm dependency for JWT verification (lightweight, Web Crypto API based)
+- Added `verifyPlaidWebhook()` and `computeSha256Hex()` to `convex/plaidHelpers.ts`
+- Updated `convex/http.ts` to gate webhook processing behind signature verification
+- Missing or invalid `Plaid-Verification` header returns HTTP 400
+
+**Verification flow:**
+1. Decode JWT header → extract `kid`
+2. Fetch key from Plaid via `webhookVerificationKeyGet({ key_id })`
+3. Destructure only JWK-standard fields (`alg`, `crv`, `kid`, `kty`, `use`, `x`, `y`) to avoid passing Plaid-specific metadata to jose
+4. Verify JWT signature + enforce 5-minute max token age via `jwtVerify`
+5. Compare `request_body_sha256` claim against SHA-256 of actual body
+
+**Key decisions:**
+- Used `jose` library over manual Web Crypto — safer, handles algorithm confusion attacks
+- Body read as text first (for hashing), then JSON.parse'd — can't read Request body twice
+- Destructured JWK fields explicitly to maintain clean type boundaries between Plaid and jose types without `any` casts
+
+**Key paths:** `convex/http.ts`, `convex/plaidHelpers.ts`
