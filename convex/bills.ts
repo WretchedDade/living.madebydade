@@ -35,8 +35,8 @@ export const listWithPayments = internalQuery({
 export const upsertBill = mutation({
 	args: {
 		id: v.optional(v.id("bills")),
-		amount: v.float64(),
-		dayDue: v.optional(v.float64()),
+		amount: v.number(), // integer cents
+		dayDue: v.optional(v.number()),
 		dueType: v.union(v.literal("Fixed"), v.literal("EndOfMonth")),
 		isAutoPay: v.boolean(),
 		name: v.string(),

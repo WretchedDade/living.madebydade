@@ -256,7 +256,7 @@ const createUpcomingPaymentsForBills = async (ctx: GenericActionCtx<DataModel>, 
 
 		console.log(`Creating payment for ${bill.name} due on ${nextPaymentDate.toISO()}`);
 		const billPaymentId: Id<"billPayments"> = await ctx.runMutation(internal.billPayments.insertBillPayment, {
-			userId: bill.userId ?? "",
+			userId: bill.userId,
 			billId: bill._id,
 			dateDue: nextPaymentDate.toISO()!,
 			isAutoPay: bill.isAutoPay,

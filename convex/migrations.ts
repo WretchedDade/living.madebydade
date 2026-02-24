@@ -343,6 +343,32 @@ export const backfillBillPaymentsUserId = migrations.define({
 	},
 });
 
+// --- Integer cents migrations ---
+
+// Convert bills.amount from float dollars to integer cents
+export const convertBillAmountsToCents = migrations.define({
+	table: "bills",
+	batchSize: 200,
+	migrateOne: async (ctx, bill) => {
+		const amount = bill.amount as number;
+		await ctx.db.patch(bill._id, {
+			amount: Math.round(amount * 100),
+		});
+	},
+});
+
+// Convert transactions.amount from float dollars to integer cents
+export const convertTransactionAmountsToCents = migrations.define({
+	table: "transactions",
+	batchSize: 500,
+	migrateOne: async (ctx, txn) => {
+		const amount = txn.amount as number;
+		await ctx.db.patch(txn._id, {
+			amount: Math.round(amount * 100),
+		});
+	},
+});
+
 // Runners
 export const runAll= migrations.runner([
 	// First prune old transactions
@@ -363,7 +389,11 @@ export const runAll= migrations.runner([
 	internal.migrations.backfillBillsUserId,
 	internal.migrations.backfillBillPaymentsUserId,
 
-	// Then clear and rebuild cash/credit summaries
+	// Convert existing dollar amounts to integer cents
+	internal.migrations.convertBillAmountsToCents,
+	internal.migrations.convertTransactionAmountsToCents,
+
+	// Then clear and rebuild cash/credit summaries (now in cents)
 	internal.migrations.clearCashCreditSummaries,
 	internal.migrations.buildCashCreditSummaries,
 ]);
@@ -391,3 +421,16 @@ export const runBackfillBillPaymentsUserId = migrations.runner(internal.migratio
 
 export const runClearCashCreditSummaries = migrations.runner([internal.migrations.clearCashCreditSummaries]);
 export const runBuildCashCreditSummaries = migrations.runner([internal.migrations.buildCashCreditSummaries]);
+
+export const runConvertBillAmountsToCents = migrations.runner(internal.migrations.convertBillAmountsToCents);
+export const runConvertTransactionAmountsToCents = migrations.runner(
+	internal.migrations.convertTransactionAmountsToCents,
+);
+
+// Run the full integer-cents migration: convert amounts, then rebuild summaries
+export const runIntegerCentsMigration = migrations.runner([
+	internal.migrations.convertBillAmountsToCents,
+	internal.migrations.convertTransactionAmountsToCents,
+	internal.migrations.clearCashCreditSummaries,
+	internal.migrations.buildCashCreditSummaries,
+]);
