@@ -52,7 +52,7 @@ export function getPlaidApi() {
 	);
 }
 
-async function fetchNewTransactionSyncData(accessToken: string, initialCursor: string | undefined, retriesLeft = 3) {
+export async function fetchNewTransactionSyncData(accessToken: string, initialCursor: string | undefined, retriesLeft = 3) {
 	const plaidApi = getPlaidApi();
 
 	const transactions = {
