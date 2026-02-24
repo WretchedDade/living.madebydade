@@ -1,7 +1,8 @@
 import { httpRouter } from "convex/server";
-import { SandboxItemFireWebhookRequestWebhookCodeEnum, SyncUpdatesAvailableWebhook, WebhookType } from "plaid";
+import { SandboxItemFireWebhookRequestWebhookCodeEnum, SyncUpdatesAvailableWebhook } from "plaid";
 import { httpAction } from "./_generated/server";
 import { internal } from "./_generated/api";
+import { verifyPlaidWebhook } from "./plaidHelpers";
 
 const http = httpRouter();
 
@@ -9,7 +10,19 @@ http.route({
 	path: "/plaid",
 	method: "POST",
 	handler: httpAction(async (ctx, request) => {
-		const json: SyncUpdatesAvailableWebhook = await request.json();
+		const body = await request.text();
+
+		const plaidVerification = request.headers.get("Plaid-Verification");
+		if (!plaidVerification) {
+			return new Response("Missing Plaid-Verification header", { status: 400 });
+		}
+
+		const isValid = await verifyPlaidWebhook(body, plaidVerification);
+		if (!isValid) {
+			return new Response("Invalid webhook signature", { status: 400 });
+		}
+
+		const json: SyncUpdatesAvailableWebhook = JSON.parse(body);
 
 		switch (json.webhook_code) {
 			case SandboxItemFireWebhookRequestWebhookCodeEnum.SyncUpdatesAvailable:

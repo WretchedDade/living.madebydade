@@ -4,6 +4,8 @@ import { Doc } from "convex/_generated/dataModel";
 import { useConvexMutation } from "@convex-dev/react-query";
 import { showToast } from "./feedback/SciFiToast";
 import { useUser } from "@clerk/tanstack-react-start";
+import { Doc } from "convex/_generated/dataModel";
+import { dollarsToCents, formatCentsAsDollars } from "~/lib/currency";
 
 export function EditBillForm({ bill, onSuccess }: { bill: Doc<"bills">; onSuccess?: () => void }) {
 	const updateBill = useConvexMutation(api.bills.upsertBill);
@@ -11,10 +13,11 @@ export function EditBillForm({ bill, onSuccess }: { bill: Doc<"bills">; onSucces
 	const { user } = useUser();
 
 	async function handleSubmit(value: BillFormValues) {
+		const amountCents = dollarsToCents(value.amount);
 		await updateBill({
 			id: bill._id,
 			name: value.name,
-			amount: parseFloat(value.amount),
+			amount: amountCents,
 			dueType: value.dueType,
 			dayDue: value.dueType === "Fixed" ? Number(value.dayDue) : undefined,
 			isAutoPay: value.isAutoPay,
@@ -22,8 +25,8 @@ export function EditBillForm({ bill, onSuccess }: { bill: Doc<"bills">; onSucces
 		// Compute changes array
 		const changes: Array<{ field: string; before: unknown; after: unknown }> = [];
 		if (bill.name !== value.name) changes.push({ field: "name", before: bill.name, after: value.name });
-		if (bill.amount !== parseFloat(value.amount))
-			changes.push({ field: "amount", before: bill.amount, after: parseFloat(value.amount) });
+		if (bill.amount !== amountCents)
+			changes.push({ field: "amount", before: bill.amount, after: amountCents });
 		if (bill.dueType !== value.dueType)
 			changes.push({ field: "dueType", before: bill.dueType, after: value.dueType });
 		if ((bill.dayDue ?? undefined) !== (value.dueType === "Fixed" ? Number(value.dayDue) : undefined))
@@ -57,7 +60,7 @@ export function EditBillForm({ bill, onSuccess }: { bill: Doc<"bills">; onSucces
 		<BillForm
 			initialValues={{
 				name: bill.name,
-				amount: bill.amount?.toString() ?? "",
+				amount: formatCentsAsDollars(bill.amount),
 				dueType: bill.dueType,
 				dayDue: bill.dayDue?.toString() ?? "",
 				isAutoPay: bill.isAutoPay,

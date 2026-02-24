@@ -3,6 +3,7 @@ import { api } from "@/convex/_generated/api";
 import { useConvexMutation } from "@convex-dev/react-query";
 import { showToast } from "./feedback/SciFiToast";
 import { useUser } from "@clerk/tanstack-react-start";
+import { dollarsToCents } from "~/lib/currency";
 
 export function AddBillForm(props: { onSuccess?: () => void }) {
 	const addBill = useConvexMutation(api.bills.upsertBill);
@@ -10,9 +11,10 @@ export function AddBillForm(props: { onSuccess?: () => void }) {
 	const { user } = useUser();
 
 	async function handleSubmit(value: BillFormValues) {
+		const amountCents = dollarsToCents(value.amount);
 		const billId = await addBill({
 			name: value.name,
-			amount: parseFloat(value.amount),
+			amount: amountCents,
 			dueType: value.dueType,
 			dayDue: value.dueType === "Fixed" ? Number(value.dayDue) : undefined,
 			isAutoPay: value.isAutoPay,
@@ -28,7 +30,7 @@ export function AddBillForm(props: { onSuccess?: () => void }) {
 		});
 		showToast({
 			title: "Bill added successfully!",
-			description: `${value.name} — $${parseFloat(value.amount).toFixed(2)} (${value.dueType}${value.isAutoPay ? ", Auto-Pay" : ""})`,
+			description: `${value.name} — $${parseFloat(value.amount.replace(/,/g, "")).toFixed(2)} (${value.dueType}${value.isAutoPay ? ", Auto-Pay" : ""})`,
 		});
 		if (typeof props.onSuccess === "function") props.onSuccess();
 	}

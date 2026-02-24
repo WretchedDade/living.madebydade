@@ -19,8 +19,8 @@ export const activityDetails = v.object({
 		v.array(
 			v.object({
 				field: v.string(),
-				before: v.any(),
-				after: v.any(),
+				before: v.union(v.string(), v.number(), v.boolean(), v.null()),
+				after: v.union(v.string(), v.number(), v.boolean(), v.null()),
 			}),
 		),
 	),
