@@ -2,14 +2,14 @@ import React from "react";
 
 export interface KeyValueTableRow {
 	label: string;
-	value: any;
-	value2?: any; // Optional second value column
+	value: unknown;
+	value2?: unknown;
 }
 
 interface ResponsiveKeyValueTableProps {
 	rows: KeyValueTableRow[];
-	columns?: string[]; // e.g. ['Field', 'Before', 'After']
-	formatValue?: (label: string, value: any) => React.ReactNode;
+	columns?: string[];
+	formatValue?: (label: string, value: unknown) => React.ReactNode;
 	cardClassName?: string;
 	tableClassName?: string;
 	fieldLabelClassName?: string;

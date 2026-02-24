@@ -2,14 +2,14 @@
 
 import { formatCurrency, formatOrdinal } from "~/utils/formatters";
 
-export function formatBillFieldValue(field: string, value: any) {
+export function formatBillFieldValue(field: string, value: unknown): string {
 	if (field === "amount") {
-		const num = typeof value === "number" ? value : Number(value?.toString().replace(/,/g, ""));
-		return isNaN(num) ? value : formatCurrency(num);
+		const num = typeof value === "number" ? value : Number(String(value).replace(/,/g, ""));
+		return isNaN(num) ? String(value) : formatCurrency(num);
 	}
 	if (field === "dayDue") {
 		const num = typeof value === "number" ? value : Number(value);
-		return isNaN(num) ? value : formatOrdinal(num);
+		return isNaN(num) ? String(value) : formatOrdinal(num);
 	}
 	if (field === "isAutoPay") {
 		if (typeof value === "boolean") return value ? "Yes" : "No";

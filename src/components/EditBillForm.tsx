@@ -1,10 +1,11 @@
 import { BillForm, BillFormValues } from "./BillForm";
 import { api } from "convex/_generated/api";
+import { Doc } from "convex/_generated/dataModel";
 import { useConvexMutation } from "@convex-dev/react-query";
 import { showToast } from "./feedback/SciFiToast";
 import { useUser } from "@clerk/tanstack-react-start";
 
-export function EditBillForm({ bill, onSuccess }: { bill: any; onSuccess?: () => void }) {
+export function EditBillForm({ bill, onSuccess }: { bill: Doc<"bills">; onSuccess?: () => void }) {
 	const updateBill = useConvexMutation(api.bills.upsertBill);
 	const logActivity = useConvexMutation(api.activity.logActivity);
 	const { user } = useUser();
