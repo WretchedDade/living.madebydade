@@ -16,3 +16,11 @@
 | Basher | Tester | Tests, quality, edge cases | 🧪 |
 | Scribe | Session Logger | Memory, decisions, session logs | 📋 |
 | Ralph | Work Monitor | Work queue, backlog, keep-alive | 🔄 |
+
+## Issue Source
+
+| Field | Value |
+|-------|-------|
+| Repository | WretchedDade/living.madebydade |
+| Connected | 2026-02-23 |
+| Filter | All open issues |
