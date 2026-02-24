@@ -7,7 +7,7 @@ export const getUserById = action({
 	args: { userId: v.string() },
 	async handler(ctx, args) {
 		try {
-			var user = await clerkClient.users.getUser(args.userId);
+			const user = await clerkClient.users.getUser(args.userId);
 			return {
 				id: user.id,
 				firstName: user.firstName,

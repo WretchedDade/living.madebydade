@@ -17,7 +17,7 @@ export function CurrencyInput({ value, onChange, onBlur, placeholder = "Amount (
 
 	const handleBlur = (e: React.FocusEvent<HTMLInputElement>) => {
 		if (onBlur) onBlur(e);
-		const num = Number(value);
+		const num = Number(value.replace(/,/g, ""));
 		if (!isNaN(num) && value !== "") {
 			onChange(
 				new Intl.NumberFormat("en-US", {

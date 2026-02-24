@@ -48,7 +48,7 @@ const variantStyles = {
 	},
 };
 
-export function CustomToast({ title, description, action, variant = "success", t }: CustomToastProps & { t?: any }) {
+export function CustomToast({ title, description, action, variant = "success", t }: CustomToastProps & { t?: string | number }) {
 	const styles = variantStyles[variant ?? "success"];
 
 	return (

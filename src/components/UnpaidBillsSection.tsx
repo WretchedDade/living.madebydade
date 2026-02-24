@@ -99,7 +99,7 @@ export function UnpaidBillsSection({
 									</span>
 									<span className="text-zinc-400 text-xs">
 										Amount:{" "}
-										{(payment.bill?.amount ?? 0).toLocaleString("en-US", {
+										{((payment.bill?.amount ?? 0) / 100).toLocaleString("en-US", {
 											style: "currency",
 											currency: "USD",
 										})}

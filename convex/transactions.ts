@@ -1,68 +1,11 @@
-import { RemovedTransaction, SyncUpdatesAvailableWebhook, Transaction, TransactionsSyncResponse } from "plaid";
-import { getPlaidApi, toTransactionSchema, toLeanTransaction } from "./plaidHelpers";
-import { httpAction, internalAction, internalMutation, internalQuery, query } from "./_generated/server";
-import { api, internal } from "./_generated/api";
-import { PlaidTransaction, PlaidTransactionSchema, LeanTransactionSchema, TAccountType } from "./transactionSchema";
+import { fetchNewTransactionSyncData, toLeanTransaction } from "./plaidHelpers";
+import { internalAction, internalMutation, internalQuery, query } from "./_generated/server";
+import { internal } from "./_generated/api";
+import { LeanTransactionSchema, TAccountType } from "./transactionSchema";
 import { v } from "convex/values";
-import { internal as internalApi } from "./_generated/api";
 import { DateTime } from "luxon";
 import { EST_TIMEZONE } from "../constants";
-import type { Doc, Id } from "./_generated/dataModel";
-
-async function fetchNewTransactionSyncData(accessToken: string, initialCursor: string | undefined, retriesLeft = 3) {
-	const plaidApi = getPlaidApi();
-
-	const transactions = {
-		added: [] as Transaction[],
-		modified: [] as Transaction[],
-		removed: [] as RemovedTransaction[],
-	};
-
-	let cursor = initialCursor;
-
-	if (retriesLeft <= 0) {
-		console.error("No retries left, returning current transactions and cursor.");
-
-		// We're just going to return no data and keep our original cursor. We can try again later.
-		return { transactions, cursor };
-	}
-
-	let response: TransactionsSyncResponse;
-
-	try {
-		do {
-			const results = await plaidApi.transactionsSync({
-				cursor,
-				access_token: accessToken,
-				options: {
-					include_personal_finance_category: true,
-				},
-			});
-
-			response = results.data;
-			cursor = response.next_cursor;
-
-			transactions.added = transactions.added.concat(response.added);
-			transactions.modified = transactions.modified.concat(response.modified);
-			transactions.removed = transactions.removed.concat(response.removed);
-
-			console.log(
-				`Fetched ${response.added.length} added, ${response.modified.length} modified, ${response.removed.length} removed transactions.`,
-			);
-			console.log(
-				`New Totals | Added: ${transactions.added.length} Modified: ${transactions.modified.length} Removed: ${transactions.removed.length} `,
-			);
-		} while (response.has_more);
-
-		return { transactions, cursor };
-	} catch (error) {
-		console.error("Error fetching transactions:", error);
-
-		await new Promise(resolve => setTimeout(resolve, 1000)); // Wait a second before retrying
-
-		return fetchNewTransactionSyncData(accessToken, initialCursor, retriesLeft - 1);
-	}
-}
+import type { Doc } from "./_generated/dataModel";
 
 /**
  * Given an item ID, this will fetch all transactions for all accounts

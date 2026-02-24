@@ -1,8 +1,3 @@
-type ActivityDetails = {
-	description?: string;
-	[key: string]: any;
-};
-
 import { SectionHeader } from "~/components/layout/SectionHeader";
 import { BillPaidActivityAccordion } from "./RecentActivityViews/BillPaidActivityAccordion";
 import { QuestCompletedActivityAccordion } from "./RecentActivityViews/QuestCompletedActivityAccordion";
