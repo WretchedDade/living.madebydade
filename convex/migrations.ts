@@ -318,12 +318,9 @@ export const convertBillAmountsToCents = migrations.define({
 	batchSize: 200,
 	migrateOne: async (ctx, bill) => {
 		const amount = bill.amount as number;
-		// Only convert if the amount looks like dollars (has decimals)
-		if (amount !== Math.round(amount)) {
-			await ctx.db.patch(bill._id, {
-				amount: Math.round(amount * 100),
-			});
-		}
+		await ctx.db.patch(bill._id, {
+			amount: Math.round(amount * 100),
+		});
 	},
 });
 
@@ -333,12 +330,9 @@ export const convertTransactionAmountsToCents = migrations.define({
 	batchSize: 500,
 	migrateOne: async (ctx, txn) => {
 		const amount = txn.amount as number;
-		// Only convert if the amount looks like dollars (has decimals)
-		if (amount !== Math.round(amount)) {
-			await ctx.db.patch(txn._id, {
-				amount: Math.round(amount * 100),
-			});
-		}
+		await ctx.db.patch(txn._id, {
+			amount: Math.round(amount * 100),
+		});
 	},
 });
 
