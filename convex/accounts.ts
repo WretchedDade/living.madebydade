@@ -60,7 +60,7 @@ const accountsCache = new ActionCache(components.actionCache, {
 
 export const getAccountsFromPlaid = internalAction({
 	args: { access_token: v.string() },
-	handler: async (__dirname, { access_token }): Promise<Account[]> => {
+	handler: async (ctx, { access_token }): Promise<Account[]> => {
 		const response = await getPlaidApi().accountsBalanceGet({ access_token });
 		return response.data.accounts.map((account: AccountBase) => ({
 			...account,
