@@ -149,6 +149,14 @@ export const markPaid = mutation({
 			throw new Error("Not authorized to modify this payment");
 		}
 
+		const bill = await ctx.db.get(payment.billId);
+		if (!bill) {
+			throw new Error("Bill not found");
+		}
+		if ((bill as { userId?: string }).userId !== identity.subject) {
+			throw new Error("Not authorized to modify this bill payment");
+		}
+
 		await ctx.db.patch(billPaymentId, { datePaid });
 	},
 });

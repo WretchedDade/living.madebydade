@@ -51,7 +51,9 @@ export default defineSchema({
 		.index("byBillId", ["billId"])
 		.index("byDatePaid", ["datePaid"])
 		.index("byUnpaidDue", ["datePaid", "dateDue"])
-		.index("byUnpaidAutoDue", ["datePaid", "isAutoPay", "dateDue"]),
+		.index("byUnpaidAutoDue", ["datePaid", "isAutoPay", "dateDue"])
+		.index("byUserUnpaidDue", ["userId", "datePaid", "dateDue"])
+		.index("byUserDatePaid", ["userId", "datePaid"]),
 	activity: defineTable({
 		type: activityType,
 		userId: v.string(),
