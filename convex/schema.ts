@@ -3,7 +3,6 @@ import { Infer, v } from "convex/values";
 
 import { activityType, activityDetails } from "./activitySchema";
 import { LeanTransactionSchema, AccountType } from "./transactionSchema";
-import { v as values } from "convex/values";
 
 export const PlaidInstitutionSchema = v.object({
 	id: v.string(),

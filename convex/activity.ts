@@ -7,13 +7,14 @@ import { activityType, activityDetails } from "./activitySchema";
 export const logActivityInternal = internalMutation({
 	args: {
 		type: activityType,
+		userId: v.string(),
 		targetId: v.string(),
 		details: activityDetails,
 	},
 	handler: async (ctx, args) => {
 		await ctx.db.insert("activity", {
 			type: args.type,
-			userId: "",
+			userId: args.userId,
 			targetId: args.targetId,
 			details: args.details,
 			timestamp: Date.now(),

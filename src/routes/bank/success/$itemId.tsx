@@ -1,4 +1,5 @@
 import { api } from "@/convex/_generated/api";
+import type { Account } from "@/convex/accounts";
 import { convexAction } from "@convex-dev/react-query";
 import { useQuery, useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute, useParams } from "@tanstack/react-router";
@@ -74,7 +75,7 @@ function BankAccountsSkeleton() {
 	);
 }
 
-function BankAccountsError({ error }: { error: any }) {
+function BankAccountsError({ error }: { error: Error }) {
 	return (
 		<BankAccountsLayout sectionClassName="flex flex-col items-center">
 			<h1 className="text-2xl font-bold text-red-400 mb-4">Something went wrong</h1>
@@ -88,7 +89,7 @@ function BankAccountsError({ error }: { error: any }) {
 	);
 }
 
-function BankAccountsList({ data }: { data: any }) {
+function BankAccountsList({ data }: { data: Account[] }) {
 	return (
 		<BankAccountsLayout>
 			<h1 className="text-2xl font-bold text-cyan-400 mb-2">Bank Linked Successfully!</h1>
@@ -98,7 +99,7 @@ function BankAccountsList({ data }: { data: any }) {
 			<p className="text-zinc-300 mb-6">Your bank account has been linked. Here are the accounts we found:</p>
 			<div className="w-full flex flex-col gap-4">
 				{data?.accounts && data.accounts.length > 0 ? (
-					data.accounts.map((account: any) => (
+					data.accounts.map((account) => (
 						<div
 							key={account.account_id || account.id}
 							className="bg-zinc-800 rounded-xl p-4 flex flex-col sm:flex-row sm:items-center gap-2 border border-zinc-700"
