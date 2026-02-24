@@ -5,7 +5,7 @@ import { components } from "./_generated/api";
 import { ActionCache } from "@convex-dev/action-cache";
 import { getPlaidApi } from "./plaidHelpers";
 import { PlaidItem } from "./schema";
-import { AccountBase, Item } from "plaid";
+import { AccountBase } from "plaid";
 
 export type Account = AccountBase & {
 	itemId: string;

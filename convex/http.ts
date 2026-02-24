@@ -1,5 +1,5 @@
 import { httpRouter } from "convex/server";
-import { SandboxItemFireWebhookRequestWebhookCodeEnum, SyncUpdatesAvailableWebhook, WebhookType } from "plaid";
+import { SandboxItemFireWebhookRequestWebhookCodeEnum, SyncUpdatesAvailableWebhook } from "plaid";
 import { httpAction } from "./_generated/server";
 import { internal } from "./_generated/api";
 import { verifyPlaidWebhook } from "./plaidHelpers";
