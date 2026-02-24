@@ -215,6 +215,7 @@ const createUpcomingPaymentsForBills = async (ctx: GenericActionCtx<DataModel>, 
 
 				await ctx.runMutation(internal.activity.logActivityInternal, {
 					type: "billPaid",
+					userId: "system",
 					targetId: existingPayment._id,
 					details: { billName: bill.name },
 				});
@@ -246,7 +247,7 @@ const createUpcomingPaymentsForBills = async (ctx: GenericActionCtx<DataModel>, 
 		}
 
 		console.log(`Creating payment for ${bill.name} due on ${nextPaymentDate.toISO()}`);
-		var billPaymentId: Id<"billPayments"> = await ctx.runMutation(internal.billPayments.insertBillPayment, {
+		const billPaymentId: Id<"billPayments"> = await ctx.runMutation(internal.billPayments.insertBillPayment, {
 			userId: bill.userId,
 			billId: bill._id,
 			dateDue: nextPaymentDate.toISO()!,
@@ -255,6 +256,7 @@ const createUpcomingPaymentsForBills = async (ctx: GenericActionCtx<DataModel>, 
 
 		await ctx.runMutation(internal.activity.logActivityInternal, {
 			type: "billDue",
+			userId: "system",
 			targetId: billPaymentId,
 			details: { billName: bill.name, dueDate: nextPaymentDate.toISO() ?? undefined },
 		});

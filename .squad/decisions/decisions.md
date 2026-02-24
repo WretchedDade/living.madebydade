@@ -93,6 +93,33 @@
 
 ---
 
+## 2026-02-24 — Revamp Plan Merged (Danny)
+
+### Living Ledger — Full Revamp Plan
+
+**Merged from:** `.squad/decisions/inbox/danny-revamp-plan.md`
+
+Comprehensive multi-phase architectural plan for Living Ledger revamp. Includes 7 foundational architecture decisions, 24 work items (R1-R24) organized into 4 phases, and full dependency graph.
+
+**Key Decisions:**
+1. Integer cents for all money (eliminate floating-point rounding)
+2. Bills scoped to userId (data isolation)
+3. User sharing model (simple access control)
+4. Plaid webhook verification (critical security)
+5. Currency input sanitization (prevent data corruption)
+6. Replace v.any() with proper union types
+7. Configurable pay schedule (user settings)
+
+**Execution:**
+- Sprint 1 (P0): R1, R2, R9-R13 (parallel, no deps)
+- Sprint 2-7: Progressive unlock of P0→P1→P2→P3 work
+- Agent assignments: Linus (backend/security), Rusty (frontend/UX), Basher (tests)
+
+**Board:** Synchronizes with 24-issue GitHub project scope.
+
+---
+
 ## Decision Log
 
 - [2026-02-23] Code review completed. 4 critical + 12 additional issues identified. Escalation path set for Rusty (frontend) and Linus (backend).
+- [2026-02-24] Revamp plan merged. Ralph Round 1 dispatch: Linus (R1 webhook), Rusty (R20 app-layout cleanup).

@@ -2,6 +2,7 @@ import { convexQuery, useConvexMutation } from "@convex-dev/react-query";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 import { api } from "convex/_generated/api";
+import { Doc } from "convex/_generated/dataModel";
 import { AppLayout } from "~/components/layout/AppLayout";
 import { useUser } from "@clerk/tanstack-react-start";
 import { useState } from "react";
@@ -18,12 +19,13 @@ import { MissionBanner } from "~/components/ui/MissionBanner";
 import { SciFiDialog } from "~/components/feedback/SciFiDialog";
 import { showToast } from "~/components/feedback/SciFiToast";
 import { EditBillForm } from "~/components/EditBillForm";
+import { formatCentsAsDollars } from "~/lib/currency";
 
 function BillsPage() {
 	const bills = useSuspenseQuery(convexQuery(api.bills.list, {}));
 	const [showAddDialog, setShowAddDialog] = useState(false);
-	const [billToDelete, setBillToDelete] = useState<any | null>(null);
-	const [billToEdit, setBillToEdit] = useState<any | null>(null);
+	const [billToDelete, setBillToDelete] = useState<Doc<"bills"> | null>(null);
+	const [billToEdit, setBillToEdit] = useState<Doc<"bills"> | null>(null);
 
 	const deleteBillMutation = useConvexMutation(api.bills.deleteBill);
 	const logActivity = useConvexMutation(api.activity.logActivity);
@@ -68,7 +70,7 @@ function BillsPage() {
 						<div className="text-zinc-400 text-center py-8 text-lg">No bills configured yet.</div>
 					) : (
 						<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-							{bills.data?.map((bill: any) => (
+							{bills.data?.map(bill => (
 								<div
 									key={bill._id}
 									className="relative bg-zinc-900 rounded-xl shadow-lg p-4 flex flex-row border border-cyan-900/40 hover:border-cyan-400 hover:shadow-[0_0_16px_0_rgba(34,211,238,0.4)] transition-shadow duration-300 min-h-[120px] overflow-hidden"
@@ -99,7 +101,7 @@ function BillsPage() {
 											</div>
 										</div>
 										<span className="text-neutral-200 text-xl font-extrabold mb-2 tracking-wide">
-											${bill.amount.toFixed(2)}
+											${formatCentsAsDollars(bill.amount)}
 										</span>
 										<div className="flex items-center gap-2 mb-1">
 											<Badge variant="neutral">
@@ -183,10 +185,10 @@ function BillsPage() {
 											description: `${billToDelete.name} was deleted successfully.`,
 											variant: "success",
 										});
-									} catch (err: any) {
+									} catch (err: unknown) {
 										showToast({
 											title: "Delete failed",
-											description: err?.message || "Could not delete bill.",
+											description: err instanceof Error ? err.message : "Could not delete bill.",
 											variant: "error",
 										});
 									}
