@@ -8,6 +8,7 @@ import { DataModel, Doc, Id } from "./_generated/dataModel";
 import { internalAction, internalMutation, mutation, query } from "./_generated/server";
 
 import { EST_TIMEZONE } from "../constants";
+import { getAccessibleUserIds } from "./userShares";
 
 export type BillWithPayments = Doc<"bills"> & { payments: Doc<"billPayments">[] };
 export type BillPaymentWithBill = Doc<"billPayments"> & { bill: Doc<"bills"> };
@@ -36,6 +37,8 @@ export const listUnpaid = query({
 		const identity = await ctx.auth.getUserIdentity();
 		if (!identity?.subject) throw new Error("User not authenticated");
 
+		const accessibleIds = await getAccessibleUserIds(ctx);
+
 		const payments = await (async () => {
 			if (args.includeAutoPay) {
 				return ctx.db
@@ -52,7 +55,7 @@ export const listUnpaid = query({
 			}
 		})();
 
-		const userPayments = payments.filter(p => p.userId === identity.subject);
+		const userPayments = payments.filter(p => p.userId && accessibleIds.includes(p.userId));
 
 		return await Promise.all(
 			userPayments.map(async payment => {
@@ -74,11 +77,11 @@ export const list = query({
 		const identity = await ctx.auth.getUserIdentity();
 		if (!identity?.subject) throw new Error("User not authenticated");
 
-		const payments = await ctx.db
-			.query("billPayments")
-			.withIndex("byUserId", q => q.eq("userId", identity.subject))
-			.order("desc")
-			.take(take);
+		const accessibleIds = await getAccessibleUserIds(ctx);
+		const allPayments = await ctx.db.query("billPayments").order("desc").collect();
+		const payments = allPayments
+			.filter(p => p.userId && accessibleIds.includes(p.userId))
+			.slice(0, take);
 
 		return Promise.all(
 			payments.map(async payment => {
@@ -108,13 +111,15 @@ export const listRecentlyPaid = query({
 		const identity = await ctx.auth.getUserIdentity();
 		if (!identity?.subject) throw new Error("User not authenticated");
 
+		const accessibleIds = await getAccessibleUserIds(ctx);
+
 		const payments = await ctx.db
 			.query("billPayments")
 			.withIndex("byDatePaid", q => q.gte("datePaid", "0"))
 			.order("desc")
 			.take(50);
 
-		const userPayments = payments.filter(p => p.userId === identity.subject);
+		const userPayments = payments.filter(p => p.userId && accessibleIds.includes(p.userId));
 
 		return Promise.all(
 			userPayments.map(async payment => {

@@ -4,6 +4,7 @@ import { DateTime } from "luxon";
 import { EST_TIMEZONE } from "../constants";
 import type { Doc } from "./_generated/dataModel";
 import type { TAccountType } from "./transactionSchema";
+import { getAccessibleUserIds } from "./userShares";
 
 type Period = "day" | "week" | "month";
 
@@ -251,12 +252,31 @@ export const listByPeriod = query({
 		const user = await ctx.auth.getUserIdentity();
 		if (!user) throw new Error("User not authenticated");
 
-		const page = await ctx.db
-			.query("cashCreditSummaries")
-			.withIndex("byUserPeriodStart", qi => qi.eq("userId", user.subject).eq("period", period))
-			.order("desc")
-			.paginate({ cursor, numItems: pageSize });
+		const accessibleIds = await getAccessibleUserIds(ctx);
 
-		return { page: page.page, cursor: page.continueCursor, isDone: page.isDone };
+		// Query per accessible userId and merge results for share-aware access
+		const allSummaries = await Promise.all(
+			accessibleIds.map(userId =>
+				ctx.db
+					.query("cashCreditSummaries")
+					.withIndex("byUserPeriodStart", qi => qi.eq("userId", userId).eq("period", period))
+					.collect(),
+			),
+		);
+
+		const merged = allSummaries
+			.flat()
+			.sort((a, b) => (b.startDate > a.startDate ? 1 : a.startDate > b.startDate ? -1 : 0));
+
+		// Simple offset-based pagination using cursor as last-seen startDate
+		const startIdx = cursor
+			? merged.findIndex(s => s.startDate < cursor) 
+			: 0;
+		const idx = startIdx >= 0 ? startIdx : merged.length;
+		const page = merged.slice(idx, idx + pageSize);
+		const isDone = idx + pageSize >= merged.length;
+		const nextCursor = page.length > 0 ? page[page.length - 1].startDate : cursor ?? "";
+
+		return { page, cursor: nextCursor ?? "", isDone };
 	},
 });

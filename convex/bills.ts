@@ -1,5 +1,6 @@
 import { v } from "convex/values";
 import { internalQuery, mutation, query } from "./_generated/server";
+import { getAccessibleUserIds } from "./userShares";
 
 export const list = query({
 	args: {},
@@ -7,10 +8,9 @@ export const list = query({
 		const identity = await ctx.auth.getUserIdentity();
 		if (!identity?.subject) throw new Error("User not authenticated");
 
-		return await ctx.db
-			.query("bills")
-			.withIndex("byUserId", q => q.eq("userId", identity.subject))
-			.collect();
+		const accessibleIds = await getAccessibleUserIds(ctx);
+		const allBills = await ctx.db.query("bills").collect();
+		return allBills.filter(b => b.userId && accessibleIds.includes(b.userId));
 	},
 });
 
