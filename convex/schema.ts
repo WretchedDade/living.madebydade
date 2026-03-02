@@ -33,7 +33,7 @@ export type PlaidItem = Infer<typeof PlaidItemSchema>;
 
 export default defineSchema({
 	bills: defineTable({
-		userId: v.string(),
+		userId: v.optional(v.string()),
 		amount: v.number(), // integer cents (e.g. 1200 = $12.00)
 		dayDue: v.optional(v.number()),
 		dueType: v.union(v.literal("Fixed"), v.literal("EndOfMonth")),
@@ -41,7 +41,7 @@ export default defineSchema({
 		name: v.string(),
 	}).index("byUserId", ["userId"]),
 	billPayments: defineTable({
-		userId: v.string(),
+		userId: v.optional(v.string()),
 		dateDue: v.string(),
 		datePaid: v.optional(v.string()),
 		billId: v.id("bills"),
