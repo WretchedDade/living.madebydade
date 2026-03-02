@@ -83,6 +83,17 @@ export default defineSchema({
 		.index("byTransactionId", ["transactionId"]),
 
 	// Cash vs Credit per-period summary
+	userSettings: defineTable({
+		userId: v.string(),
+		paySchedule: v.union(
+			v.literal("semimonthly"),
+			v.literal("biweekly"),
+			v.literal("weekly"),
+			v.literal("monthly"),
+		),
+		payDays: v.array(v.number()),
+	}).index("byUserId", ["userId"]),
+
 	cashCreditSummaries: defineTable({
 		userId: v.string(),
 		period: v.union(v.literal("day"), v.literal("week"), v.literal("month")),
