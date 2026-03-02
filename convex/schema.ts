@@ -115,4 +115,12 @@ export default defineSchema({
 		extNetFlow: v.optional(v.number()),
 		buildVersion: v.optional(v.string()),
 	}).index("byUserPeriodStart", ["userId", "period", "startDate"]),
+	userShares: defineTable({
+		ownerId: v.string(),
+		sharedWithId: v.string(),
+		permissions: v.union(v.literal("read"), v.literal("write")),
+	})
+		.index("byOwnerId", ["ownerId"])
+		.index("bySharedWithId", ["sharedWithId"])
+		.index("byOwnerAndSharedWith", ["ownerId", "sharedWithId"]),
 });

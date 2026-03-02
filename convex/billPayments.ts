@@ -8,6 +8,7 @@ import { DataModel, Doc, Id } from "./_generated/dataModel";
 import { internalAction, internalMutation, mutation, query } from "./_generated/server";
 
 import { EST_TIMEZONE } from "../constants";
+import { getAccessibleUserIds } from "./userShares";
 
 export type BillWithPayments = Doc<"bills"> & { payments: Doc<"billPayments">[] };
 export type BillPaymentWithBill = Doc<"billPayments"> & { bill: Doc<"bills"> };
@@ -36,26 +37,31 @@ export const listUnpaid = query({
 		const identity = await ctx.auth.getUserIdentity();
 		if (!identity?.subject) throw new Error("User not authenticated");
 
-		const payments = await (async () => {
-			if (args.includeAutoPay) {
-				return ctx.db
-					.query("billPayments")
-					.withIndex("byUnpaidDue", q => q.eq("datePaid", undefined))
-					.order("asc")
-					.collect();
-			} else {
-				return ctx.db
-					.query("billPayments")
-					.withIndex("byUnpaidAutoDue", q => q.eq("datePaid", undefined).eq("isAutoPay", false))
-					.order("asc")
-					.collect();
-			}
-		})();
+		const accessibleIds = await getAccessibleUserIds(ctx);
 
-		const userPayments = payments.filter(p => p.userId === identity.subject);
+		const paymentsPerUser = await Promise.all(
+			accessibleIds.map(async userId => {
+				if (args.includeAutoPay) {
+					return ctx.db
+						.query("billPayments")
+						.withIndex("byUserUnpaidDue", q => q.eq("userId", userId).eq("datePaid", undefined))
+						.order("asc")
+						.collect();
+				} else {
+					return (await ctx.db
+						.query("billPayments")
+						.withIndex("byUserUnpaidDue", q => q.eq("userId", userId).eq("datePaid", undefined))
+						.order("asc")
+						.collect()
+					).filter(p => !p.isAutoPay);
+				}
+			}),
+		);
+
+		const payments = paymentsPerUser.flat();
 
 		return await Promise.all(
-			userPayments.map(async payment => {
+			payments.map(async payment => {
 				const bill = await ctx.db.get(payment.billId);
 
 				if (!bill) {
@@ -74,11 +80,19 @@ export const list = query({
 		const identity = await ctx.auth.getUserIdentity();
 		if (!identity?.subject) throw new Error("User not authenticated");
 
-		const payments = await ctx.db
-			.query("billPayments")
-			.withIndex("byUserId", q => q.eq("userId", identity.subject))
-			.order("desc")
-			.take(take);
+		const accessibleIds = await getAccessibleUserIds(ctx);
+		const perUserPayments = await Promise.all(
+			accessibleIds.map(userId =>
+				ctx.db
+					.query("billPayments")
+					.withIndex("byUserId", q => q.eq("userId", userId))
+					.order("desc")
+					.take(take),
+			),
+		);
+		const payments = perUserPayments.flat()
+			.sort((a, b) => b._creationTime - a._creationTime)
+			.slice(0, take);
 
 		return Promise.all(
 			payments.map(async payment => {
@@ -108,13 +122,20 @@ export const listRecentlyPaid = query({
 		const identity = await ctx.auth.getUserIdentity();
 		if (!identity?.subject) throw new Error("User not authenticated");
 
-		const payments = await ctx.db
-			.query("billPayments")
-			.withIndex("byDatePaid", q => q.gte("datePaid", "0"))
-			.order("desc")
-			.take(50);
+		const accessibleIds = await getAccessibleUserIds(ctx);
 
-		const userPayments = payments.filter(p => p.userId === identity.subject);
+		const perUserPayments = await Promise.all(
+			accessibleIds.map(userId =>
+				ctx.db
+					.query("billPayments")
+					.withIndex("byUserDatePaid", q => q.eq("userId", userId).gt("datePaid", "0"))
+					.order("desc")
+					.take(50),
+			),
+		);
+		const userPayments = perUserPayments.flat()
+			.sort((a, b) => (b.datePaid ?? "").localeCompare(a.datePaid ?? ""))
+			.slice(0, 50);
 
 		return Promise.all(
 			userPayments.map(async payment => {
