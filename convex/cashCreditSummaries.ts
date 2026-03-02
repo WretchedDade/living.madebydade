@@ -254,29 +254,30 @@ export const listByPeriod = query({
 
 		const accessibleIds = await getAccessibleUserIds(ctx);
 
-		// Query per accessible userId and merge results for share-aware access
-		const allSummaries = await Promise.all(
-			accessibleIds.map(userId =>
-				ctx.db
+		const perUserResults = await Promise.all(
+			accessibleIds.map(userId => {
+				let q = ctx.db
 					.query("cashCreditSummaries")
-					.withIndex("byUserPeriodStart", qi => qi.eq("userId", userId).eq("period", period))
-					.collect(),
-			),
+					.withIndex("byUserPeriodStart", qi => {
+						let chained = qi.eq("userId", userId).eq("period", period);
+						if (cursor) {
+							chained = chained.lt("startDate", cursor);
+						}
+						return chained;
+					});
+				return q.take(pageSize);
+			}),
 		);
 
-		const merged = allSummaries
-			.flat()
+		const merged = perUserResults.flat()
 			.sort((a, b) => (b.startDate > a.startDate ? 1 : a.startDate > b.startDate ? -1 : 0));
 
-		// Simple offset-based pagination using cursor as last-seen startDate
-		const startIdx = cursor
-			? merged.findIndex(s => s.startDate < cursor) 
-			: 0;
-		const idx = startIdx >= 0 ? startIdx : merged.length;
-		const page = merged.slice(idx, idx + pageSize);
-		const isDone = idx + pageSize >= merged.length;
-		const nextCursor = page.length > 0 ? page[page.length - 1].startDate : cursor ?? "";
+		const page = merged.slice(0, pageSize);
+		const anyUserAtLimit = perUserResults.some(r => r.length === pageSize);
+		const isDone = !anyUserAtLimit || page.length < pageSize;
+		const last = page[page.length - 1];
+		const nextCursor = last ? last.startDate : cursor ?? "";
 
-		return { page, cursor: nextCursor ?? "", isDone };
+		return { page, cursor: nextCursor, isDone };
 	},
 });

@@ -9,8 +9,15 @@ export const list = query({
 		if (!identity?.subject) throw new Error("User not authenticated");
 
 		const accessibleIds = await getAccessibleUserIds(ctx);
-		const allBills = await ctx.db.query("bills").collect();
-		return allBills.filter(b => b.userId && accessibleIds.includes(b.userId));
+		const billsPerUser = await Promise.all(
+			accessibleIds.map(userId =>
+				ctx.db
+					.query("bills")
+					.withIndex("byUserId", q => q.eq("userId", userId))
+					.collect(),
+			),
+		);
+		return billsPerUser.flat();
 	},
 });
 

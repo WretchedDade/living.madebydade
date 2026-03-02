@@ -39,26 +39,29 @@ export const listUnpaid = query({
 
 		const accessibleIds = await getAccessibleUserIds(ctx);
 
-		const payments = await (async () => {
-			if (args.includeAutoPay) {
-				return ctx.db
-					.query("billPayments")
-					.withIndex("byUnpaidDue", q => q.eq("datePaid", undefined))
-					.order("asc")
-					.collect();
-			} else {
-				return ctx.db
-					.query("billPayments")
-					.withIndex("byUnpaidAutoDue", q => q.eq("datePaid", undefined).eq("isAutoPay", false))
-					.order("asc")
-					.collect();
-			}
-		})();
+		const paymentsPerUser = await Promise.all(
+			accessibleIds.map(async userId => {
+				if (args.includeAutoPay) {
+					return ctx.db
+						.query("billPayments")
+						.withIndex("byUserUnpaidDue", q => q.eq("userId", userId).eq("datePaid", undefined))
+						.order("asc")
+						.collect();
+				} else {
+					return (await ctx.db
+						.query("billPayments")
+						.withIndex("byUserUnpaidDue", q => q.eq("userId", userId).eq("datePaid", undefined))
+						.order("asc")
+						.collect()
+					).filter(p => !p.isAutoPay);
+				}
+			}),
+		);
 
-		const userPayments = payments.filter(p => p.userId && accessibleIds.includes(p.userId));
+		const payments = paymentsPerUser.flat();
 
 		return await Promise.all(
-			userPayments.map(async payment => {
+			payments.map(async payment => {
 				const bill = await ctx.db.get(payment.billId);
 
 				if (!bill) {
@@ -78,9 +81,17 @@ export const list = query({
 		if (!identity?.subject) throw new Error("User not authenticated");
 
 		const accessibleIds = await getAccessibleUserIds(ctx);
-		const allPayments = await ctx.db.query("billPayments").order("desc").collect();
-		const payments = allPayments
-			.filter(p => p.userId && accessibleIds.includes(p.userId))
+		const perUserPayments = await Promise.all(
+			accessibleIds.map(userId =>
+				ctx.db
+					.query("billPayments")
+					.withIndex("byUserId", q => q.eq("userId", userId))
+					.order("desc")
+					.take(take),
+			),
+		);
+		const payments = perUserPayments.flat()
+			.sort((a, b) => b._creationTime - a._creationTime)
 			.slice(0, take);
 
 		return Promise.all(
@@ -113,13 +124,18 @@ export const listRecentlyPaid = query({
 
 		const accessibleIds = await getAccessibleUserIds(ctx);
 
-		const payments = await ctx.db
-			.query("billPayments")
-			.withIndex("byDatePaid", q => q.gte("datePaid", "0"))
-			.order("desc")
-			.take(50);
-
-		const userPayments = payments.filter(p => p.userId && accessibleIds.includes(p.userId));
+		const perUserPayments = await Promise.all(
+			accessibleIds.map(userId =>
+				ctx.db
+					.query("billPayments")
+					.withIndex("byUserDatePaid", q => q.eq("userId", userId).gt("datePaid", "0"))
+					.order("desc")
+					.take(50),
+			),
+		);
+		const userPayments = perUserPayments.flat()
+			.sort((a, b) => (b.datePaid ?? "").localeCompare(a.datePaid ?? ""))
+			.slice(0, 50);
 
 		return Promise.all(
 			userPayments.map(async payment => {
