@@ -1,0 +1,53 @@
+import { v } from "convex/values";
+import { mutation, query } from "./_generated/server";
+
+export const get = query({
+	args: {},
+	handler: async (ctx) => {
+		const identity = await ctx.auth.getUserIdentity();
+		if (!identity?.subject) throw new Error("User not authenticated");
+
+		const settings = await ctx.db
+			.query("userSettings")
+			.withIndex("byUserId", (q) => q.eq("userId", identity.subject))
+			.first();
+
+		return settings ?? null;
+	},
+});
+
+export const upsert = mutation({
+	args: {
+		paySchedule: v.union(
+			v.literal("semimonthly"),
+			v.literal("biweekly"),
+			v.literal("weekly"),
+			v.literal("monthly"),
+		),
+		payDays: v.array(v.number()),
+	},
+	handler: async (ctx, { paySchedule, payDays }) => {
+		const identity = await ctx.auth.getUserIdentity();
+		if (!identity?.subject) throw new Error("User not authenticated");
+
+		const existing = await ctx.db
+			.query("userSettings")
+			.withIndex("byUserId", (q) => q.eq("userId", identity.subject))
+			.first();
+
+		if (existing) {
+			await ctx.db.replace(existing._id, {
+				userId: identity.subject,
+				paySchedule,
+				payDays,
+			});
+			return existing._id;
+		}
+
+		return await ctx.db.insert("userSettings", {
+			userId: identity.subject,
+			paySchedule,
+			payDays,
+		});
+	},
+});
