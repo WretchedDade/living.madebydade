@@ -81,8 +81,10 @@ export type Activity =
 	| BillUpdatedActivity
 	| BillDueActivity;
 
+import { Doc } from "convex/_generated/dataModel";
+
 // Type for Convex backend results (includes _id, _creationTime, etc.)
-export type ActivityDoc = Activity & { _id: string; _creationTime?: number };
+export type ActivityDoc = Doc<"activity">;
 
 // Type guard functions
 export function isBillPaidActivity(activity: Activity): activity is BillPaidActivity {
