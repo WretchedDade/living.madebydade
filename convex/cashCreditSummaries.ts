@@ -255,18 +255,16 @@ export const listByPeriod = query({
 		const accessibleIds = await getAccessibleUserIds(ctx);
 
 		const perUserResults = await Promise.all(
-			accessibleIds.map(userId => {
-				let q = ctx.db
+			accessibleIds.map(userId =>
+				ctx.db
 					.query("cashCreditSummaries")
-					.withIndex("byUserPeriodStart", qi => {
-						let chained = qi.eq("userId", userId).eq("period", period);
-						if (cursor) {
-							chained = chained.lt("startDate", cursor);
-						}
-						return chained;
-					});
-				return q.take(pageSize);
-			}),
+					.withIndex("byUserPeriodStart", qi =>
+						cursor
+							? qi.eq("userId", userId).eq("period", period).lt("startDate", cursor)
+							: qi.eq("userId", userId).eq("period", period),
+					)
+					.take(pageSize),
+			),
 		);
 
 		const merged = perUserResults.flat()
