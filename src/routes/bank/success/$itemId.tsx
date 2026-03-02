@@ -90,18 +90,20 @@ function BankAccountsError({ error }: { error: Error }) {
 }
 
 function BankAccountsList({ data }: { data: Account[] }) {
+	const institutionName = data[0]?.institution?.name;
+
 	return (
 		<BankAccountsLayout>
 			<h1 className="text-2xl font-bold text-cyan-400 mb-2">Bank Linked Successfully!</h1>
-			{data?.institution?.name && (
-				<div className="text-cyan-300 mb-2 text-lg font-semibold">{data.institution.name}</div>
+			{institutionName && (
+				<div className="text-cyan-300 mb-2 text-lg font-semibold">{institutionName}</div>
 			)}
 			<p className="text-zinc-300 mb-6">Your bank account has been linked. Here are the accounts we found:</p>
 			<div className="w-full flex flex-col gap-4">
-				{data?.accounts && data.accounts.length > 0 ? (
-					data.accounts.map((account) => (
+				{data.length > 0 ? (
+					data.map((account) => (
 						<div
-							key={account.account_id || account.id}
+							key={account.account_id}
 							className="bg-zinc-800 rounded-xl p-4 flex flex-col sm:flex-row sm:items-center gap-2 border border-zinc-700"
 						>
 							<div className="flex-1">
