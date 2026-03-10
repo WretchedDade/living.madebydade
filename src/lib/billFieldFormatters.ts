@@ -5,7 +5,7 @@ import { formatCurrency, formatOrdinal } from "~/utils/formatters";
 export function formatBillFieldValue(field: string, value: string | number | boolean | undefined | null): string {
 	if (field === "amount") {
 		const num = typeof value === "number" ? value : Number(value?.toString().replace(/,/g, ""));
-		return isNaN(num) ? String(value) : formatCurrency(num / 100);
+		return isNaN(num) ? String(value) : formatCurrency(num);
 	}
 	if (field === "dayDue") {
 		const num = typeof value === "number" ? value : Number(value);

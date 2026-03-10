@@ -52,7 +52,7 @@ export function BillPaidActivityAccordion({ activity }: { activity: BillPaidActi
 				</div>
 				<div className="flex flex-col gap-1">
 					<div className="text-3xl font-extrabold text-green-300 mb-2">
-						{formatCurrency(billQuery.data.amount / 100)}
+						{formatCurrency(billQuery.data.amount)}
 					</div>
 					<div className="flex gap-2">
 						<span className="font-semibold text-zinc-400">Due Date:</span>

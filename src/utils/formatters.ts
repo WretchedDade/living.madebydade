@@ -22,7 +22,8 @@ export function formatRelativeTime(date: string | number | Date): string {
 	}
 }
 
-export function formatCurrency(value: number) {
+/** Format an integer-cents value as a USD currency string (e.g. 1200 → "$12.00"). */
+export function formatCurrency(cents: number) {
 	const formatter = new Intl.NumberFormat("en-US", {
 		style: "currency",
 		currency: "USD",
@@ -32,7 +33,7 @@ export function formatCurrency(value: number) {
 		currencySign: "standard",
 	});
 
-	return formatter.format(value);
+	return formatter.format(cents / 100);
 }
 
 const suffixes: Record<Intl.LDMLPluralRule, string> = {
