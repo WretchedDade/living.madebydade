@@ -33,25 +33,25 @@ export const ResponsiveKeyValueTable: React.FC<ResponsiveKeyValueTableProps> = (
 					<div
 						key={label + idx}
 						className={
-							`p-3 mb-4 border border-slate-700 shadow-lg shadow-zinc-800/30 ` +
-							(idx % 2 === 0 ? "bg-zinc-900" : "bg-zinc-800") +
+							`p-3 mb-4 border border-border shadow-lg ` +
+							(idx % 2 === 0 ? "bg-card" : "bg-muted") +
 							` ${cardClassName}`
 						}
 					>
 						<div className="flex flex-col gap-1">
 							<div
-								className={`text-xs text-zinc-400 font-semibold uppercase tracking-wide ${fieldLabelClassName}`}
+								className={`text-xs text-muted-foreground font-semibold uppercase tracking-wide ${fieldLabelClassName}`}
 							>
 								{label}
 							</div>
 							<div className="flex justify-between text-sm">
-								<span className="text-zinc-400">{columns[1] || "Value"}:</span>
-								<span className="text-zinc-200">{formatValue(label, value)}</span>
+								<span className="text-muted-foreground">{columns[1] || "Value"}:</span>
+								<span className="text-foreground">{formatValue(label, value)}</span>
 							</div>
 							{hasValue2 && (
 								<div className="flex justify-between text-sm">
-									<span className="text-zinc-400">{columns[2] || "Value2"}:</span>
-									<span className="text-zinc-200">{formatValue(label, value2)}</span>
+									<span className="text-muted-foreground">{columns[2] || "Value2"}:</span>
+									<span className="text-foreground">{formatValue(label, value2)}</span>
 								</div>
 							)}
 						</div>
@@ -60,17 +60,17 @@ export const ResponsiveKeyValueTable: React.FC<ResponsiveKeyValueTableProps> = (
 			</div>
 			{/* Desktop: table */}
 			<div className={`hidden md:block overflow-x-auto ${tableClassName}`}>
-				<table className="min-w-full text-sm border-2 border-slate-700 bg-zinc-900">
+				<table className="min-w-full text-sm border-2 border-border bg-card">
 					<thead>
 						<tr>
-							<th className="px-4 py-2 text-left font-semibold text-zinc-400 bg-zinc-800">
+							<th className="px-4 py-2 text-left font-semibold text-muted-foreground bg-muted">
 								{columns[0]}
 							</th>
-							<th className="px-4 py-2 text-left font-semibold text-zinc-400 bg-zinc-800">
+							<th className="px-4 py-2 text-left font-semibold text-muted-foreground bg-muted">
 								{columns[1]}
 							</th>
 							{hasValue2 && (
-								<th className="px-4 py-2 text-left font-semibold text-zinc-400 bg-zinc-800">
+								<th className="px-4 py-2 text-left font-semibold text-muted-foreground bg-muted">
 									{columns[2]}
 								</th>
 							)}
@@ -82,16 +82,16 @@ export const ResponsiveKeyValueTable: React.FC<ResponsiveKeyValueTableProps> = (
 								key={label + idx}
 								className={
 									"transition-colors " +
-									(idx % 2 === 0 ? "bg-zinc-900" : "bg-zinc-800") +
-									" hover:bg-zinc-700/40"
+									(idx % 2 === 0 ? "bg-card" : "bg-muted") +
+									" hover:bg-muted/40"
 								}
 							>
-								<td className="px-4 py-2 font-medium text-zinc-200 whitespace-nowrap">{label}</td>
-								<td className="px-4 py-2 text-zinc-400 whitespace-nowrap">
+								<td className="px-4 py-2 font-medium text-foreground whitespace-nowrap">{label}</td>
+								<td className="px-4 py-2 text-muted-foreground whitespace-nowrap">
 									{formatValue(label, value)}
 								</td>
 								{hasValue2 && (
-									<td className="px-4 py-2 text-zinc-400 whitespace-nowrap">
+									<td className="px-4 py-2 text-muted-foreground whitespace-nowrap">
 										{formatValue(label, value2)}
 									</td>
 								)}

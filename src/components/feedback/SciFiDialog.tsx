@@ -14,15 +14,15 @@ interface SciFiDialogProps {
 export const SciFiDialog: React.FC<SciFiDialogProps> = ({ open, onOpenChange, title, children, showClose = true }) => (
 	<Dialog.Root open={open} onOpenChange={onOpenChange}>
 		<Dialog.Portal>
-			<Dialog.Overlay className="fixed inset-0 z-50 bg-gradient-to-br from-black/70 via-cyan-900/60 to-black/80 backdrop-blur-sm" />
-			<Dialog.Content className="fixed z-50 left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 bg-zinc-950 rounded-2xl shadow-2xl p-8 w-full max-w-lg border border-cyan-700/40">
+			<Dialog.Overlay className="fixed inset-0 z-50 bg-background/80 backdrop-blur-sm" />
+			<Dialog.Content className="fixed z-50 left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 bg-background rounded-2xl shadow-2xl p-8 w-full max-w-lg border border-primary/40">
 				{showClose && (
 					<Dialog.Close asChild>
 						<Button
 							circular
 							variant="ghost"
 							icon
-							className="absolute top-3 right-3 text-cyan-300 hover:text-cyan-400 w-9 h-9 flex items-center justify-center"
+							className="absolute top-3 right-3 text-primary hover:text-primary/80 w-9 h-9 flex items-center justify-center"
 							aria-label="Close"
 						>
 							<XMarkIcon className="w-6 h-6" />
@@ -30,7 +30,7 @@ export const SciFiDialog: React.FC<SciFiDialogProps> = ({ open, onOpenChange, ti
 					</Dialog.Close>
 				)}
 				{title && (
-					<h2 className="text-2xl font-extrabold text-cyan-300 mb-6 drop-shadow-[0_0_4px_rgba(34,211,238,0.3)]">
+					<h2 className="text-2xl font-extrabold text-primary mb-6">
 						{title}
 					</h2>
 				)}

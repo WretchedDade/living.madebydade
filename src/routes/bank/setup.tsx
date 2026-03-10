@@ -90,19 +90,19 @@ function BankSetup() {
 	return (
 		<AppLayout>
 			<main className="flex flex-col items-center justify-center min-h-[60vh] p-4 w-full">
-				<div className="bg-zinc-900 rounded-2xl shadow-lg p-8 max-w-md w-full flex flex-col items-center">
+				<div className="bg-card rounded-2xl shadow-lg p-8 max-w-md w-full flex flex-col items-center">
 					<SciFiBars count={7} className="mb-8" />
 					{!ready ? (
 						<div className="flex flex-col items-center justify-center h-48">
-							<ArrowPathIcon className="w-8 h-8 animate-spin text-cyan-400 mb-3" />
-							<span className="text-cyan-300 text-base">Preparing Plaid Link...</span>
+							<ArrowPathIcon className="w-8 h-8 animate-spin text-primary mb-3" />
+							<span className="text-primary text-base">Preparing Plaid Link...</span>
 						</div>
 					) : (
 						<>
-							<h1 className="text-2xl font-bold text-cyan-400 mb-4 text-center">
+							<h1 className="text-2xl font-bold text-primary mb-4 text-center">
 								Link Your Bank Account
 							</h1>
-							<p className="text-zinc-300 text-center mb-6">
+							<p className="text-muted-foreground text-center mb-6">
 								Securely connect your bank account to get started. The Plaid window will open
 								automatically. If it doesn't, please check your popup blocker.
 							</p>

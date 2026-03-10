@@ -54,12 +54,12 @@ export function UserAvatarCard({ level = 3, xp = 1250, xpMax = 2000 }: UserAvata
 			<Popover.Content
 				side="bottom"
 				align="end"
-				className="bg-zinc-900 border border-zinc-700 rounded-lg shadow-lg p-4 min-w-[180px] flex flex-col items-center z-10"
+				className="bg-card border border-border rounded-lg shadow-lg p-4 min-w-[180px] flex flex-col items-center z-10"
 				sideOffset={8}
 			>
-				{/* <div className="font-semibold text-cyan-400 mb-1">{userName}</div>
-                <div className="text-sm text-cyan-400">Level {level}</div>
-                <div className="text-xs text-zinc-400 mb-2">
+				{/* <div className="font-semibold text-primary mb-1">{userName}</div>
+                <div className="text-sm text-primary">Level {level}</div>
+                <div className="text-xs text-muted-foreground mb-2">
                     XP: {xp?.toLocaleString()} / {xpMax?.toLocaleString()}
                 </div> */}
 				<div className="w-full flex flex-col items-center gap-2">
@@ -69,7 +69,7 @@ export function UserAvatarCard({ level = 3, xp = 1250, xpMax = 2000 }: UserAvata
 						</Button>
 					</SignOutButton>
 				</div>
-				<Popover.Arrow className="fill-zinc-700" />
+				<Popover.Arrow className="fill-border" />
 			</Popover.Content>
 		</Popover.Root>
 	);

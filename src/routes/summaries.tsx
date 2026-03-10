@@ -34,7 +34,7 @@ function SummaryTable({ rows, period }: { rows: Array<Doc<"cashCreditSummaries">
 	const txnsData = txnsDataRaw ?? { items: [] as Doc<"transactions">[] };
 
 	if (!rows || rows.length === 0) {
-		return <div className="text-zinc-400 italic">No summaries yet.</div>;
+		return <div className="text-muted-foreground italic">No summaries yet.</div>;
 	}
 
 	const fmtDate = (iso: string) =>
@@ -43,8 +43,8 @@ function SummaryTable({ rows, period }: { rows: Array<Doc<"cashCreditSummaries">
 	return (
 		<div className="overflow-x-auto">
 			<table className="min-w-full text-sm">
-				<thead className="sticky top-0 z-10 bg-zinc-900 border-b border-zinc-700">
-					<tr className="text-left text-zinc-100">
+				<thead className="sticky top-0 z-10 bg-card border-b border-border">
+					<tr className="text-left text-foreground">
 						<th className="py-2 pl-4 pr-4 font-semibold text-xs uppercase tracking-wider">Period</th>
 						<th className="py-2 pr-4 font-semibold text-xs uppercase tracking-wider text-right">Cash In</th>
 						<th className="py-2 pr-4 font-semibold text-xs uppercase tracking-wider text-right">
@@ -73,9 +73,9 @@ function SummaryTable({ rows, period }: { rows: Array<Doc<"cashCreditSummaries">
 						return (
 							<tr
 								key={r._id}
-								className={`border-t border-zinc-800 ${idx % 2 === 0 ? "bg-zinc-900" : "bg-zinc-900/60"} hover:bg-zinc-800/60 transition-colors`}
+								className={`border-t border-border ${idx % 2 === 0 ? "bg-card" : "bg-card/60"} hover:bg-muted transition-colors`}
 							>
-								<td className="py-2 pl-4 pr-4 whitespace-nowrap text-zinc-200">
+								<td className="py-2 pl-4 pr-4 whitespace-nowrap text-foreground">
 									{(() => {
 										if (period === "month") {
 											return new Date(r.startDate).toLocaleDateString(undefined, {
@@ -88,22 +88,22 @@ function SummaryTable({ rows, period }: { rows: Array<Doc<"cashCreditSummaries">
 										return fromStr === toStr ? fromStr : `${fromStr} – ${toStr}`;
 									})()}
 								</td>
-								<td className="py-2 pr-4 text-right text-emerald-300">
+								<td className="py-2 pr-4 text-right text-success">
 									{formatCurrency(r.cashIncomeExternal ?? 0)}
 								</td>
-								<td className="py-2 pr-4 text-right text-rose-300">
+								<td className="py-2 pr-4 text-right text-destructive">
 									{formatCurrency(r.cashSpending ?? 0)}
 								</td>
-								<td className="py-2 pr-4 text-right text-cyan-300">
+								<td className="py-2 pr-4 text-right text-primary">
 									{formatCurrency(r.cashSavingsContributions ?? 0)}
 								</td>
 								<td className="py-2 pr-2 text-right">
 									<NetPill net={cashNet} />
 								</td>
-								<td className="py-2 pr-4 text-right text-rose-300">
+								<td className="py-2 pr-4 text-right text-destructive">
 									{formatCurrency(r.ccPurchases ?? 0)}
 								</td>
-								<td className="py-2 pr-4 text-right text-emerald-300">
+								<td className="py-2 pr-4 text-right text-success">
 									{formatCurrency(r.ccPayments ?? 0)}
 								</td>
 								<td className="py-2 pr-4 text-right font-mono">
@@ -138,9 +138,9 @@ function SummaryTable({ rows, period }: { rows: Array<Doc<"cashCreditSummaries">
 				})()}
 			>
 				{!openRow ? (
-					<div className="text-zinc-400">No summary selected.</div>
+					<div className="text-muted-foreground">No summary selected.</div>
 				) : txnsLoading ? (
-					<div className="text-zinc-400">Loading…</div>
+					<div className="text-muted-foreground">Loading…</div>
 				) : (
 					(() => {
 						const items = (txnsData?.items as Doc<"transactions">[]) ?? [];
@@ -166,57 +166,57 @@ function SummaryTable({ rows, period }: { rows: Array<Doc<"cashCreditSummaries">
 						return (
 							<Tabs.Root defaultValue="overview" orientation="vertical" className="min-h-0">
 								<div className="mt-2 grid grid-cols-1 md:grid-cols-[220px_1fr] gap-4">
-									<Tabs.List className="flex md:flex-col gap-2 border-b md:border-b-0 md:border-r border-zinc-800 md:pr-4 overflow-x-auto">
+									<Tabs.List className="flex md:flex-col gap-2 border-b md:border-b-0 md:border-r border-border md:pr-4 overflow-x-auto">
 										<Tabs.Trigger
-											className="whitespace-nowrap rounded-md px-3 py-2 text-sm text-zinc-300 data-[state=active]:bg-zinc-800 data-[state=active]:text-cyan-300"
+											className="whitespace-nowrap rounded-md px-3 py-2 text-sm text-muted-foreground data-[state=active]:bg-muted data-[state=active]:text-primary"
 											value="overview"
 										>
 											Overview
 										</Tabs.Trigger>
 										<Tabs.Trigger
-											className="whitespace-nowrap rounded-md px-3 py-2 text-sm text-zinc-300 data-[state=active]:bg-zinc-800 data-[state=active]:text-cyan-300"
+											className="whitespace-nowrap rounded-md px-3 py-2 text-sm text-muted-foreground data-[state=active]:bg-muted data-[state=active]:text-primary"
 											value="cashIn"
 										>
 											Cash In ({cashInflows.length})
 										</Tabs.Trigger>
 										<Tabs.Trigger
-											className="whitespace-nowrap rounded-md px-3 py-2 text-sm text-zinc-300 data-[state=active]:bg-zinc-800 data-[state=active]:text-cyan-300"
+											className="whitespace-nowrap rounded-md px-3 py-2 text-sm text-muted-foreground data-[state=active]:bg-muted data-[state=active]:text-primary"
 											value="cashOut"
 										>
 											Cash Out ({cashOutflows.length})
 										</Tabs.Trigger>
 										<Tabs.Trigger
-											className="whitespace-nowrap rounded-md px-3 py-2 text-sm text-zinc-300 data-[state=active]:bg-zinc-800 data-[state=active]:text-cyan-300"
+											className="whitespace-nowrap rounded-md px-3 py-2 text-sm text-muted-foreground data-[state=active]:bg-muted data-[state=active]:text-primary"
 											value="transfers"
 										>
 											Transfers ({cashTransfers.length})
 										</Tabs.Trigger>
 										<Tabs.Trigger
-											className="whitespace-nowrap rounded-md px-3 py-2 text-sm text-zinc-300 data-[state=active]:bg-zinc-800 data-[state=active]:text-cyan-300"
+											className="whitespace-nowrap rounded-md px-3 py-2 text-sm text-muted-foreground data-[state=active]:bg-muted data-[state=active]:text-primary"
 											value="ccPaymentsCash"
 										>
 											CC Payments (cash) ({ccPaymentsCashSide.length})
 										</Tabs.Trigger>
 										<Tabs.Trigger
-											className="whitespace-nowrap rounded-md px-3 py-2 text-sm text-zinc-300 data-[state=active]:bg-zinc-800 data-[state=active]:text-cyan-300"
+											className="whitespace-nowrap rounded-md px-3 py-2 text-sm text-muted-foreground data-[state=active]:bg-muted data-[state=active]:text-primary"
 											value="ccPurchases"
 										>
 											CC Purchases ({ccPurchases.length})
 										</Tabs.Trigger>
 										<Tabs.Trigger
-											className="whitespace-nowrap rounded-md px-3 py-2 text-sm text-zinc-300 data-[state=active]:bg-zinc-800 data-[state=active]:text-cyan-300"
+											className="whitespace-nowrap rounded-md px-3 py-2 text-sm text-muted-foreground data-[state=active]:bg-muted data-[state=active]:text-primary"
 											value="ccPaymentsCard"
 										>
 											CC Payments (card) ({ccPaymentsCardSide.length})
 										</Tabs.Trigger>
 										<Tabs.Trigger
-											className="whitespace-nowrap rounded-md px-3 py-2 text-sm text-zinc-300 data-[state=active]:bg-zinc-800 data-[state=active]:text-cyan-300"
+											className="whitespace-nowrap rounded-md px-3 py-2 text-sm text-muted-foreground data-[state=active]:bg-muted data-[state=active]:text-primary"
 											value="ccRefunds"
 										>
 											CC Refunds ({ccRefunds.length})
 										</Tabs.Trigger>
 										<Tabs.Trigger
-											className="whitespace-nowrap rounded-md px-3 py-2 text-sm text-zinc-300 data-[state=active]:bg-zinc-800 data-[state=active]:text-cyan-300"
+											className="whitespace-nowrap rounded-md px-3 py-2 text-sm text-muted-foreground data-[state=active]:bg-muted data-[state=active]:text-primary"
 											value="ccInterestFees"
 										>
 											Interest & Fees ({ccInterestFees.length})
@@ -228,37 +228,37 @@ function SummaryTable({ rows, period }: { rows: Array<Doc<"cashCreditSummaries">
 												<StatTile
 													label="Cash In"
 													value={formatCurrency(openRow.cashIncomeExternal ?? 0)}
-													tone="emerald"
+													tone="success"
 												/>
 												<StatTile
 													label="Cash Out"
 													value={formatCurrency(openRow.cashSpending ?? 0)}
-													tone="rose"
+													tone="destructive"
 												/>
 												<StatTile
 													label="Savings"
 													value={formatCurrency(openRow.cashSavingsContributions ?? 0)}
-													tone="cyan"
+													tone="primary"
 												/>
 												<StatTile
 													label="CC Purchases"
 													value={formatCurrency(openRow.ccPurchases ?? 0)}
-													tone="rose"
+													tone="destructive"
 												/>
 												<StatTile
 													label="CC Payments"
 													value={formatCurrency(openRow.ccPayments ?? 0)}
-													tone="emerald"
+													tone="success"
 												/>
 												<StatTile
 													label="CC Refunds"
 													value={formatCurrency(openRow.ccRefunds ?? 0)}
-													tone="emerald"
+													tone="success"
 												/>
 												<StatTile
 													label="CC Interest/Fees"
 													value={formatCurrency(openRow.ccInterestFees ?? 0)}
-													tone="rose"
+													tone="destructive"
 												/>
 												<StatTile
 													label="CC Principal Δ"
@@ -267,7 +267,7 @@ function SummaryTable({ rows, period }: { rows: Array<Doc<"cashCreditSummaries">
 												/>
 											</div>
 											<div className="pt-2">
-												<div className="mb-2 text-xs uppercase tracking-wide text-zinc-400">
+												<div className="mb-2 text-xs uppercase tracking-wide text-muted-foreground">
 													Spending by Category
 												</div>
 												<CategoriesPieChart
@@ -343,7 +343,7 @@ function RouteComponent() {
 			<main className="flex-1 w-full min-h-0 overflow-y-auto p-4 sm:p-10 space-y-6">
 				<div className="flex items-center justify-between">
 					<SectionHeader
-						icon={<ChartBarIcon className="w-4 h-4 sm:w-7 sm:h-7 text-yellow-400" />}
+						icon={<ChartBarIcon className="w-4 h-4 sm:w-7 sm:h-7 text-warning" />}
 						title="Cash vs Credit Summaries"
 					/>
 					<div className="flex items-center gap-2">
@@ -370,7 +370,7 @@ function RouteComponent() {
 				<SciFiBars count={8} />
 
 				<div className="flex flex-wrap items-center gap-3">
-					<span className="text-zinc-300">Period:</span>
+					<span className="text-muted-foreground">Period:</span>
 					<PeriodTabs
 						value={period}
 						onChange={p => {
@@ -405,13 +405,13 @@ function RouteComponent() {
 					<Accordion.Root
 						type="single"
 						collapsible
-						className="rounded-lg border border-zinc-800 bg-zinc-900/70"
+						className="rounded-lg border border-border bg-card/70"
 					>
 						<Accordion.Item value="howto">
-							<Accordion.Trigger className="group flex w-full items-center justify-between px-4 py-3 text-sm font-medium text-zinc-100 cursor-pointer">
+							<Accordion.Trigger className="group flex w-full items-center justify-between px-4 py-3 text-sm font-medium text-foreground cursor-pointer">
 								<span>How to read this table</span>
 								<svg
-									className="h-4 w-4 text-zinc-400 transition-transform duration-200 group-data-[state=open]:rotate-180"
+									className="h-4 w-4 text-muted-foreground transition-transform duration-200 group-data-[state=open]:rotate-180"
 									viewBox="0 0 20 20"
 									fill="currentColor"
 									aria-hidden="true"
@@ -423,59 +423,59 @@ function RouteComponent() {
 									/>
 								</svg>
 							</Accordion.Trigger>
-							<Accordion.Content className="data-[state=open]:animate-slideDown data-[state=closed]:animate-slideUp overflow-hidden border-t border-zinc-800">
-								<div className="p-4 text-sm text-zinc-200 space-y-4">
+							<Accordion.Content className="data-[state=open]:animate-slideDown data-[state=closed]:animate-slideUp overflow-hidden border-t border-border">
+								<div className="p-4 text-sm text-foreground space-y-4">
 									<div className="grid gap-2 sm:grid-cols-2">
-										<div className="rounded-md border border-zinc-800 bg-zinc-900 p-3">
-											<div className="mb-2 text-xs uppercase tracking-wide text-zinc-400">
+										<div className="rounded-md border border-border bg-card p-3">
+											<div className="mb-2 text-xs uppercase tracking-wide text-muted-foreground">
 												Cash
 											</div>
-											<ul className="space-y-1 text-zinc-300">
+											<ul className="space-y-1 text-muted-foreground">
 												<li>
-													<span className="rounded-full border border-emerald-600/40 bg-emerald-500/10 px-2 py-0.5 text-[10px] text-emerald-300">
+													<span className="rounded-full border border-success/40 bg-success/10 px-2 py-0.5 text-[10px] text-success">
 														Cash In
 													</span>{" "}
 													External inflows (paychecks, transfers in).
 												</li>
 												<li>
-													<span className="rounded-full border border-rose-600/40 bg-rose-500/10 px-2 py-0.5 text-[10px] text-rose-300">
+													<span className="rounded-full border border-destructive/40 bg-destructive/10 px-2 py-0.5 text-[10px] text-destructive">
 														Cash Out
 													</span>{" "}
 													Cash-basis spending from checking/savings.
 												</li>
 												<li>
-													<span className="rounded-full border border-cyan-600/40 bg-cyan-500/10 px-2 py-0.5 text-[10px] text-cyan-300">
+													<span className="rounded-full border border-primary/40 bg-primary/10 px-2 py-0.5 text-[10px] text-primary">
 														Savings
 													</span>{" "}
 													Net moved into savings accounts.
 												</li>
 											</ul>
 										</div>
-										<div className="rounded-md border border-zinc-800 bg-zinc-900 p-3">
-											<div className="mb-2 text-xs uppercase tracking-wide text-zinc-400">
+										<div className="rounded-md border border-border bg-card p-3">
+											<div className="mb-2 text-xs uppercase tracking-wide text-muted-foreground">
 												Credit Cards
 											</div>
-											<ul className="space-y-1 text-zinc-300">
+											<ul className="space-y-1 text-muted-foreground">
 												<li>
-													<span className="rounded-full border border-rose-600/40 bg-rose-500/10 px-2 py-0.5 text-[10px] text-rose-300">
+													<span className="rounded-full border border-destructive/40 bg-destructive/10 px-2 py-0.5 text-[10px] text-destructive">
 														CC Purchases
 													</span>{" "}
 													New charges on the card.
 												</li>
 												<li>
-													<span className="rounded-full border border-emerald-600/40 bg-emerald-500/10 px-2 py-0.5 text-[10px] text-emerald-300">
+													<span className="rounded-full border border-success/40 bg-success/10 px-2 py-0.5 text-[10px] text-success">
 														CC Payments
 													</span>{" "}
 													Principal paid from cash.
 												</li>
 												<li>
-													<span className="rounded-full border border-emerald-600/40 bg-emerald-500/10 px-2 py-0.5 text-[10px] text-emerald-300">
+													<span className="rounded-full border border-success/40 bg-success/10 px-2 py-0.5 text-[10px] text-success">
 														CC Refunds
 													</span>{" "}
 													Returns/credits back to the card.
 												</li>
 												<li>
-													<span className="rounded-full border border-rose-600/40 bg-rose-500/10 px-2 py-0.5 text-[10px] text-rose-300">
+													<span className="rounded-full border border-destructive/40 bg-destructive/10 px-2 py-0.5 text-[10px] text-destructive">
 														Interest/Fees
 													</span>{" "}
 													Cost of borrowing (not principal).
@@ -484,11 +484,11 @@ function RouteComponent() {
 										</div>
 									</div>
 
-									<div className="rounded-md border border-zinc-800 bg-zinc-900 p-3">
-										<div className="mb-1 text-xs uppercase tracking-wide text-zinc-400">
+									<div className="rounded-md border border-border bg-card p-3">
+										<div className="mb-1 text-xs uppercase tracking-wide text-muted-foreground">
 											Formulas
 										</div>
-										<ul className="list-disc pl-5 space-y-1 text-zinc-300">
+										<ul className="list-disc pl-5 space-y-1 text-muted-foreground">
 											<li>
 												<span className="font-semibold">Cash Net (cash-only)</span> = Cash In −
 												Cash Out − Savings
@@ -506,8 +506,8 @@ function RouteComponent() {
 										</ul>
 									</div>
 
-									<div className="rounded-md border border-zinc-800 bg-zinc-900 p-3 text-zinc-300">
-										<div className="mb-1 text-xs uppercase tracking-wide text-zinc-400">Tips</div>
+									<div className="rounded-md border border-border bg-card p-3 text-muted-foreground">
+										<div className="mb-1 text-xs uppercase tracking-wide text-muted-foreground">Tips</div>
 										<ul className="list-disc pl-5 space-y-1">
 											<li>Values are shown as positive magnitudes for readability.</li>
 											<li>
@@ -527,7 +527,7 @@ function RouteComponent() {
 				)}
 
 				{isLoading ? (
-					<div className="text-zinc-400">Loading…</div>
+					<div className="text-muted-foreground">Loading…</div>
 				) : view === "charts" ? (
 					<ChartsView rows={rows} period={period} />
 				) : (

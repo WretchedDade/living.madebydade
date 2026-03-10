@@ -21,7 +21,7 @@ export function getPlaidConfig() {
 		env: process.env.PLAID_ENV as keyof typeof PlaidEnvironments,
 		redirectUri: process.env.PLAID_REDIRECT_URI,
 
-		clientName: "The Living Ledger | MadeByDade",
+		clientName: "Magic Living | MadeByDade",
 
 		language: "en",
 		countryCodes: [CountryCode.Us],

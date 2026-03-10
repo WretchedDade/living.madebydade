@@ -35,14 +35,11 @@ export const Route = createRootRouteWithContext<RouterContext>()({
 		],
 		links: [
 			{ rel: "stylesheet", href: appCss },
-			{ rel: "apple-touch-icon", href: "/apple-touch-icon.png", sizes: "180x180" },
-			{ rel: "icon", href: "/favicon-32x32.png", sizes: "32x32", type: "image/png" },
-			{ rel: "icon", href: "/favicon-16x16.png", sizes: "16x16", type: "image/png" },
-			{ rel: "manifest", href: "/site.webmanifest" },
-			{ rel: "mask-icon", href: "/safari-pinned-tab.svg", color: "#5bbad5" },
+			{ rel: "icon", href: "/favicon.svg", type: "image/svg+xml" },
+			{ rel: "icon", href: "/favicon-96x96.png", sizes: "96x96", type: "image/png" },
 			{ rel: "shortcut icon", href: "/favicon.ico" },
-			{ rel: "android-chrome", href: "/android-chrome-192x192.png", sizes: "192x192", type: "image/png" },
-			{ rel: "android-chrome", href: "/android-chrome-512x512.png", sizes: "512x512", type: "image/png" },
+			{ rel: "apple-touch-icon", href: "/apple-touch-icon.png", sizes: "180x180" },
+			{ rel: "manifest", href: "/site.webmanifest" },
 		],
 		scripts: [
 			{ src: initThemeScript },
@@ -76,7 +73,7 @@ function RootComponent() {
 	});
 
 	return (
-		<ThemeProvider storageKey="living-madebydade-theme">
+		<ThemeProvider>
 			<AuthProvider>
 				<ConvexProviderWithClerk useAuth={useAuth} client={convexClient}>
 					<RootDocument>
@@ -112,7 +109,7 @@ const TanStackRouterDevtools =
 
 function RootDocument({ children }: { children: React.ReactNode }) {
 	return (
-		<html className="bg-zinc-800 text-white">
+		<html className="bg-background text-foreground">
 			<head>
 				<HeadContent />
 			</head>

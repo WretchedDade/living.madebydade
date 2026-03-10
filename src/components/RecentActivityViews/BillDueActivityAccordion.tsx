@@ -8,7 +8,7 @@ export function BillDueActivityAccordion({ activity }: { activity: BillDueActivi
 		<RecentActivityAccordion
 			activity={activity as ActivityDoc}
 			label={`${billName} Due`}
-			borderClass="border-cyan-400"
+			borderClass="border-primary"
 		>
 			{dueDate && <div>Due: {dueDate}</div>}
 			<div className="mt-2">

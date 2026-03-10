@@ -41,12 +41,12 @@ function BillsPage() {
 							title="Back to Home"
 							size="sm"
 							variant="subtle"
-							className="text-zinc-300 hover:text-white bg-zinc-800 border border-zinc-700"
+							className="text-muted-foreground hover:text-foreground bg-muted border border-border"
 						>
 							<ArrowUturnLeftIcon className="w-4 h-4" />
 							Back to Home
 						</Link>
-						<hr className="my-4 border-zinc-500" />
+						<hr className="my-4 border-border" />
 					</div>
 					<div className="mb-10 flex items-center justify-between">
 						<SciFiBars count={9} />
@@ -57,7 +57,7 @@ function BillsPage() {
 					</div>
 					<SectionHeader
 						icon={
-							<ListBulletIcon className="relative w-7 h-7 text-white drop-shadow-[0_0_6px_rgba(34,211,238,0.7)]" />
+							<ListBulletIcon className="relative w-7 h-7 text-foreground drop-shadow-[0_0_6px_rgba(34,211,238,0.7)]" />
 						}
 						title="Configured Bills"
 					/>
@@ -67,17 +67,17 @@ function BillsPage() {
 				</div>
 				<div className="w-full px-2 sm:px-4">
 					{bills.data?.length === 0 ? (
-						<div className="text-zinc-400 text-center py-8 text-lg">No bills configured yet.</div>
+						<div className="text-muted-foreground text-center py-8 text-lg">No bills configured yet.</div>
 					) : (
 						<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
 							{bills.data?.map(bill => (
 								<div
 									key={bill._id}
-									className="relative bg-zinc-900 rounded-xl shadow-lg p-4 flex flex-row border border-cyan-900/40 hover:border-cyan-400 hover:shadow-[0_0_16px_0_rgba(34,211,238,0.4)] transition-shadow duration-300 min-h-[120px] overflow-hidden"
+									className="relative bg-card rounded-xl shadow-lg p-4 flex flex-row border border-border hover:border-primary hover:shadow-lg transition-shadow duration-300 min-h-[120px] overflow-hidden"
 								>
 									<div className="flex flex-col flex-1 relative z-10 gap-3">
 										<div className="flex items-center justify-between mb-1">
-											<span className="font-bold text-neutral-100 text-lg">{bill.name}</span>
+											<span className="font-bold text-foreground text-lg">{bill.name}</span>
 											<div className="flex gap-2">
 												<Button
 													variant="subtle"
@@ -100,7 +100,7 @@ function BillsPage() {
 												</Button>
 											</div>
 										</div>
-										<span className="text-neutral-200 text-xl font-extrabold mb-2 tracking-wide">
+										<span className="text-foreground text-xl font-extrabold mb-2 tracking-wide">
 											${formatCentsAsDollars(bill.amount)}
 										</span>
 										<div className="flex items-center gap-2 mb-1">
@@ -153,7 +153,7 @@ function BillsPage() {
 					}}
 					title="Delete Bill"
 				>
-					<div className="text-zinc-200 mb-4">
+					<div className="text-foreground mb-4">
 						Are you sure you want to delete <span className="font-bold">{billToDelete?.name}</span>?
 						<br />
 						This action cannot be undone.

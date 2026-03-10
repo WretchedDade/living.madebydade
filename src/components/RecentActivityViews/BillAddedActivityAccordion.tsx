@@ -34,10 +34,10 @@ export function BillAddedActivityAccordion({ activity }: { activity: BillAddedAc
 			borderClass="border-blue-500"
 		>
 			{bill === undefined ? (
-				<div className="text-zinc-400 italic">Loading bill details...</div>
+				<div className="text-muted-foreground italic">Loading bill details...</div>
 			) : bill ? (
 				<div className="mb-2">
-					<span className="font-semibold block mb-4 text-zinc-200 text-base">Bill Details</span>
+					<span className="font-semibold block mb-4 text-foreground text-base">Bill Details</span>
 					<ResponsiveKeyValueTable
 						rows={rows}
 						columns={["Field", "Value"]}
@@ -45,7 +45,7 @@ export function BillAddedActivityAccordion({ activity }: { activity: BillAddedAc
 					/>
 				</div>
 			) : (
-				<div className="text-zinc-400 italic">Bill details not found.</div>
+				<div className="text-muted-foreground italic">Bill details not found.</div>
 			)}
 		</RecentActivityAccordion>
 	);

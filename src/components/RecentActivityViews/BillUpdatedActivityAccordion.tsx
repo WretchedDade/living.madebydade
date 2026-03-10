@@ -33,7 +33,7 @@ export function BillUpdatedActivityAccordion({ activity }: { activity: BillUpdat
 		>
 			{changes.length > 0 ? (
 				<div className="mb-2">
-					<span className="font-semibold block mb-4 text-zinc-200 text-base">Changes</span>
+					<span className="font-semibold block mb-4 text-foreground text-base">Changes</span>
 					<ResponsiveKeyValueTable
 						rows={rows}
 						columns={["Field", "Before", "After"]}
@@ -41,7 +41,7 @@ export function BillUpdatedActivityAccordion({ activity }: { activity: BillUpdat
 					/>
 				</div>
 			) : (
-				<div className="mb-2 text-zinc-400 italic">No changes detected.</div>
+				<div className="mb-2 text-muted-foreground italic">No changes detected.</div>
 			)}
 		</RecentActivityAccordion>
 	);

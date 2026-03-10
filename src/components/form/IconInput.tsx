@@ -9,12 +9,12 @@ interface IconInputProps extends React.InputHTMLAttributes<HTMLInputElement> {
 export function IconInput({ icon, className = "", inputClassName = "", ...props }: IconInputProps) {
 	return (
 		<div className={`relative w-full ${className}`}>
-			<span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-cyan-300 text-lg pointer-events-none">
+			<span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-primary text-lg pointer-events-none">
 				{icon}
 			</span>
 			<input
 				{...props}
-				className={`w-full pl-8 rounded border border-cyan-400 bg-zinc-800 text-white p-2 ${inputClassName}`}
+				className={`w-full pl-8 rounded border border-border bg-card text-white p-2 ${inputClassName}`}
 			/>
 		</div>
 	);

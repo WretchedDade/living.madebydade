@@ -12,7 +12,7 @@ interface AvatarProps {
 
 export function Avatar({ avatarUrl, userName = "User", size = "sm", className = "", isSignedIn = true }: AvatarProps) {
 	const base = size === "lg" ? "w-12 h-12 text-xl" : "w-10 h-10 text-base";
-	const bgColor = isSignedIn ? "bg-cyan-500" : "bg-zinc-600";
+	const bgColor = isSignedIn ? "bg-primary" : "bg-muted";
 	return (
 		<RadixAvatar.Root
 			className={`${bgColor} rounded-full flex items-center justify-center font-bold ${base} ${className}`}
@@ -24,7 +24,7 @@ export function Avatar({ avatarUrl, userName = "User", size = "sm", className = 
 				{isSignedIn && !avatarUrl ? (
 					userName.charAt(0).toUpperCase()
 				) : (
-					<UserIcon className="w-6 h-6 text-zinc-300" />
+					<UserIcon className="w-6 h-6 text-muted-foreground" />
 				)}
 			</RadixAvatar.Fallback>
 		</RadixAvatar.Root>

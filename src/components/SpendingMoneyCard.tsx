@@ -12,16 +12,16 @@ export function SpendingMoneyCard() {
 
 	const spendingState = spendingMoney < 0 ? "negative" : spendingMoney < 100 ? "low" : "ok";
 	const spendingBgClass =
-		spendingState === "negative" ? "bg-red-900/80" : spendingState === "low" ? "bg-amber-900/80" : "bg-cyan-900/80";
+		spendingState === "negative" ? "bg-red-900/80" : spendingState === "low" ? "bg-amber-900/80" : "bg-primary/20";
 	const spendingTitleColor =
-		spendingState === "negative" ? "text-red-300" : spendingState === "low" ? "text-amber-300" : "text-cyan-300";
+		spendingState === "negative" ? "text-red-300" : spendingState === "low" ? "text-amber-300" : "text-primary";
 	const spendingValueColor =
-		spendingState === "negative" ? "text-red-400" : spendingState === "low" ? "text-amber-400" : "text-cyan-400";
+		spendingState === "negative" ? "text-red-400" : spendingState === "low" ? "text-amber-400" : "text-primary";
 
 	if (isLoading) {
 		return (
 			<div className="mb-6">
-				<div className="relative bg-zinc-800 rounded-xl shadow-lg p-6 flex flex-col items-center justify-center overflow-hidden">
+				<div className="relative bg-muted rounded-xl shadow-lg p-6 flex flex-col items-center justify-center overflow-hidden">
 					<div className="shimmer-bg opacity-40" />
 					<div className="relative z-10 w-40 h-6" />
 					<div className="relative z-10 w-56 h-10" />

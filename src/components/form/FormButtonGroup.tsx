@@ -13,7 +13,7 @@ export function FormButtonGroup({ onCancel, submitLabel = "Submit" }: FormButton
 			<Button
 				type="button"
 				variant="ghost"
-				className="text-cyan-400 flex items-center gap-2 font-normal"
+				className="text-primary flex items-center gap-2 font-normal"
 				onClick={onCancel}
 			>
 				Cancel

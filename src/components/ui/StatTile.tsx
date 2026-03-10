@@ -8,20 +8,20 @@ export function StatTile({
 }: {
 	label: string;
 	value: ReactElement | string | number;
-	tone?: "default" | "emerald" | "rose" | "cyan";
+	tone?: "default" | "success" | "destructive" | "primary";
 	extraClassName?: string;
 }): ReactElement {
 	const toneCls =
-		tone === "emerald"
-			? "text-emerald-300"
-			: tone === "rose"
-				? "text-rose-300"
-				: tone === "cyan"
-					? "text-cyan-300"
-					: "text-zinc-100";
+		tone === "success"
+			? "text-success"
+			: tone === "destructive"
+				? "text-destructive"
+				: tone === "primary"
+					? "text-primary"
+					: "text-foreground";
 	return (
-		<div className={`rounded-md border border-zinc-800 bg-zinc-900/70 p-2 ${extraClassName ?? ""}`}>
-			<div className="text-zinc-400">{label}</div>
+		<div className={`rounded-md border border-border bg-card p-2 ${extraClassName ?? ""}`}>
+			<div className="text-muted-foreground">{label}</div>
 			<div className={`${toneCls} font-mono`}>{value}</div>
 		</div>
 	);

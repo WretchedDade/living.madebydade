@@ -15,10 +15,10 @@ export function CheckboxField({ label, checked, onChange, id = "checkbox", class
 			<Checkbox
 				checked={checked}
 				onCheckedChange={onChange}
-				className="w-5 h-5 border border-cyan-400 bg-zinc-800 data-[state=checked]:bg-cyan-400 data-[state=checked]:border-cyan-400 rounded"
+				className="w-5 h-5 border border-border bg-card data-[state=checked]:bg-primary data-[state=checked]:border-primary rounded"
 				id={id}
 			/>
-			<label htmlFor={id} className="text-cyan-300 font-bold">
+			<label htmlFor={id} className="text-primary font-bold">
 				{label}
 			</label>
 		</div>

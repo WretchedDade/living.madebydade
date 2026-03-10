@@ -4,7 +4,6 @@ import { getButtonStyles, ButtonStyleOptions } from "./buttonStyles";
 
 export interface LinkProps extends React.ComponentProps<typeof RouterLink>, ButtonStyleOptions {
 	children?: ReactNode;
-	color?: ButtonStyleOptions["color"];
 }
 
 export function Link({
@@ -22,12 +21,9 @@ export function Link({
 		icon,
 		circular,
 		className,
-		color: rest.color,
 	});
-	// Remove color from rest so it doesn't get passed to RouterLink
-	const { color, ...routerProps } = rest;
 	return (
-		<RouterLink {...routerProps} className={classes}>
+		<RouterLink {...rest} className={classes}>
 			{children}
 		</RouterLink>
 	);

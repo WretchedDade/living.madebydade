@@ -79,8 +79,8 @@ function prettyCategoryName(raw: string): string {
 // --- UI building blocks ---
 function ChartCard({ title, children }: { title: string; children: ReactNode }) {
 	return (
-		<div className="rounded-md border border-zinc-800 bg-zinc-900 p-3">
-			<div className="mb-2 text-xs uppercase tracking-wide text-zinc-400">{title}</div>
+		<div className="rounded-md border border-border bg-card p-3">
+			<div className="mb-2 text-xs uppercase tracking-wide text-muted-foreground">{title}</div>
 			{children}
 		</div>
 	);
@@ -89,8 +89,8 @@ function ChartCard({ title, children }: { title: string; children: ReactNode }) 
 function ChartTooltip({ active, payload, displayLabel, formatValue }: TooltipProps<number, string> & { displayLabel?: string; formatValue?: (v: number) => string }) {
 	if (!active || !payload || payload.length === 0) return null;
 	return (
-		<div className="rounded-md border border-zinc-700 bg-zinc-900/95 text-zinc-100 shadow-lg px-3 py-2">
-			{displayLabel ? <div className="text-xs font-medium text-zinc-300 mb-1">{displayLabel}</div> : null}
+		<div className="rounded-md border border-border bg-card text-foreground shadow-lg px-3 py-2">
+			{displayLabel ? <div className="text-xs font-medium text-muted-foreground mb-1">{displayLabel}</div> : null}
 			<div className="space-y-1">
 				{payload.map(it => {
 					const color = it.color ?? "#22d3ee";
@@ -102,7 +102,7 @@ function ChartTooltip({ active, payload, displayLabel, formatValue }: TooltipPro
 						<div key={key} className="flex items-center justify-between gap-3">
 							<div className="flex items-center gap-2">
 								<span className="inline-block w-2 h-2 rounded-sm" style={{ backgroundColor: color }} />
-								<span className="text-xs text-zinc-300">{name}</span>
+								<span className="text-xs text-muted-foreground">{name}</span>
 							</div>
 							<span className="text-xs font-mono">{valStr}</span>
 						</div>
@@ -115,7 +115,7 @@ function ChartTooltip({ active, payload, displayLabel, formatValue }: TooltipPro
 
 // --- Charts ---
 export function NetFlowLineChart({ rows, period }: { rows: Summary[]; period: Period }) {
-	if (rows.length === 0) return <div className="text-zinc-400">No data.</div>;
+	if (rows.length === 0) return <div className="text-muted-foreground">No data.</div>;
 	type NetPoint = { label: string; net: number };
 	const data: NetPoint[] = rows.map(r => ({ label: labelForRow(r, period), net: getCashNet(r) }));
 	return (
@@ -153,7 +153,7 @@ export function NetFlowLineChart({ rows, period }: { rows: Summary[]; period: Pe
 }
 
 export function CashStackedBars({ rows, period }: { rows: Summary[]; period: Period }) {
-	if (rows.length === 0) return <div className="text-zinc-400">No data.</div>;
+	if (rows.length === 0) return <div className="text-muted-foreground">No data.</div>;
 	type CashPoint = { label: string; cashIn: number; cashOut: number; savings: number };
 	const data: CashPoint[] = rows.map(r => ({
 		label: labelForRow(r, period),
@@ -191,7 +191,7 @@ export function CashStackedBars({ rows, period }: { rows: Summary[]; period: Per
 }
 
 export function CreditGroupedBars({ rows, period }: { rows: Summary[]; period: Period }) {
-	if (rows.length === 0) return <div className="text-zinc-400">No data.</div>;
+	if (rows.length === 0) return <div className="text-muted-foreground">No data.</div>;
 	type CreditPoint = { label: string; purchases: number; payments: number; refunds: number; fees: number };
 	const data: CreditPoint[] = rows.map(r => ({
 		label: labelForRow(r, period),
@@ -243,22 +243,22 @@ export function ChartsView({ rows, period }: { rows: Summary[]; period: Period }
 			{/* Totals strip */}
 			<div className="grid grid-cols-2 sm:grid-cols-3 gap-3 text-xs">
 				<ChartCard title="Cash In">
-					<div className="text-emerald-300 font-medium">{formatCurrency(totalCashIn)}</div>
+					<div className="text-success font-medium">{formatCurrency(totalCashIn)}</div>
 				</ChartCard>
 				<ChartCard title="Cash Out">
-					<div className="text-rose-300 font-medium">{formatCurrency(totalCashOut)}</div>
+					<div className="text-destructive font-medium">{formatCurrency(totalCashOut)}</div>
 				</ChartCard>
 				<ChartCard title="Savings">
-					<div className="text-cyan-300 font-medium">{formatCurrency(totalSavings)}</div>
+					<div className="text-primary font-medium">{formatCurrency(totalSavings)}</div>
 				</ChartCard>
 				<ChartCard title="CC Purchases">
-					<div className="text-rose-300 font-medium">{formatCurrency(totalPurchases)}</div>
+					<div className="text-destructive font-medium">{formatCurrency(totalPurchases)}</div>
 				</ChartCard>
 				<ChartCard title="CC Payments">
-					<div className="text-emerald-300 font-medium">{formatCurrency(totalPayments)}</div>
+					<div className="text-success font-medium">{formatCurrency(totalPayments)}</div>
 				</ChartCard>
 				<ChartCard title="Net (cash-basis)">
-					<div className={netSum >= 0 ? "text-emerald-300 font-medium" : "text-rose-300 font-medium"}>
+					<div className={netSum >= 0 ? "text-success font-medium" : "text-destructive font-medium"}>
 						{formatCurrency(netSum)}
 					</div>
 				</ChartCard>
@@ -266,28 +266,28 @@ export function ChartsView({ rows, period }: { rows: Summary[]; period: Period }
 
 			{/* Chart toggles */}
 			<Tabs.Root defaultValue="net" className="space-y-3">
-				<Tabs.List className="flex gap-2 border-b border-zinc-800 pb-2 overflow-x-auto">
+				<Tabs.List className="flex gap-2 border-b border-border pb-2 overflow-x-auto">
 					<Tabs.Trigger
 						value="net"
-						className="whitespace-nowrap rounded-md px-3 py-1.5 text-sm text-zinc-300 data-[state=active]:bg-zinc-800 data-[state=active]:text-cyan-300"
+						className="whitespace-nowrap rounded-md px-3 py-1.5 text-sm text-muted-foreground data-[state=active]:bg-muted data-[state=active]:text-primary"
 					>
 						Net
 					</Tabs.Trigger>
 					<Tabs.Trigger
 						value="cash"
-						className="whitespace-nowrap rounded-md px-3 py-1.5 text-sm text-zinc-300 data-[state=active]:bg-zinc-800 data-[state=active]:text-cyan-300"
+						className="whitespace-nowrap rounded-md px-3 py-1.5 text-sm text-muted-foreground data-[state=active]:bg-muted data-[state=active]:text-primary"
 					>
 						Cash
 					</Tabs.Trigger>
 					<Tabs.Trigger
 						value="credit"
-						className="whitespace-nowrap rounded-md px-3 py-1.5 text-sm text-zinc-300 data-[state=active]:bg-zinc-800 data-[state=active]:text-cyan-300"
+						className="whitespace-nowrap rounded-md px-3 py-1.5 text-sm text-muted-foreground data-[state=active]:bg-muted data-[state=active]:text-primary"
 					>
 						Credit
 					</Tabs.Trigger>
 					<Tabs.Trigger
 						value="categories"
-						className="whitespace-nowrap rounded-md px-3 py-1.5 text-sm text-zinc-300 data-[state=active]:bg-zinc-800 data-[state=active]:text-cyan-300"
+						className="whitespace-nowrap rounded-md px-3 py-1.5 text-sm text-muted-foreground data-[state=active]:bg-muted data-[state=active]:text-primary"
 					>
 						Categories
 					</Tabs.Trigger>
@@ -405,7 +405,7 @@ export function CategoriesPieChart(
 			{selectedKey ? (
 				<div className="mt-3">
 					<div className="mb-2 flex items-center justify-between">
-						<div className="text-sm text-zinc-200">
+						<div className="text-sm text-foreground">
 							{selectedKey === "OTHER" ? "Other" : prettyCategoryName(selectedKey)} • {(() => {
 								const v = selectedKey === "OTHER"
 									? (dataPoints.find(d => d.key === null)?.value ?? 0)
@@ -414,7 +414,7 @@ export function CategoriesPieChart(
 								return `${formatCurrency(v)} (${pct}%)`;
 							})()}
 						</div>
-						<button onClick={() => setSelectedKey(null)} className="text-xs text-zinc-300 hover:text-zinc-100 rounded px-2 py-1 border border-zinc-700 bg-zinc-800">Clear</button>
+						<button onClick={() => setSelectedKey(null)} className="text-xs text-muted-foreground hover:text-foreground rounded px-2 py-1 border border-border bg-muted">Clear</button>
 					</div>
 					{(() => {
 						const topKeys = new Set(top.map(t => t.key));

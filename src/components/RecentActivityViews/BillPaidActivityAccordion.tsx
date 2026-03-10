@@ -38,9 +38,9 @@ export function BillPaidActivityAccordion({ activity }: { activity: BillPaidActi
 	let billDetails = null;
 	if (paymentQuery.isSuccess && billQuery.isSuccess && paymentQuery.data && billQuery.data) {
 		paymentDetails = (
-			<div className="mb-4 p-4 bg-zinc-900 border border-green-700 rounded-lg shadow-lg flex flex-col gap-4">
+			<div className="mb-4 p-4 bg-card border border-green-700 rounded-lg shadow-lg flex flex-col gap-4">
 				<div className="flex items-center gap-3 mb-2">
-					<span className="inline-block px-3 py-1 rounded-full bg-green-600 text-white text-xs font-bold tracking-wide shadow">
+					<span className="inline-block px-3 py-1 rounded-full bg-green-600 text-foreground text-xs font-bold tracking-wide shadow">
 						Paid{" "}
 						{paymentQuery.data.datePaid
 							? new Date(paymentQuery.data.datePaid).toLocaleString(undefined, {
@@ -55,8 +55,8 @@ export function BillPaidActivityAccordion({ activity }: { activity: BillPaidActi
 						{formatCurrency(billQuery.data.amount)}
 					</div>
 					<div className="flex gap-2">
-						<span className="font-semibold text-zinc-400">Due Date:</span>
-						<span className="text-zinc-200">
+						<span className="font-semibold text-muted-foreground">Due Date:</span>
+						<span className="text-foreground">
 							{paymentQuery.data.dateDue
 								? new Date(paymentQuery.data.dateDue).toLocaleDateString(undefined, {
 										dateStyle: "medium",
@@ -65,12 +65,12 @@ export function BillPaidActivityAccordion({ activity }: { activity: BillPaidActi
 						</span>
 					</div>
 					<div className="flex gap-2">
-						<span className="font-semibold text-zinc-400">Auto-Pay:</span>
-						<span className="text-zinc-200">{paymentQuery.data.isAutoPay ? "Yes" : "No"}</span>
+						<span className="font-semibold text-muted-foreground">Auto-Pay:</span>
+						<span className="text-foreground">{paymentQuery.data.isAutoPay ? "Yes" : "No"}</span>
 					</div>
 					<div className="flex gap-2">
-						<span className="font-semibold text-zinc-400">Paid By:</span>
-						<span className="text-zinc-200">{getUserDisplayName()}</span>
+						<span className="font-semibold text-muted-foreground">Paid By:</span>
+						<span className="text-foreground">{getUserDisplayName()}</span>
 					</div>
 				</div>
 			</div>
@@ -85,14 +85,14 @@ export function BillPaidActivityAccordion({ activity }: { activity: BillPaidActi
 		>
 			<div>
 				{(paymentQuery.isLoading || billQuery.isLoading) && (
-					<div className="text-zinc-400 italic">Loading payment and bill details...</div>
+					<div className="text-muted-foreground italic">Loading payment and bill details...</div>
 				)}
 				{!paymentQuery.isSuccess ||
 					(paymentQuery.data == null && (
-						<div className="text-zinc-400 italic">Payment details not found.</div>
+						<div className="text-muted-foreground italic">Payment details not found.</div>
 					))}
 				{!billQuery.isSuccess ||
-					(billQuery.data == null && <div className="text-zinc-400 italic">Bill details not found.</div>)}
+					(billQuery.data == null && <div className="text-muted-foreground italic">Bill details not found.</div>)}
 				{paymentDetails}
 				{billDetails}
 			</div>

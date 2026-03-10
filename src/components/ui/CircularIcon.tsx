@@ -1,7 +1,5 @@
 import React from "react";
 
-import { useTheme } from "../provider/ThemeProvider";
-
 type IconType = React.ElementType<{ className?: string }>;
 
 interface CircularIconProps {
@@ -17,12 +15,10 @@ interface CircularIconProps {
  * - `size`: sets width/height (default: 48px)
  */
 export function CircularIcon({ icon: Icon, image, size = 48 }: CircularIconProps) {
-	const { theme } = useTheme();
 	return (
 		<span
-			className={`relative flex items-center justify-center rounded-full border-[var(--border-color)] border-2 ring-4 shadow-[var(--shadow-lg)]`}
+			className="relative flex items-center justify-center rounded-full border-border border-2 ring-4 ring-primary/30 shadow-lg"
 			style={{ width: size, height: size }}
-			data-theme={theme}
 		>
 			{/* Decorative radial gradient overlay for visual interest */}
 			<span

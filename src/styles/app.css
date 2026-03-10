@@ -1,14 +1,14 @@
-/* Shimmer animation for Spending Money card */
+/* Shimmer animation for card highlights */
 .shimmer-bg {
 	position: absolute;
 	inset: 0;
 	pointer-events: none;
-	border-radius: 0.75rem; /* matches rounded-xl */
+	border-radius: 0.75rem;
 	background: linear-gradient(
 		120deg,
-		rgba(0, 255, 255, 0.08) 0%,
-		rgba(0, 255, 255, 0.18) 40%,
-		rgba(0, 255, 255, 0.08) 80%
+		hsl(var(--primary) / 0.06) 0%,
+		hsl(var(--primary) / 0.14) 40%,
+		hsl(var(--primary) / 0.06) 80%
 	);
 	background-size: 200% 100%;
 	animation: shimmer 10s linear infinite;
@@ -16,93 +16,64 @@
 }
 
 @keyframes shimmer {
-	0% {
-		background-position: -200% 0;
-	}
-	100% {
-		background-position: 200% 0;
-	}
-}
-@keyframes charging-bar {
-	0% {
-		background-size: 0% 100%;
-	}
-	90% {
-		background-size: 100% 100%;
-	}
-	100% {
-		background-size: 0% 100%;
-	}
+	0% { background-position: -200% 0; }
+	100% { background-position: 200% 0; }
 }
 
 @keyframes charging-bar {
-	0% {
-		background-position: 0% 50%;
-	}
-	100% {
-		background-position: 100% 50%;
-	}
+	0% { background-position: 0% 50%; }
+	100% { background-position: 100% 50%; }
 }
 
 .animate-charging-bar {
-	animation: charging-bar 2.5s linear infinite;
+	animation: charging-bar 2.5s cubic-bezier(0.4, 0, 0.2, 1) infinite;
 	background-size: 200% 200%;
 }
-.animate-charging-bar {
-	width: 0%;
-	animation: charging-bar 2.5s cubic-bezier(0.4, 0, 0.2, 1) infinite;
-}
-/* Game-themed dark scrollbar for the whole app */
+
+/* Scrollbar */
 html {
 	scrollbar-width: thin;
-	scrollbar-color: #22d3ee #18181b;
+	scrollbar-color: hsl(var(--primary)) hsl(var(--background));
 }
 
 body::-webkit-scrollbar,
 html::-webkit-scrollbar {
-	width: 10px;
-	background: #18181b;
+	width: 8px;
+	background: hsl(var(--background));
 }
 
 body::-webkit-scrollbar-thumb,
 html::-webkit-scrollbar-thumb {
-	background: linear-gradient(135deg, #22d3ee 0%, #0e7490 100%);
+	background: hsl(var(--primary) / 0.5);
 	border-radius: 8px;
-	border: 2px solid #18181b;
+	border: 2px solid hsl(var(--background));
 }
 
-body::-webkit-scrollbar-track,
-html::-webkit-scrollbar-track {
-	background: #18181b;
-	border-radius: 8px;
+body::-webkit-scrollbar-thumb:hover,
+html::-webkit-scrollbar-thumb:hover {
+	background: hsl(var(--primary) / 0.7);
 }
 
 @import "tailwindcss";
 
 @keyframes gradient-x {
-	0% {
-		background-position: 0% 0%;
-	}
-	50% {
-		background-position: 100% 0%;
-	}
-	100% {
-		background-position: 0% 0%;
-	}
+	0% { background-position: 0% 0%; }
+	50% { background-position: 100% 0%; }
+	100% { background-position: 0% 0%; }
 }
 
 .animate-gradient-x {
 	background-size: 200% 100%;
 	animation: gradient-x 4s linear infinite;
 }
-/* Hide number input spinners for Chrome, Safari, Edge */
+
+/* Hide number input spinners */
 input[type="number"]::-webkit-outer-spin-button,
 input[type="number"]::-webkit-inner-spin-button {
 	-webkit-appearance: none;
 	margin: 0;
 }
 
-/* Hide number input spinners for Firefox */
 input[type="number"] {
 	-moz-appearance: textfield;
 }

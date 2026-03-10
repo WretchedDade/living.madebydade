@@ -5,24 +5,24 @@ import { PillBadge } from "./PillBadge";
 
 export function TxnSection({ title, txs }: { title: string; txs: Doc<"transactions">[] }): ReactElement {
 	return (
-		<div className="rounded-md border border-zinc-800 bg-zinc-900/70 overflow-x-hidden">
-			<div className="flex items-center justify-between px-3 py-2 border-b border-zinc-800">
-				<div className="text-zinc-200 text-sm font-medium">{title}</div>
-				<div className="text-zinc-400 text-xs font-mono">
+		<div className="rounded-md border border-border bg-card overflow-x-hidden">
+			<div className="flex items-center justify-between px-3 py-2 border-b border-border">
+				<div className="text-foreground text-sm font-medium">{title}</div>
+				<div className="text-muted-foreground text-xs font-mono">
 					{formatCurrency(txs.reduce((s, t) => s + t.amount, 0))}
 				</div>
 			</div>
-			<div className="divide-y divide-zinc-800 overflow-x-hidden">
+			<div className="divide-y divide-border overflow-x-hidden">
 				{txs.map(t => (
 					<div key={t._id} className="flex w-full items-center justify-between gap-3 px-3 py-2">
 						<div className="flex-1 min-w-0 pr-2">
 							<div
-								className="truncate text-zinc-100 text-sm w-full max-w-[40ch] md:max-w-[56ch]"
+								className="truncate text-foreground text-sm w-full max-w-[40ch] md:max-w-[56ch]"
 								title={t.merchantName ?? t.name}
 							>
 								{t.merchantName ?? t.name}
 							</div>
-							<div className="mt-0.5 flex flex-wrap items-center gap-1 text-[10px] text-zinc-400">
+							<div className="mt-0.5 flex flex-wrap items-center gap-1 text-[10px] text-muted-foreground">
 								<span>{new Date(t.authorizedDate ?? t.date).toLocaleDateString()}</span>
 								{t.accountType ? <PillBadge label={t.accountType} /> : null}
 								{t.isCreditCardPayment ? <PillBadge label="cc payment" /> : null}
@@ -32,7 +32,7 @@ export function TxnSection({ title, txs }: { title: string; txs: Doc<"transactio
 							</div>
 						</div>
 						<div
-							className={`shrink-0 text-right font-mono ${t.amount < 0 ? "text-emerald-300" : "text-rose-300"}`}
+							className={`shrink-0 text-right font-mono ${t.amount < 0 ? "text-success" : "text-destructive"}`}
 						>
 							{formatCurrency(t.amount)}
 						</div>

@@ -62,7 +62,7 @@ export function BillForm({ initialValues, onSubmit, submitLabel = "Save", onCanc
 								field.validate("blur");
 							}}
 							placeholder="Enter bill name"
-							className="w-full rounded border border-cyan-400 bg-zinc-800 text-white p-2"
+							className="w-full rounded border border-border bg-card text-white p-2"
 						/>
 					</FormField>
 				)}
@@ -86,7 +86,7 @@ export function BillForm({ initialValues, onSubmit, submitLabel = "Save", onCanc
 					</FormField>
 				)}
 			/>
-			<hr className="my-1 border-zinc-700" />
+			<hr className="my-1 border-border" />
 			<form.Field
 				name="dueType"
 				validators={{
@@ -129,7 +129,7 @@ export function BillForm({ initialValues, onSubmit, submitLabel = "Save", onCanc
 											field.validate("blur");
 										}}
 										placeholder="Day of month (1-31)"
-										className="w-full rounded border border-cyan-400 bg-zinc-800 text-white p-2"
+										className="w-full rounded border border-border bg-card text-white p-2"
 									/>
 								</FormField>
 							)}

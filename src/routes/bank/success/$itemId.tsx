@@ -37,10 +37,10 @@ function BankAccountsLayout({ children, sectionClassName }: BankAccountsLayoutPr
 			<main className="w-full max-w-2xl mx-auto p-4 flex flex-col justify-center grow">
 				<SciFiBars count={7} className="mb-6" />
 				<section
-					className={`bg-zinc-900 rounded-2xl shadow-lg p-0 w-full overflow-hidden ${sectionClassName ?? ""}`}
+					className={`bg-card rounded-2xl shadow-lg p-0 w-full overflow-hidden ${sectionClassName ?? ""}`}
 				>
 					<div className="p-8">{children}</div>
-					<div className="border-t border-zinc-800 bg-zinc-950/70 px-8 py-4 flex flex-col sm:flex-row sm:justify-end items-stretch gap-2">
+					<div className="border-t border-border bg-card/70 px-8 py-4 flex flex-col sm:flex-row sm:justify-end items-stretch gap-2">
 						<Link to="/bank" variant="primary" color="emerald" className="w-full sm:w-auto">
 							Go to Bank Dashboard
 						</Link>
@@ -61,7 +61,7 @@ function BankAccountsSkeleton() {
 				{[...Array(3)].map((_, i) => (
 					<div
 						key={i}
-						className="bg-zinc-800 rounded-xl p-4 flex flex-col sm:flex-row sm:items-center gap-2 border border-zinc-700"
+						className="bg-muted rounded-xl p-4 flex flex-col sm:flex-row sm:items-center gap-2 border border-border"
 					>
 						<div className="flex-1">
 							<Skeleton className="h-5 w-40 mb-2" />
@@ -79,7 +79,7 @@ function BankAccountsError({ error }: { error: Error }) {
 	return (
 		<BankAccountsLayout sectionClassName="flex flex-col items-center">
 			<h1 className="text-2xl font-bold text-red-400 mb-4">Something went wrong</h1>
-			<p className="text-zinc-300 mb-4 text-center">
+			<p className="text-muted-foreground mb-4 text-center">
 				We couldn't load your linked accounts. Please try again or contact support if the problem persists.
 			</p>
 			{error && (
@@ -94,23 +94,23 @@ function BankAccountsList({ data }: { data: Account[] }) {
 
 	return (
 		<BankAccountsLayout>
-			<h1 className="text-2xl font-bold text-cyan-400 mb-2">Bank Linked Successfully!</h1>
+			<h1 className="text-2xl font-bold text-primary mb-2">Bank Linked Successfully!</h1>
 			{institutionName && (
-				<div className="text-cyan-300 mb-2 text-lg font-semibold">{institutionName}</div>
+				<div className="text-primary mb-2 text-lg font-semibold">{institutionName}</div>
 			)}
-			<p className="text-zinc-300 mb-6">Your bank account has been linked. Here are the accounts we found:</p>
+			<p className="text-muted-foreground mb-6">Your bank account has been linked. Here are the accounts we found:</p>
 			<div className="w-full flex flex-col gap-4">
 				{data.length > 0 ? (
 					data.map((account) => (
 						<div
 							key={account.account_id}
-							className="bg-zinc-800 rounded-xl p-4 flex flex-col sm:flex-row sm:items-center gap-2 border border-zinc-700"
+							className="bg-muted rounded-xl p-4 flex flex-col sm:flex-row sm:items-center gap-2 border border-border"
 						>
 							<div className="flex-1">
-								<div className="font-semibold text-cyan-300 text-lg">
-									{account.name} <span className="text-zinc-400 font-mono">•••{account.mask}</span>
+								<div className="font-semibold text-primary text-lg">
+									{account.name} <span className="text-muted-foreground font-mono">•••{account.mask}</span>
 								</div>
-								<div className="text-zinc-400 text-sm capitalize">
+								<div className="text-muted-foreground text-sm capitalize">
 									{account.type}
 									{account.subtype ? ` • ${account.subtype}` : ""}
 								</div>
@@ -121,7 +121,7 @@ function BankAccountsList({ data }: { data: Account[] }) {
 						</div>
 					))
 				) : (
-					<div className="text-zinc-400">No accounts found.</div>
+					<div className="text-muted-foreground">No accounts found.</div>
 				)}
 			</div>
 		</BankAccountsLayout>
