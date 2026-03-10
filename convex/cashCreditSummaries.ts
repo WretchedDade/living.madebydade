@@ -194,7 +194,7 @@ export const applyTxn = internalMutation({
 			paymentChannel: (paymentChannel as string | null) ?? null,
 		} as unknown as Doc<"transactions">;
 
-		const deltas = computeCashCreditDeltas(baseTxn, accountType as TAccountType | undefined, flags ?? {});
+		const deltas = computeCashCreditDeltas(baseTxn, accountType as TAccountType | undefined, flags);
 
 		const periods: Period[] = period ? [period] : (["day", "week", "month"] as Period[]);
 
