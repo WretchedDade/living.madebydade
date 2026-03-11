@@ -187,7 +187,7 @@ export function SpendingTrend({ summaries, currentPeriodSpending, currentPeriodI
 					Income
 				</span>
 				<span className="flex items-center gap-1.5">
-					<span className="w-3 h-0.5 border-t-2 border-dashed" style={{ borderColor: successColor }} />
+					<span className="w-3 h-0.5 border-t-2 border-dashed" style={{ borderColor: "hsl(var(--muted-foreground))" }} />
 					Net
 				</span>
 			</div>
