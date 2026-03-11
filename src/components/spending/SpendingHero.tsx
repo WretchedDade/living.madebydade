@@ -133,8 +133,14 @@ export function SpendingHero({
 					)}
 				</div>
 
-				{/* Income + Net pills */}
+				{/* Stat pills */}
 				<div className="flex flex-wrap gap-2.5">
+					<StatPill
+						icon={<WalletIcon className="w-3.5 h-3.5" />}
+						label="Spent"
+						value={formatCurrency(current.totalSpending)}
+						colorClass="text-primary"
+					/>
 					<StatPill
 						icon={<DollarSignIcon className="w-3.5 h-3.5" />}
 						label="Income"
