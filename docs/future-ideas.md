@@ -4,6 +4,9 @@ Ideas and features to revisit in future sessions. Not committed to — just capt
 
 ---
 
+## Compact/Detailed View Toggle
+Bills page: add a toggle (like ADO's compact vs detailed view) in the header area. Compact mode shows just bill name + amount per row — super scannable across pay periods. Detailed mode shows the full current layout with due dates, badges, and actions. Persist the preference.
+
 ## Bill Categories
 Add a `category` field to bills (e.g. Housing, Utilities, Subscriptions, Insurance, Transportation). This would enable:
 - Category breakdown in the bills page hero (e.g. "Housing $1,850 · Subscriptions $89")
