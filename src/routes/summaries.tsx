@@ -6,11 +6,10 @@ import { api } from "@/convex/_generated/api";
 import { AppLayout } from "~/components/layout/AppLayout";
 import { SectionHeader } from "~/components/layout/SectionHeader";
 import { Button } from "~/components/ui/Button";
-import { SciFiBars } from "~/components/ui/SciFiBars";
 import { Link } from "~/components/ui/Link";
 import { formatCurrency } from "~/utils/formatters";
 import { ChartBarIcon } from "@heroicons/react/24/solid";
-import { SciFiSheet } from "~/components/feedback/SciFiSheet";
+import { Sheet } from "~/components/feedback/Sheet";
 import * as Accordion from "@radix-ui/react-accordion";
 import * as Tabs from "@radix-ui/react-tabs";
 import { Doc } from "@/convex/_generated/dataModel";
@@ -120,7 +119,7 @@ function SummaryTable({ rows, period }: { rows: Array<Doc<"cashCreditSummaries">
 				</tbody>
 			</table>
 
-			<SciFiSheet
+			<Sheet
 				open={!!openRowId}
 				onOpenChange={o => !o && setOpenRowId(null)}
 				title={(() => {
@@ -317,7 +316,7 @@ function SummaryTable({ rows, period }: { rows: Array<Doc<"cashCreditSummaries">
 						);
 					})()
 				)}
-			</SciFiSheet>
+			</Sheet>
 		</div>
 	);
 }
@@ -343,7 +342,7 @@ function RouteComponent() {
 			<main className="flex-1 w-full min-h-0 overflow-y-auto p-4 sm:p-10 space-y-6">
 				<div className="flex items-center justify-between">
 					<SectionHeader
-						icon={<ChartBarIcon className="w-4 h-4 sm:w-7 sm:h-7 text-warning" />}
+						icon={<ChartBarIcon className="w-5 h-5" />}
 						title="Cash vs Credit Summaries"
 					/>
 					<div className="flex items-center gap-2">
@@ -361,13 +360,8 @@ function RouteComponent() {
 						>
 							Charts
 						</Button>
-						<Link to="/" variant="ghost">
-							Home
-						</Link>
 					</div>
 				</div>
-
-				<SciFiBars count={8} />
 
 				<div className="flex flex-wrap items-center gap-3">
 					<span className="text-muted-foreground">Period:</span>

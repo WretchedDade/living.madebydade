@@ -5,7 +5,6 @@ import { useQuery, useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute, useParams } from "@tanstack/react-router";
 
 import { AppLayout } from "~/components/layout/AppLayout";
-import { SciFiBars } from "~/components/ui/SciFiBars";
 import { Badge } from "~/components/ui/Badge";
 import { Skeleton } from "~/components/ui/Skeleton";
 import { Button } from "~/components/ui/Button";
@@ -31,22 +30,19 @@ interface BankAccountsLayoutProps {
 	sectionClassName?: string;
 }
 function BankAccountsLayout({ children, sectionClassName }: BankAccountsLayoutProps) {
-	const navigate = useNavigate();
 	return (
 		<AppLayout>
 			<main className="w-full max-w-2xl mx-auto p-4 flex flex-col justify-center grow">
-				<SciFiBars count={7} className="mb-6" />
 				<section
-					className={`bg-card rounded-2xl shadow-lg p-0 w-full overflow-hidden ${sectionClassName ?? ""}`}
+					className={`bg-card rounded-xl shadow-sm border border-border w-full overflow-hidden ${sectionClassName ?? ""}`}
 				>
-					<div className="p-8">{children}</div>
-					<div className="border-t border-border bg-card/70 px-8 py-4 flex flex-col sm:flex-row sm:justify-end items-stretch gap-2">
-						<Link to="/bank" variant="primary" color="emerald" className="w-full sm:w-auto">
+					<div className="p-6 sm:p-8">{children}</div>
+					<div className="border-t border-border bg-muted/30 px-6 sm:px-8 py-4 flex flex-col sm:flex-row sm:justify-end items-stretch gap-2">
+						<Link to="/bank" variant="primary" className="w-full sm:w-auto">
 							Go to Bank Dashboard
 						</Link>
 					</div>
 				</section>
-				<SciFiBars count={12} className="mt-8" />
 			</main>
 		</AppLayout>
 	);

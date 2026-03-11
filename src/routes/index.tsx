@@ -1,83 +1,67 @@
-import { convexAction, convexQuery, useConvexMutation } from "@convex-dev/react-query";
+import { convexQuery, useConvexMutation } from "@convex-dev/react-query";
 import { useUser } from "@clerk/tanstack-react-start";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 import { api } from "convex/_generated/api";
 import { useState } from "react";
-import { useUserPermissions } from "~/hooks/use-user-metadata";
 import { AppLayout } from "~/components/layout/AppLayout";
-import { SciFiBars } from "~/components/ui/SciFiBars";
-
-import { UnpaidBillsSection } from "~/components/UnpaidBillsSection";
-
-import { RecentActivitySection } from "~/components/RecentActivitySection";
-import { ActivityDoc } from "~/types/activity";
-import { BankingSection } from "~/components/BankingSection";
-import { Link } from "~/components/ui/Link";
-import { SpendingMoneyCard } from "~/components/SpendingMoneyCard";
+import { HeroSection } from "~/components/home/HeroSection";
+import { UpcomingBillsCard } from "~/components/UpcomingBillsCard";
+import { AccountsCard } from "~/components/AccountsCard";
 
 function Home() {
-	const permissions = useUserPermissions();
 	const [showAutoPay, setShowAutoPay] = useState(false);
-	// Query for UI display (toggle)
+
 	const { data: payments, isLoading } = useQuery(
 		convexQuery(api.billPayments.listUnpaid, { includeAutoPay: showAutoPay }),
 	);
 
-	// Query for calculation (always include auto-pay)
-	const { data: allUnpaidPayments } = useQuery(convexQuery(api.billPayments.listUnpaid, { includeAutoPay: true }));
-
-	const { data: activities = [], isLoading: isLoadingActivity } = useQuery(
-		convexQuery(api.activity.listRecentActivity, {}),
+	const { data: summaryData } = useQuery(
+		convexQuery(api.cashCreditSummaries.listByPeriod, { period: "month", pageSize: 6 }),
 	);
+
 	const mutation = useMutation({
 		mutationFn: useConvexMutation(api.billPayments.markPaid),
 	});
 	const logActivity = useConvexMutation(api.activity.logActivity);
 	const { user } = useUser();
 
-	// Spending money display moved into its own component
-
 	return (
 		<AppLayout>
-			<main className="flex-1 w-full min-h-0 overflow-y-auto p-4 sm:p-10">
-				<div className="flex justify-end mb-4">
-					<Link to="/summaries" variant="outline">
-						View Transaction Summaries
-					</Link>
-				</div>
-				<SpendingMoneyCard />
-				<SciFiBars count={7} className="mb-6" />
-				<div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
-					{/* Row: Unpaid Bills & Daily Quests */}
-					<div className="col-span-1 md:col-span-2 flex flex-col md:flex-row gap-8 w-full">
-						<UnpaidBillsSection
-							payments={payments || []}
-							isLoading={isLoading}
-							showAutoPay={showAutoPay}
-							setShowAutoPay={setShowAutoPay}
-							onMarkPaid={async payment => {
-								await mutation.mutateAsync({
-									billPaymentId: payment._id,
-									datePaid: new Date().toISOString(),
-								});
-								await logActivity({
-									type: "billPaid",
-									userId: user?.id ?? "unknown",
-									targetId: payment._id,
-									details: {
-										description: `Paid bill: ${payment.bill?.name}`,
-										amount: payment.bill?.amount,
-										billName: payment.bill?.name,
-									},
-								});
-							}}
-						/>
-						<BankingSection />
+			<main className="flex-1 w-full min-h-0">
+				<HeroSection monthlySummaries={summaryData?.page ?? []} />
+
+				<div className="relative flex-1 flex flex-col">
+					<div className="absolute top-0 left-0 right-0 h-48 bg-gradient-to-b from-primary/8 to-transparent pointer-events-none" />
+
+					<div className="relative px-6 md:px-10 lg:px-12 py-8 md:py-10 flex-1">
+						<div className="grid grid-cols-1 lg:grid-cols-2 gap-6 h-full">
+							<UpcomingBillsCard
+								payments={payments ?? []}
+								isLoading={isLoading}
+								showAutoPay={showAutoPay}
+								setShowAutoPay={setShowAutoPay}
+								onMarkPaid={async payment => {
+									await mutation.mutateAsync({
+										billPaymentId: payment._id,
+										datePaid: new Date().toISOString(),
+									});
+									await logActivity({
+										type: "billPaid",
+										userId: user?.id ?? "unknown",
+										targetId: payment._id,
+										details: {
+											description: `Paid bill: ${payment.bill?.name}`,
+											amount: payment.bill?.amount,
+											billName: payment.bill?.name,
+										},
+									});
+								}}
+							/>
+							<AccountsCard />
+						</div>
 					</div>
 				</div>
-				<SciFiBars count={12} className="mb-6" />
-				<RecentActivitySection activities={activities as ActivityDoc[]} isLoading={isLoadingActivity} />
 			</main>
 		</AppLayout>
 	);
@@ -90,7 +74,7 @@ export const Route = createFileRoute("/")({
 			context.queryClient.prefetchQuery(convexQuery(api.billPayments.listUnpaid, { includeAutoPay: false })),
 			context.queryClient.prefetchQuery(convexQuery(api.billPayments.listUnpaid, { includeAutoPay: true })),
 			context.queryClient.prefetchQuery(convexQuery(api.billPayments.listRecentlyPaid, {})),
-			context.queryClient.prefetchQuery(convexQuery(api.activity.listRecentActivity, {})),
+			context.queryClient.prefetchQuery(convexQuery(api.cashCreditSummaries.listByPeriod, { period: "month", pageSize: 6 })),
 		]);
 	},
 });

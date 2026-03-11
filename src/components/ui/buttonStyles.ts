@@ -15,13 +15,13 @@ export function getButtonStyles({
 	className = "",
 }: ButtonStyleOptions) {
 	const base =
-		"inline-flex items-center justify-center font-medium transition-colors gap-x-1 gap-y-1 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:opacity-50 disabled:pointer-events-none cursor-pointer";
+		"inline-flex items-center justify-center font-medium transition-colors gap-x-1 gap-y-1 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-50 disabled:pointer-events-none cursor-pointer";
 
 	const variants: Record<string, string> = {
 		primary:
-			"bg-primary text-primary-foreground border border-primary hover:bg-primary/90 active:bg-primary/80",
+			"bg-primary text-primary-foreground shadow-sm hover:bg-primary/90 active:bg-primary/80",
 		outline:
-			"bg-transparent border border-border text-foreground hover:bg-muted active:bg-muted/80",
+			"bg-transparent text-foreground hover:bg-muted active:bg-muted/80",
 		ghost:
 			"bg-transparent text-foreground hover:bg-muted active:bg-muted/80",
 		subtle:

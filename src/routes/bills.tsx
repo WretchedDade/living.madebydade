@@ -7,22 +7,20 @@ import { AppLayout } from "~/components/layout/AppLayout";
 import { useUser } from "@clerk/tanstack-react-start";
 import { useState } from "react";
 import { AddBillForm } from "~/components/AddBillForm";
-import * as Dialog from "@radix-ui/react-dialog";
-import { ListBulletIcon, PencilSquareIcon, TrashIcon, PlusIcon, ArrowUturnLeftIcon } from "@heroicons/react/24/solid";
-import { SectionHeader } from "~/components/layout/SectionHeader";
+import { PencilSquareIcon, TrashIcon, PlusIcon } from "@heroicons/react/24/solid";
 import { Badge } from "~/components/ui/Badge";
 import { formatOrdinal } from "~/utils/formatters";
 import { Button } from "~/components/ui/Button";
-import { Link } from "~/components/ui/Link";
-import { SciFiBars } from "~/components/ui/SciFiBars";
-import { MissionBanner } from "~/components/ui/MissionBanner";
-import { SciFiDialog } from "~/components/feedback/SciFiDialog";
-import { showToast } from "~/components/feedback/SciFiToast";
+import { Dialog } from "~/components/feedback/Dialog";
+import { showToast } from "~/components/feedback/Toast";
 import { EditBillForm } from "~/components/EditBillForm";
 import { formatCentsAsDollars } from "~/lib/currency";
+import { useQuery } from "@tanstack/react-query";
+import { convexQuery as cq } from "@convex-dev/react-query";
 
 function BillsPage() {
 	const bills = useSuspenseQuery(convexQuery(api.bills.list, {}));
+	const unpaidPayments = useQuery(cq(api.billPayments.listUnpaid, { includeAutoPay: true }));
 	const [showAddDialog, setShowAddDialog] = useState(false);
 	const [billToDelete, setBillToDelete] = useState<Doc<"bills"> | null>(null);
 	const [billToEdit, setBillToEdit] = useState<Doc<"bills"> | null>(null);
@@ -31,182 +29,213 @@ function BillsPage() {
 	const logActivity = useConvexMutation(api.activity.logActivity);
 	const { user } = useUser();
 
+	// Figure out which bills have unpaid payments
+	const unpaidBillIds = new Set(
+		(unpaidPayments.data ?? []).map(p => p.bill?._id).filter(Boolean),
+	);
+
+	const unpaidBills = (bills.data ?? []).filter(b => unpaidBillIds.has(b._id));
+	const allBills = bills.data ?? [];
+
 	return (
 		<AppLayout>
-			<main className="flex-1 w-full min-h-0 overflow-y-auto p-4 sm:p-10">
-				<div className="w-full px-2 sm:px-4 text-left">
-					<div className="mb-2">
-						<Link
-							href="/"
-							title="Back to Home"
-							size="sm"
-							variant="subtle"
-							className="text-muted-foreground hover:text-foreground bg-muted border border-border"
-						>
-							<ArrowUturnLeftIcon className="w-4 h-4" />
-							Back to Home
-						</Link>
-						<hr className="my-4 border-border" />
-					</div>
-					<div className="mb-10 flex items-center justify-between">
-						<SciFiBars count={9} />
-						<Button variant="outline" onClick={() => setShowAddDialog(true)}>
-							<PlusIcon className="w-5 h-5" aria-hidden="true" />
+			<main className="flex-1 w-full min-h-0 p-6 md:p-10 lg:p-12">
+				<div>
+					{/* Header */}
+					<div className="flex items-center justify-between mb-6">
+						<h1 className="text-xl font-bold text-foreground">Bills</h1>
+						<Button variant="primary" size="sm" onClick={() => setShowAddDialog(true)}>
+							<PlusIcon className="w-4 h-4" />
 							Add Bill
 						</Button>
 					</div>
-					<SectionHeader
-						icon={
-							<ListBulletIcon className="relative w-7 h-7 text-foreground drop-shadow-[0_0_6px_rgba(34,211,238,0.7)]" />
-						}
-						title="Configured Bills"
-					/>
-					<MissionBanner>
-						Mission: Manage your household bills and keep everything organized and up to date.
-					</MissionBanner>
-				</div>
-				<div className="w-full px-2 sm:px-4">
-					{bills.data?.length === 0 ? (
-						<div className="text-muted-foreground text-center py-8 text-lg">No bills configured yet.</div>
-					) : (
-						<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-							{bills.data?.map(bill => (
-								<div
-									key={bill._id}
-									className="relative bg-card rounded-xl shadow-lg p-4 flex flex-row border border-border hover:border-primary hover:shadow-lg transition-shadow duration-300 min-h-[120px] overflow-hidden"
-								>
-									<div className="flex flex-col flex-1 relative z-10 gap-3">
-										<div className="flex items-center justify-between mb-1">
-											<span className="font-bold text-foreground text-lg">{bill.name}</span>
-											<div className="flex gap-2">
-												<Button
-													variant="subtle"
-													size="sm"
-													icon
-													title="Edit"
-													onClick={() => setBillToEdit(bill)}
-												>
-													<PencilSquareIcon className="w-5 h-5" />
-												</Button>
-												<Button
-													variant="subtle"
-													size="sm"
-													icon
-													title="Delete"
-													color="amber"
-													onClick={() => setBillToDelete(bill)}
-												>
-													<TrashIcon className="w-5 h-5" />
-												</Button>
-											</div>
-										</div>
-										<span className="text-foreground text-xl font-extrabold mb-2 tracking-wide">
-											${formatCentsAsDollars(bill.amount)}
-										</span>
-										<div className="flex items-center gap-2 mb-1">
-											<Badge variant="neutral">
-												{bill.dueType === "EndOfMonth"
-													? "End of Month"
-													: bill.dueType === "Fixed" && bill.dayDue !== undefined
-														? `Due: ${formatOrdinal(bill.dayDue)}`
-														: bill.dueType}
-											</Badge>
-											{bill.isAutoPay && <Badge variant="success">Auto-Pay</Badge>}
-										</div>
-									</div>
-								</div>
-							))}
-						</div>
+
+					{/* Unpaid section */}
+					{unpaidBills.length > 0 && (
+						<section className="mb-6">
+							<h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">
+								Unpaid This Period
+							</h2>
+							<div className="space-y-2">
+								{unpaidBills.map(bill => (
+									<BillCard
+										key={`unpaid-${bill._id}`}
+										bill={bill}
+										isUnpaid
+										onEdit={() => setBillToEdit(bill)}
+										onDelete={() => setBillToDelete(bill)}
+									/>
+								))}
+							</div>
+						</section>
 					)}
-				</div>
-				<SciFiDialog open={showAddDialog} onOpenChange={setShowAddDialog} title="Add Bill">
-					<AddBillForm
-						onSuccess={() => {
-							setShowAddDialog(false);
-							bills.refetch();
-						}}
-					/>
-				</SciFiDialog>
-				{/* Delete Confirmation Dialog */}
-				{/* Edit Bill Dialog */}
-				<SciFiDialog
-					open={!!billToEdit}
-					onOpenChange={open => {
-						if (!open) setBillToEdit(null);
-					}}
-					title="Edit Bill"
-				>
-					{billToEdit && (
-						<EditBillForm
-							bill={billToEdit}
+
+					{/* All bills */}
+					<section>
+						<h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">
+							All Bills
+						</h2>
+						{allBills.length === 0 ? (
+							<div className="bg-card rounded-xl card-elevated p-8 text-center">
+								<p className="text-muted-foreground mb-3">No bills configured yet.</p>
+								<Button variant="primary" size="sm" onClick={() => setShowAddDialog(true)}>
+									Add Your First Bill
+								</Button>
+							</div>
+						) : (
+							<div className="space-y-2">
+								{allBills.map(bill => (
+									<BillCard
+										key={bill._id}
+										bill={bill}
+										onEdit={() => setBillToEdit(bill)}
+										onDelete={() => setBillToDelete(bill)}
+									/>
+								))}
+							</div>
+						)}
+					</section>
+
+					{/* Add dialog */}
+					<Dialog open={showAddDialog} onOpenChange={setShowAddDialog} title="Add Bill">
+						<AddBillForm
 							onSuccess={() => {
-								setBillToEdit(null);
+								setShowAddDialog(false);
 								bills.refetch();
 							}}
 						/>
-					)}
-				</SciFiDialog>
-				<SciFiDialog
-					open={!!billToDelete}
-					onOpenChange={open => {
-						if (!open) setBillToDelete(null);
-					}}
-					title="Delete Bill"
-				>
-					<div className="text-foreground mb-4">
-						Are you sure you want to delete <span className="font-bold">{billToDelete?.name}</span>?
-						<br />
-						This action cannot be undone.
-					</div>
-					<div className="flex gap-2 justify-end">
-						<Button variant="subtle" onClick={() => setBillToDelete(null)}>
-							Cancel
-						</Button>
-						<Button
-							variant="primary"
-							color="rose"
-							onClick={async () => {
-								if (billToDelete && deleteBillMutation) {
-									try {
-										await deleteBillMutation({ id: billToDelete._id });
-										await logActivity({
-											type: "billRemoved",
-											userId: user?.id ?? "unknown",
-											targetId: billToDelete._id,
-											details: {
-												description: `Removed bill: ${billToDelete.name}`,
-												billName: billToDelete.name,
-											},
-										});
-										setBillToDelete(null);
-										bills.refetch();
-										showToast({
-											title: "Bill deleted",
-											description: `${billToDelete.name} was deleted successfully.`,
-											variant: "success",
-										});
-									} catch (err: unknown) {
-										showToast({
-											title: "Delete failed",
-											description: err instanceof Error ? err.message : "Could not delete bill.",
-											variant: "error",
-										});
+					</Dialog>
+
+					{/* Edit dialog */}
+					<Dialog
+						open={!!billToEdit}
+						onOpenChange={open => { if (!open) setBillToEdit(null); }}
+						title="Edit Bill"
+					>
+						{billToEdit && (
+							<EditBillForm
+								bill={billToEdit}
+								onSuccess={() => {
+									setBillToEdit(null);
+									bills.refetch();
+								}}
+							/>
+						)}
+					</Dialog>
+
+					{/* Delete confirmation */}
+					<Dialog
+						open={!!billToDelete}
+						onOpenChange={open => { if (!open) setBillToDelete(null); }}
+						title="Delete Bill"
+					>
+						<p className="text-foreground text-sm mb-4">
+							Are you sure you want to delete <span className="font-bold">{billToDelete?.name}</span>?
+							This action cannot be undone.
+						</p>
+						<div className="flex gap-2 justify-end">
+							<Button variant="ghost" size="sm" onClick={() => setBillToDelete(null)}>
+								Cancel
+							</Button>
+							<Button
+								variant="primary"
+								size="sm"
+								className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+								onClick={async () => {
+									if (billToDelete && deleteBillMutation) {
+										try {
+											await deleteBillMutation({ id: billToDelete._id });
+											await logActivity({
+												type: "billRemoved",
+												userId: user?.id ?? "unknown",
+												targetId: billToDelete._id,
+												details: {
+													description: `Removed bill: ${billToDelete.name}`,
+													billName: billToDelete.name,
+												},
+											});
+											setBillToDelete(null);
+											bills.refetch();
+											showToast({
+												title: "Bill deleted",
+												description: `${billToDelete.name} was deleted successfully.`,
+												variant: "success",
+											});
+										} catch (err: unknown) {
+											showToast({
+												title: "Delete failed",
+												description: err instanceof Error ? err.message : "Could not delete bill.",
+												variant: "error",
+											});
+										}
 									}
-								}
-							}}
-						>
-							Delete
-						</Button>
-					</div>
-				</SciFiDialog>
+								}}
+							>
+								Delete
+							</Button>
+						</div>
+					</Dialog>
+				</div>
 			</main>
 		</AppLayout>
+	);
+}
+
+function BillCard({
+	bill,
+	isUnpaid,
+	onEdit,
+	onDelete,
+}: {
+	bill: Doc<"bills">;
+	isUnpaid?: boolean;
+	onEdit: () => void;
+	onDelete: () => void;
+}) {
+	return (
+		<div
+			className={`bg-card rounded-xl p-4 flex items-center justify-between gap-3 group transition-all ${
+				isUnpaid ? "card-elevated ring-1 ring-warning/20 bg-warning/5" : "card-elevated hover:shadow-md"
+			}`}
+		>
+			<div className="flex-1 min-w-0">
+				<div className="flex items-center gap-2 mb-1">
+					<span className="font-semibold text-foreground text-sm truncate">{bill.name}</span>
+					{bill.isAutoPay && <Badge variant="success">Auto</Badge>}
+					{isUnpaid && <Badge variant="warning">Due</Badge>}
+				</div>
+				<div className="flex items-center gap-3 text-xs text-muted-foreground">
+					<span className="font-semibold text-primary tabular-nums">
+						${formatCentsAsDollars(bill.amount)}
+					</span>
+					<span>·</span>
+					<span>
+						{bill.dueType === "EndOfMonth"
+							? "End of Month"
+							: bill.dayDue !== undefined
+								? `${formatOrdinal(bill.dayDue)} of month`
+								: bill.dueType}
+					</span>
+				</div>
+			</div>
+			<div className="flex items-center gap-1 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
+				<Button variant="ghost" size="sm" icon onClick={onEdit} aria-label="Edit">
+					<PencilSquareIcon className="w-4 h-4" />
+				</Button>
+				<Button variant="ghost" size="sm" icon onClick={onDelete} aria-label="Delete">
+					<TrashIcon className="w-4 h-4 text-destructive" />
+				</Button>
+			</div>
+		</div>
 	);
 }
 
 export const Route = createFileRoute("/bills")({
 	component: BillsPage,
 	loader: async ({ context }) => {
-		await context.queryClient.prefetchQuery(convexQuery(api.bills.list, {}));
+		await Promise.all([
+			context.queryClient.prefetchQuery(convexQuery(api.bills.list, {})),
+			context.queryClient.prefetchQuery(convexQuery(api.billPayments.listUnpaid, { includeAutoPay: true })),
+		]);
 	},
 });

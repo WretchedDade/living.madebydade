@@ -1,7 +1,7 @@
 import { BillForm, BillFormValues } from "./BillForm";
 import { api } from "@/convex/_generated/api";
 import { useConvexMutation } from "@convex-dev/react-query";
-import { showToast } from "./feedback/SciFiToast";
+import { showToast } from "./feedback/Toast";
 import { useUser } from "@clerk/tanstack-react-start";
 import { dollarsToCents } from "~/lib/currency";
 

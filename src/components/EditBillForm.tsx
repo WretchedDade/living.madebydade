@@ -2,9 +2,8 @@ import { BillForm, BillFormValues } from "./BillForm";
 import { api } from "convex/_generated/api";
 import { Doc } from "convex/_generated/dataModel";
 import { useConvexMutation } from "@convex-dev/react-query";
-import { showToast } from "./feedback/SciFiToast";
+import { showToast } from "./feedback/Toast";
 import { useUser } from "@clerk/tanstack-react-start";
-import { Doc } from "convex/_generated/dataModel";
 import { dollarsToCents, formatCentsAsDollars } from "~/lib/currency";
 
 export function EditBillForm({ bill, onSuccess }: { bill: Doc<"bills">; onSuccess?: () => void }) {

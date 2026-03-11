@@ -17,6 +17,9 @@ import { ToastProvider } from "~/components/provider/ToastProvider";
 import initThemeScript from "~/scripts/init-theme?url";
 import appCss from "~/styles/app.css?url";
 
+const NUNITO_URL =
+	"https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800&display=swap";
+
 type RouterContext = {
 	queryClient: QueryClient;
 	convexClient: ConvexReactClient;
@@ -34,6 +37,9 @@ export const Route = createRootRouteWithContext<RouterContext>()({
 			},
 		],
 		links: [
+			{ rel: "preconnect", href: "https://fonts.googleapis.com" },
+			{ rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
+			{ rel: "stylesheet", href: NUNITO_URL },
 			{ rel: "stylesheet", href: appCss },
 			{ rel: "icon", href: "/favicon.svg", type: "image/svg+xml" },
 			{ rel: "icon", href: "/favicon-96x96.png", sizes: "96x96", type: "image/png" },
@@ -113,7 +119,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
 			<head>
 				<HeadContent />
 			</head>
-			<body className="lg:max-h-svh lg:overflow-hidden">
+			<body>
 				{children}
 				<React.Suspense>
 					{/* <TanStackRouterDevtools position="bottom-right" /> */}
