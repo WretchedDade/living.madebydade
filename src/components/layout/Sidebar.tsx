@@ -23,7 +23,7 @@ const navItems = [
 export function Sidebar() {
 	const location = useLocation();
 	const [collapsed, setCollapsed] = useState(false);
-	const { theme, setTheme, availableThemes } = useTheme();
+	const { theme, setTheme, lightThemes, darkThemes } = useTheme();
 	const [themeOpen, setThemeOpen] = useState(false);
 
 	const isActive = (to: string) => {
@@ -90,21 +90,44 @@ export function Sidebar() {
 						{themeOpen && (
 							<>
 								<div className="fixed inset-0 z-40" onClick={() => setThemeOpen(false)} />
-								<div style={{ backgroundColor: "hsl(var(--popover))" }} className="absolute bottom-full left-0 mb-2 z-50 w-52 rounded-xl p-1.5 shadow-2xl ring-1 ring-white/10">
-									{availableThemes.map(t => {
+								<div style={{ backgroundColor: "hsl(var(--popover))" }} className="absolute bottom-full left-0 mb-2 z-50 w-52 rounded-xl p-1.5 shadow-2xl ring-1 ring-white/10 max-h-[60vh] overflow-y-auto">
+									<div className="px-2 py-1.5 text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Light</div>
+									{lightThemes.map(t => {
 										const isSelected = t.id === theme.id;
 										return (
 											<button
 												key={t.id}
 												onClick={() => { setTheme(t.id); setThemeOpen(false); }}
-												className={`flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-colors cursor-pointer ${
+												className={`flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors cursor-pointer ${
 													isSelected
 														? "bg-primary/10 text-primary"
 														: "text-popover-foreground hover:bg-muted/50"
 												}`}
 											>
 												<span
-													className="h-4 w-4 rounded-full shrink-0 shadow-sm"
+													className="h-3.5 w-3.5 rounded-full shrink-0 shadow-sm"
+													style={{ backgroundColor: `hsl(${t.colors.primary})` }}
+												/>
+												<span className="font-medium flex-1 text-left">{t.name}</span>
+												{isSelected && <span className="text-primary text-xs">✓</span>}
+											</button>
+										);
+									})}
+									<div className="px-2 py-1.5 mt-1 text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Dark</div>
+									{darkThemes.map(t => {
+										const isSelected = t.id === theme.id;
+										return (
+											<button
+												key={t.id}
+												onClick={() => { setTheme(t.id); setThemeOpen(false); }}
+												className={`flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors cursor-pointer ${
+													isSelected
+														? "bg-primary/10 text-primary"
+														: "text-popover-foreground hover:bg-muted/50"
+												}`}
+											>
+												<span
+													className="h-3.5 w-3.5 rounded-full shrink-0 shadow-sm"
 													style={{ backgroundColor: `hsl(${t.colors.primary})` }}
 												/>
 												<span className="font-medium flex-1 text-left">{t.name}</span>

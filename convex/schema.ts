@@ -92,6 +92,7 @@ export default defineSchema({
 			v.literal("monthly"),
 		),
 		payDays: v.array(v.number()),
+		themeId: v.optional(v.string()),
 	}).index("byUserId", ["userId"]),
 
 	cashCreditSummaries: defineTable({

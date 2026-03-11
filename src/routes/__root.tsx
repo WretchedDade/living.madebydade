@@ -12,6 +12,7 @@ import { DefaultCatchBoundary } from "~/components/feedback/DefaultCatchBoundary
 import { NotFound } from "~/components/feedback/NotFound";
 import { NotSignedIn } from "~/components/feedback/NotSignedIn";
 import { ThemeProvider } from "~/components/provider/ThemeProvider";
+import { ThemeSyncer } from "~/components/provider/ThemeSyncer";
 import { ToastProvider } from "~/components/provider/ToastProvider";
 
 import initThemeScript from "~/scripts/init-theme?url";
@@ -86,6 +87,7 @@ function RootComponent() {
 						<ClerkLoaded>
 							<SignedIn>
 								<Authenticated>
+									<ThemeSyncer />
 									<Outlet />
 									<ToastProvider />
 								</Authenticated>

@@ -15,7 +15,7 @@ const pageTitles: Record<string, string> = {
 
 export function MobileHeader() {
 	const location = useLocation();
-	const { theme, setTheme, availableThemes } = useTheme();
+	const { theme, setTheme, lightThemes, darkThemes } = useTheme();
 	const [themeOpen, setThemeOpen] = useState(false);
 
 	const pageTitle =
@@ -45,8 +45,31 @@ export function MobileHeader() {
 					{themeOpen && (
 						<>
 							<div className="fixed inset-0 z-40" onClick={() => setThemeOpen(false)} />
-							<div className="absolute right-0 top-full mt-1 z-50 w-48 rounded-xl bg-card p-1.5 shadow-xl">
-								{availableThemes.map(t => {
+							<div style={{ backgroundColor: "hsl(var(--popover))" }} className="absolute right-0 top-full mt-1 z-50 w-48 rounded-xl p-1.5 shadow-xl max-h-[60vh] overflow-y-auto">
+								<div className="px-2 py-1.5 text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Light</div>
+								{lightThemes.map(t => {
+									const isSelected = t.id === theme.id;
+									return (
+										<button
+											key={t.id}
+											onClick={() => { setTheme(t.id); setThemeOpen(false); }}
+											className={`flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-sm transition-colors cursor-pointer ${
+												isSelected
+													? "bg-primary/10 text-primary"
+													: "text-popover-foreground hover:bg-muted"
+											}`}
+										>
+											<span
+												className="h-3.5 w-3.5 rounded-full shrink-0 shadow-sm"
+												style={{ backgroundColor: `hsl(${t.colors.primary})` }}
+											/>
+											<span className="font-medium flex-1 text-left">{t.name}</span>
+											{isSelected && <span className="text-primary text-xs">✓</span>}
+										</button>
+									);
+								})}
+								<div className="px-2 py-1.5 mt-1 text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Dark</div>
+								{darkThemes.map(t => {
 									const isSelected = t.id === theme.id;
 									return (
 										<button

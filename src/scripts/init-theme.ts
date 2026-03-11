@@ -11,6 +11,13 @@ function initTheme() {
 		"magic-kingdom": "light",
 		"space-mountain": "dark",
 		"haunted-mansion": "dark",
+		"animal-kingdom": "light",
+		"star-wars": "dark",
+		"frozen": "light",
+		"tron": "dark",
+		"villains": "dark",
+		"toy-story": "light",
+		"tomorrowland": "light",
 	};
 
 	try {

@@ -36,11 +36,7 @@ export const upsert = mutation({
 			.first();
 
 		if (existing) {
-			await ctx.db.replace(existing._id, {
-				userId: identity.subject,
-				paySchedule,
-				payDays,
-			});
+			await ctx.db.patch(existing._id, { paySchedule, payDays });
 			return existing._id;
 		}
 
@@ -48,6 +44,33 @@ export const upsert = mutation({
 			userId: identity.subject,
 			paySchedule,
 			payDays,
+		});
+	},
+});
+
+export const setTheme = mutation({
+	args: {
+		themeId: v.string(),
+	},
+	handler: async (ctx, { themeId }) => {
+		const identity = await ctx.auth.getUserIdentity();
+		if (!identity?.subject) throw new Error("User not authenticated");
+
+		const existing = await ctx.db
+			.query("userSettings")
+			.withIndex("byUserId", (q) => q.eq("userId", identity.subject))
+			.first();
+
+		if (existing) {
+			await ctx.db.patch(existing._id, { themeId });
+			return existing._id;
+		}
+
+		return await ctx.db.insert("userSettings", {
+			userId: identity.subject,
+			paySchedule: "semimonthly",
+			payDays: [15, 0],
+			themeId,
 		});
 	},
 });
