@@ -27,26 +27,35 @@ interface SpendingHeroProps {
 	isCurrentPeriod: boolean;
 }
 
-/** Sum actual spending from transactions, excluding transfers/payments/refunds/fees */
-export function sumSpending(transactions: Doc<"transactions">[]): {
-	total: number;
+/** Analyze transactions: spending breakdown + income */
+export function analyzeSpending(transactions: Doc<"transactions">[]): {
+	totalSpending: number;
 	essential: number;
 	nonEssential: number;
+	income: number;
 } {
-	let total = 0;
+	let totalSpending = 0;
 	let essential = 0;
 	let nonEssential = 0;
+	let income = 0;
 
 	for (const t of transactions) {
-		if (t.amount <= 0) continue;
-		if (t.isInternalTransfer || t.isCreditCardPayment || t.isRefundOrReversal || t.isInterestOrFee)
+		if (t.isInternalTransfer || t.isCreditCardPayment) continue;
+
+		if (t.amount < 0 && !t.isRefundOrReversal) {
+			// Inflow = income (negative amount in Plaid = money coming in)
+			income += Math.abs(t.amount);
 			continue;
+		}
+
+		if (t.amount <= 0) continue;
+		if (t.isRefundOrReversal || t.isInterestOrFee) continue;
 
 		const meta = getCategoryMeta(t.categoryPrimary);
 		if (meta.classification === "excluded") continue;
 
 		const cents = Math.abs(t.amount);
-		total += cents;
+		totalSpending += cents;
 		if (meta.classification === "essential") {
 			essential += cents;
 		} else {
@@ -54,7 +63,17 @@ export function sumSpending(transactions: Doc<"transactions">[]): {
 		}
 	}
 
-	return { total, essential, nonEssential };
+	return { totalSpending, essential, nonEssential, income };
+}
+
+/** @deprecated Use analyzeSpending instead */
+export function sumSpending(transactions: Doc<"transactions">[]): {
+	total: number;
+	essential: number;
+	nonEssential: number;
+} {
+	const result = analyzeSpending(transactions);
+	return { total: result.totalSpending, essential: result.essential, nonEssential: result.nonEssential };
 }
 
 export function SpendingHero({
@@ -68,14 +87,15 @@ export function SpendingHero({
 	onOffsetChange,
 	isCurrentPeriod,
 }: SpendingHeroProps) {
-	const current = sumSpending(transactions);
-	const previous = sumSpending(previousTransactions);
+	const current = analyzeSpending(transactions);
+	const previous = analyzeSpending(previousTransactions);
+	const net = current.income - current.totalSpending;
 
-	const pctChange = previous.total > 0
-		? ((current.total - previous.total) / previous.total) * 100
+	const pctChange = previous.totalSpending > 0
+		? ((current.totalSpending - previous.totalSpending) / previous.totalSpending) * 100
 		: 0;
 	const isUp = pctChange > 0;
-	const hasPrevious = previous.total > 0;
+	const hasPrevious = previous.totalSpending > 0;
 
 	// Build a human-readable date label
 	const dateLabel = (() => {
@@ -139,7 +159,7 @@ export function SpendingHero({
 				</div>
 				<div className="flex items-baseline gap-3 mb-4">
 					<span className="text-3xl sm:text-5xl font-extrabold text-foreground tabular-nums tracking-tight leading-none">
-						{formatCurrency(current.total)}
+						{formatCurrency(current.totalSpending)}
 					</span>
 					{hasPrevious && (
 						<span
@@ -155,7 +175,7 @@ export function SpendingHero({
 					)}
 				</div>
 
-				{/* Essential / Non-essential pills */}
+				{/* Stat pills */}
 				<div className="flex flex-wrap gap-2.5">
 					<ClassificationPill
 						icon={<ShieldCheckIcon className="w-3.5 h-3.5" />}
@@ -169,6 +189,27 @@ export function SpendingHero({
 						value={formatCurrency(current.nonEssential)}
 						classification="non-essential"
 					/>
+					<div
+						className={`flex items-center gap-2 bg-background/50 backdrop-blur-md rounded-lg px-3 py-2 shadow-sm`}
+					>
+						<span className={`opacity-70 ${net >= 0 ? "text-success" : "text-destructive"}`}>
+							{net >= 0 ? (
+								<TrendingUpIcon className="w-3.5 h-3.5" />
+							) : (
+								<TrendingDownIcon className="w-3.5 h-3.5" />
+							)}
+						</span>
+						<div>
+							<div className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider leading-none">
+								Net
+							</div>
+							<div
+								className={`text-sm font-bold tabular-nums leading-snug ${net >= 0 ? "text-success" : "text-destructive"}`}
+							>
+								{net >= 0 ? "+" : ""}{formatCurrency(net)}
+							</div>
+						</div>
+					</div>
 				</div>
 			</div>
 		</div>

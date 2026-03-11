@@ -2,10 +2,12 @@ import {
 	ResponsiveContainer,
 	AreaChart,
 	Area,
+	Line,
 	XAxis,
 	YAxis,
 	CartesianGrid,
 	Tooltip,
+	ReferenceLine,
 	type TooltipProps,
 } from "recharts";
 import type { Doc } from "convex/_generated/dataModel";
@@ -17,6 +19,8 @@ interface SpendingTrendProps {
 	/** Transaction-based spending total (cents) for the currently selected period.
 	 *  Overrides the summary-based calculation for that period so chart matches hero. */
 	currentPeriodSpending?: number;
+	/** Transaction-based income total (cents) for the currently selected period. */
+	currentPeriodIncome?: number;
 	/** The startDate of the currently selected period, to identify which summary to override */
 	currentPeriodStart?: string;
 }
@@ -25,11 +29,13 @@ interface TrendDataPoint {
 	label: string;
 	spending: number;
 	income: number;
+	net: number;
 }
 
 function buildTrendData(
 	summaries: Doc<"cashCreditSummaries">[],
 	currentPeriodSpending?: number,
+	currentPeriodIncome?: number,
 	currentPeriodStart?: string,
 ): TrendDataPoint[] {
 	return [...summaries]
@@ -41,18 +47,24 @@ function buildTrendData(
 					? start.toLocaleDateString("en-US", { month: "short" })
 					: start.toLocaleDateString("en-US", { month: "short", day: "numeric" });
 
-			// Use transaction-based total for the selected period (matches hero exactly)
 			const isSelectedPeriod =
 				currentPeriodStart && s.startDate.slice(0, 10) === currentPeriodStart;
+
 			const spending =
 				isSelectedPeriod && currentPeriodSpending != null
 					? Math.round(currentPeriodSpending / 100)
 					: Math.round(((s.cashSpending ?? 0) + (s.ccPurchases ?? 0)) / 100);
 
+			const income =
+				isSelectedPeriod && currentPeriodIncome != null
+					? Math.round(currentPeriodIncome / 100)
+					: Math.round((s.cashIncomeExternal ?? 0) / 100);
+
 			return {
 				label,
 				spending,
-				income: Math.round((s.cashIncomeExternal ?? 0) / 100),
+				income,
+				net: income - spending,
 			};
 		});
 }
@@ -81,21 +93,25 @@ function CustomTooltip({ active, payload, label }: TooltipProps<number, string>)
 	);
 }
 
-export function SpendingTrend({ summaries, currentPeriodSpending, currentPeriodStart }: SpendingTrendProps) {
+export function SpendingTrend({ summaries, currentPeriodSpending, currentPeriodIncome, currentPeriodStart }: SpendingTrendProps) {
 	const { theme } = useTheme();
 
 	if (summaries.length < 2) return null;
 
-	const data = buildTrendData(summaries, currentPeriodSpending, currentPeriodStart);
+	const data = buildTrendData(summaries, currentPeriodSpending, currentPeriodIncome, currentPeriodStart);
 	const primary = `hsl(${theme.colors.primary})`;
 	const secondary = `hsl(${theme.colors.secondary})`;
+
+	const hasNegativeNet = data.some((d) => d.net < 0);
+	const successColor = "hsl(var(--success))";
+	const destructiveColor = "hsl(var(--destructive))";
 
 	return (
 		<div className="px-5 md:px-10 lg:px-12 py-6">
 			<h2 className="text-sm font-semibold text-foreground mb-4">Spending vs Income</h2>
 			<div className="h-48 md:h-56">
 				<ResponsiveContainer width="100%" height="100%">
-					<AreaChart data={data} margin={{ top: 4, right: 4, left: -20, bottom: 0 }}>
+					<AreaChart data={data} margin={{ top: 4, right: 4, left: 0, bottom: 0 }}>
 						<defs>
 							<linearGradient id="trendSpendFill" x1="0" y1="0" x2="0" y2="1">
 								<stop offset="0%" stopColor={primary} stopOpacity={0.3} />
@@ -119,15 +135,20 @@ export function SpendingTrend({ summaries, currentPeriodSpending, currentPeriodS
 							axisLine={false}
 						/>
 						<YAxis
-							tickFormatter={(v: number) =>
-								v >= 1000 ? `$${(v / 1000).toFixed(0)}k` : `$${v}`
-							}
+							tickFormatter={(v: number) => {
+								const abs = Math.abs(v);
+								const prefix = v < 0 ? "-" : "";
+								return abs >= 1000 ? `${prefix}$${(abs / 1000).toFixed(0)}k` : `${prefix}$${abs}`;
+							}}
 							tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 10 }}
 							tickLine={false}
 							axisLine={false}
-							width={36}
+							width={40}
 						/>
 						<Tooltip content={<CustomTooltip />} />
+						{hasNegativeNet && (
+							<ReferenceLine y={0} stroke="hsl(var(--muted-foreground))" strokeDasharray="4 4" strokeOpacity={0.5} />
+						)}
 						<Area
 							type="monotone"
 							dataKey="income"
@@ -146,6 +167,20 @@ export function SpendingTrend({ summaries, currentPeriodSpending, currentPeriodS
 							fill="url(#trendSpendFill)"
 							dot={false}
 						/>
+						<Line
+							type="monotone"
+							dataKey="net"
+							name="net"
+							stroke="url(#netLineGradient)"
+							strokeWidth={2}
+							strokeDasharray="6 3"
+							dot={(props: Record<string, unknown>) => {
+								const { cx, cy, payload } = props as { cx: number; cy: number; payload: TrendDataPoint };
+								const color = payload.net >= 0 ? successColor : destructiveColor;
+								return <circle cx={cx} cy={cy} r={3} fill={color} stroke="none" />;
+							}}
+							activeDot={false}
+						/>
 					</AreaChart>
 				</ResponsiveContainer>
 			</div>
@@ -157,6 +192,10 @@ export function SpendingTrend({ summaries, currentPeriodSpending, currentPeriodS
 				<span className="flex items-center gap-1.5">
 					<span className="w-2 h-2 rounded-full" style={{ backgroundColor: secondary }} />
 					Income
+				</span>
+				<span className="flex items-center gap-1.5">
+					<span className="w-3 h-0.5 border-t-2 border-dashed" style={{ borderColor: successColor }} />
+					Net
 				</span>
 			</div>
 		</div>

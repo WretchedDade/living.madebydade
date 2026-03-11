@@ -4,8 +4,9 @@ import { createFileRoute } from "@tanstack/react-router";
 import { api } from "convex/_generated/api";
 import { useState, useMemo, useEffect, useCallback } from "react";
 import { AppLayout } from "~/components/layout/AppLayout";
-import { SpendingHero, sumSpending } from "~/components/spending/SpendingHero";
+import { SpendingHero, analyzeSpending } from "~/components/spending/SpendingHero";
 import { SpendingTrend } from "~/components/spending/SpendingTrend";
+import { ClassificationTrend } from "~/components/spending/ClassificationTrend";
 import { CategoryBreakdown } from "~/components/spending/CategoryBreakdown";
 import { LoaderIcon } from "lucide-react";
 import type { Doc } from "convex/_generated/dataModel";
@@ -112,11 +113,32 @@ function SpendingPage() {
 	);
 	const previousTransactions = prevTxnData?.items ?? [];
 
-	// Transaction-based spending total for the selected period (matches hero)
-	const currentPeriodSpending = useMemo(
-		() => sumSpending(transactions).total,
+	// Transaction-based totals for the selected period (matches hero)
+	const currentPeriodAnalysis = useMemo(
+		() => analyzeSpending(transactions),
 		[transactions],
 	);
+
+	// Wide-range transactions for the classification trend chart
+	const trendRange = useMemo(() => {
+		if (aggregatedSummaries.length === 0) return { trendStart: startDate, trendEnd: endDate };
+		const sorted = [...aggregatedSummaries].sort(
+			(a, b) => (a.startDate < b.startDate ? -1 : 1),
+		);
+		return {
+			trendStart: sorted[0].startDate.slice(0, 10),
+			trendEnd: sorted[sorted.length - 1].endDate.slice(0, 10),
+		};
+	}, [aggregatedSummaries, startDate, endDate]);
+
+	const { data: trendTxnData } = useQuery(
+		convexQuery(api.transactions.listByDateRange, {
+			startDate: trendRange.trendStart,
+			endDate: trendRange.trendEnd,
+			limit: 5000,
+		}),
+	);
+	const trendTransactions = trendTxnData?.items ?? [];
 
 	const isLoading = summariesLoading || txnsLoading;
 
@@ -144,8 +166,16 @@ function SpendingPage() {
 						{isClient && (
 							<SpendingTrend
 								summaries={aggregatedSummaries}
-								currentPeriodSpending={currentPeriodSpending}
+								currentPeriodSpending={currentPeriodAnalysis.totalSpending}
+								currentPeriodIncome={currentPeriodAnalysis.income}
 								currentPeriodStart={startDate}
+							/>
+						)}
+
+						{isClient && (
+							<ClassificationTrend
+								transactions={trendTransactions}
+								period={period}
 							/>
 						)}
 
