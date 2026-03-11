@@ -14,7 +14,7 @@ export function IconInput({ icon, className = "", inputClassName = "", ...props 
 			</span>
 			<input
 				{...props}
-				className={`w-full pl-8 rounded border border-border bg-card text-white p-2 ${inputClassName}`}
+				className={`w-full pl-8 rounded-lg border border-border bg-card text-foreground p-2 ${inputClassName}`}
 			/>
 		</div>
 	);

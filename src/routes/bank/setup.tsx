@@ -117,6 +117,10 @@ function BankSetup() {
 export const Route = createFileRoute("/bank/setup")({
 	component: BankSetup,
 	loader: async ({ context }) => {
-		await Promise.all([context.queryClient.prefetchQuery(convexAction(api.plaidItems.getLinkToken, {}))]);
+		try {
+			await Promise.all([context.queryClient.prefetchQuery(convexAction(api.plaidItems.getLinkToken, {}))]);
+		} catch {
+			// Auth may not be available during SSR
+		}
 	},
 });

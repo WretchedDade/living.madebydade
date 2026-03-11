@@ -18,7 +18,7 @@ interface RadioGroupFieldProps {
 export function RadioGroupField({ label, value, options, onChange, error, className }: RadioGroupFieldProps) {
 	return (
 		<div className={className}>
-			<label className="block text-primary font-bold mb-1">{label}</label>
+			<label className="block text-foreground font-bold mb-1">{label}</label>
 			<RadioGroup.Root value={value} onValueChange={onChange} className="flex gap-4 mt-2">
 				{options.map(opt => (
 					<RadioGroup.Item
@@ -30,7 +30,7 @@ export function RadioGroupField({ label, value, options, onChange, error, classN
 						<span className="w-4 h-4 rounded-full border border-border bg-card flex items-center justify-center mr-2">
 							<RadioGroup.Indicator className="w-2 h-2 rounded-full bg-primary" />
 						</span>
-						<label htmlFor={`radio-${opt.value}`} className="text-white cursor-pointer">
+						<label htmlFor={`radio-${opt.value}`} className="text-foreground cursor-pointer">
 							{opt.label}
 						</label>
 					</RadioGroup.Item>

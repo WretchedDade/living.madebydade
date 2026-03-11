@@ -70,11 +70,15 @@ function Home() {
 export const Route = createFileRoute("/")({
 	component: Home,
 	loader: async ({ context }) => {
-		await Promise.all([
-			context.queryClient.prefetchQuery(convexQuery(api.billPayments.listUnpaid, { includeAutoPay: false })),
-			context.queryClient.prefetchQuery(convexQuery(api.billPayments.listUnpaid, { includeAutoPay: true })),
-			context.queryClient.prefetchQuery(convexQuery(api.billPayments.listRecentlyPaid, {})),
-			context.queryClient.prefetchQuery(convexQuery(api.cashCreditSummaries.listByPeriod, { period: "month", pageSize: 6 })),
-		]);
+		try {
+			await Promise.all([
+				context.queryClient.prefetchQuery(convexQuery(api.billPayments.listUnpaid, { includeAutoPay: false })),
+				context.queryClient.prefetchQuery(convexQuery(api.billPayments.listUnpaid, { includeAutoPay: true })),
+				context.queryClient.prefetchQuery(convexQuery(api.billPayments.listRecentlyPaid, {})),
+				context.queryClient.prefetchQuery(convexQuery(api.cashCreditSummaries.listByPeriod, { period: "month", pageSize: 6 })),
+			]);
+		} catch {
+			// Auth may not be available during SSR
+		}
 	},
 });
