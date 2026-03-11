@@ -263,6 +263,7 @@ export const listByPeriod = query({
 							? qi.eq("userId", userId).eq("period", period).lt("startDate", cursor)
 							: qi.eq("userId", userId).eq("period", period),
 					)
+					.order("desc")
 					.take(pageSize),
 			),
 		);

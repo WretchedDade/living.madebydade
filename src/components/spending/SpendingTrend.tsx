@@ -31,9 +31,12 @@ function buildTrendData(summaries: Doc<"cashCreditSummaries">[]): TrendDataPoint
 				s.period === "month"
 					? start.toLocaleDateString("en-US", { month: "short" })
 					: start.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+			// Correct for double-counting: cashSpending may include CC bill payments
+			// that are already reflected in ccPurchases. Subtract ccPayments to remove the overlap.
+			const correctedCashSpending = Math.max(0, (s.cashSpending ?? 0) - (s.ccPayments ?? 0));
 			return {
 				label,
-				spending: Math.round(((s.cashSpending ?? 0) + (s.ccPurchases ?? 0)) / 100),
+				spending: Math.round((correctedCashSpending + (s.ccPurchases ?? 0)) / 100),
 				income: Math.round((s.cashIncomeExternal ?? 0) / 100),
 			};
 		});
