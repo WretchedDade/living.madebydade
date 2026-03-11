@@ -57,9 +57,18 @@
 
 ```
 ┌─────────────────────────┐
+│ Spending Money           │
+│                          │
+│        $1,247.53         │
+│                          │
+│ Checking     $3,241.52   │
+│ Bills due    -$1,993.99  │
+│ Next paycheck  Mar 15    │
+└─────────────────────────┘
+
+┌─────────────────────────┐
 │ Spending This Month      │
-│ $2,847 of ~$4,500       │
-│ ████████████░░░░  63%    │
+│ $2,847                   │
 │ ↑12% vs last month       │
 └─────────────────────────┘
 
@@ -92,13 +101,14 @@
 
 **Key changes from current:**
 
-- Replace SpendingMoneyCard with simpler "Spending This Month" card (total spending vs income, progress bar, vs last month %)
+- Keep Spending Money front and center — this is the most important number ("what can I spend right now?"). Redesign the card to be cleaner but keep the `useSpendingMoney()` hook and its logic (checking balance minus unpaid bills due before next paycheck).
+- Add a secondary "Spending This Month" card below it (total spending vs last month)
 - Remove SciFiBars (decorative only)
 - Upcoming bills: Show next 3-5 bills only, not the full toggle-able list
 - Accounts: Simple list with balances, not the elaborate card layout
 - Activity: Collapsed by default, expandable — it's a log, not primary content
 - Remove inline nav links (sidebar/bottom nav handles navigation)
-- Grid on desktop: 2 columns (spending + bills left, accounts + activity right)
+- Grid on desktop: 2 columns (spending money + upcoming bills left, monthly spending + accounts right)
 
 **Data needed:**
 
