@@ -49,7 +49,9 @@ function BankPage() {
 		<AppLayout>
 			<main className="flex-1 w-full relative overflow-hidden min-h-screen">
 				{/* Hero */}
-				<div className="relative px-5 md:px-10 lg:px-12 pt-16 md:pt-24 pb-10 md:pb-12 bg-card/80">
+				<div className="relative px-5 md:px-10 lg:px-12 pt-16 md:pt-24 pb-10 md:pb-12 bg-gradient-to-br from-secondary/8 via-card to-primary/6 overflow-hidden">
+					{/* Decorative blur */}
+					<div className="absolute bottom-0 left-0 w-64 h-64 rounded-full bg-secondary/10 blur-3xl translate-y-1/3 -translate-x-1/4 pointer-events-none" />
 					<div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
 						<div>
 							<p className="text-sm font-semibold text-muted-foreground mb-1">Connected Accounts</p>
