@@ -3,7 +3,6 @@ import { ChevronDownIcon, ChevronUpIcon } from "lucide-react";
 import type { Doc } from "convex/_generated/dataModel";
 import { getCategoryMeta, type CategoryMeta } from "~/lib/categories";
 import { formatCurrency } from "~/utils/formatters";
-import { PillBadge } from "~/components/ui/PillBadge";
 
 interface CategoryBreakdownProps {
 	transactions: Doc<"transactions">[];
@@ -25,7 +24,7 @@ function groupByCategory(transactions: Doc<"transactions">[]): CategoryGroup[] {
 		if (t.isInternalTransfer || t.isCreditCardPayment || t.isRefundOrReversal || t.isInterestOrFee)
 			continue;
 
-		const meta = getCategoryMeta(t.categoryPrimary, t.categoryDetailed);
+		const meta = getCategoryMeta(t.categoryPrimary);
 		if (meta.classification === "excluded") continue;
 
 		const key = t.categoryPrimary?.toUpperCase() ?? "UNCATEGORIZED";
@@ -95,8 +94,6 @@ function CategoryRow({
 	onToggle: () => void;
 }) {
 	const pct = Math.round((group.totalCents / grandTotal) * 100);
-	const badgeTone = group.meta.classification === "essential" ? "good" : "neutral";
-	const badgeLabel = group.meta.classification === "essential" ? "Essential" : "Non-essential";
 
 	return (
 		<div className="rounded-lg overflow-hidden">
@@ -117,24 +114,20 @@ function CategoryRow({
 						</span>
 					</div>
 
-					{/* Proportion bar + badge */}
+					{/* Proportion bar */}
 					<div className="mt-1.5 flex items-center gap-2">
 						<div className="flex-1 h-1.5 rounded-full bg-muted overflow-hidden">
 							<div
 								className="h-full rounded-full transition-all duration-500"
 								style={{
 									width: `${pct}%`,
-									backgroundColor:
-										group.meta.classification === "essential"
-											? "hsl(var(--primary))"
-											: "hsl(var(--secondary))",
+									backgroundColor: "hsl(var(--primary))",
 								}}
 							/>
 						</div>
 						<span className="text-[11px] text-muted-foreground tabular-nums shrink-0">
 							{pct}%
 						</span>
-						<PillBadge label={badgeLabel} tone={badgeTone} />
 					</div>
 				</div>
 

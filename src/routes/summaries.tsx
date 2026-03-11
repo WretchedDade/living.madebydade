@@ -6,7 +6,6 @@ import { useState, useMemo, useEffect, useCallback } from "react";
 import { AppLayout } from "~/components/layout/AppLayout";
 import { SpendingHero, analyzeSpending } from "~/components/spending/SpendingHero";
 import { SpendingTrend } from "~/components/spending/SpendingTrend";
-import { ClassificationTrend } from "~/components/spending/ClassificationTrend";
 import { CategoryBreakdown } from "~/components/spending/CategoryBreakdown";
 import { LoaderIcon } from "lucide-react";
 import type { Doc } from "convex/_generated/dataModel";
@@ -119,27 +118,6 @@ function SpendingPage() {
 		[transactions],
 	);
 
-	// Wide-range transactions for the classification trend chart
-	const trendRange = useMemo(() => {
-		if (aggregatedSummaries.length === 0) return { trendStart: startDate, trendEnd: endDate };
-		const sorted = [...aggregatedSummaries].sort(
-			(a, b) => (a.startDate < b.startDate ? -1 : 1),
-		);
-		return {
-			trendStart: sorted[0].startDate.slice(0, 10),
-			trendEnd: sorted[sorted.length - 1].endDate.slice(0, 10),
-		};
-	}, [aggregatedSummaries, startDate, endDate]);
-
-	const { data: trendTxnData } = useQuery(
-		convexQuery(api.transactions.listByDateRange, {
-			startDate: trendRange.trendStart,
-			endDate: trendRange.trendEnd,
-			limit: 5000,
-		}),
-	);
-	const trendTransactions = trendTxnData?.items ?? [];
-
 	const isLoading = summariesLoading || txnsLoading;
 
 	return (
@@ -169,13 +147,6 @@ function SpendingPage() {
 								currentPeriodSpending={currentPeriodAnalysis.totalSpending}
 								currentPeriodIncome={currentPeriodAnalysis.income}
 								currentPeriodStart={startDate}
-							/>
-						)}
-
-						{isClient && (
-							<ClassificationTrend
-								transactions={trendTransactions}
-								period={period}
 							/>
 						)}
 

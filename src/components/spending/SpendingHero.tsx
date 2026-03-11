@@ -1,22 +1,19 @@
 import {
 	TrendingUpIcon,
 	TrendingDownIcon,
-	ShieldCheckIcon,
-	SparklesIcon,
+	DollarSignIcon,
+	WalletIcon,
 	ChevronLeftIcon,
 	ChevronRightIcon,
 } from "lucide-react";
 import { formatCurrency } from "~/utils/formatters";
 import type { Doc } from "convex/_generated/dataModel";
-import type { CategoryClassification } from "~/lib/categories";
 import { getCategoryMeta } from "~/lib/categories";
 
 type Period = "month" | "week";
 
 interface SpendingHeroProps {
-	/** All transactions for the current period — used for totals and classification */
 	transactions: Doc<"transactions">[];
-	/** Previous period transactions for comparison */
 	previousTransactions: Doc<"transactions">[];
 	period: Period;
 	onPeriodChange: (period: Period) => void;
@@ -27,23 +24,18 @@ interface SpendingHeroProps {
 	isCurrentPeriod: boolean;
 }
 
-/** Analyze transactions: spending breakdown + income */
+/** Analyze transactions: total spending + income */
 export function analyzeSpending(transactions: Doc<"transactions">[]): {
 	totalSpending: number;
-	essential: number;
-	nonEssential: number;
 	income: number;
 } {
 	let totalSpending = 0;
-	let essential = 0;
-	let nonEssential = 0;
 	let income = 0;
 
 	for (const t of transactions) {
 		if (t.isInternalTransfer || t.isCreditCardPayment) continue;
 
 		if (t.amount < 0 && !t.isRefundOrReversal) {
-			// Inflow = income (negative amount in Plaid = money coming in)
 			income += Math.abs(t.amount);
 			continue;
 		}
@@ -51,29 +43,13 @@ export function analyzeSpending(transactions: Doc<"transactions">[]): {
 		if (t.amount <= 0) continue;
 		if (t.isRefundOrReversal || t.isInterestOrFee) continue;
 
-		const meta = getCategoryMeta(t.categoryPrimary, t.categoryDetailed);
+		const meta = getCategoryMeta(t.categoryPrimary);
 		if (meta.classification === "excluded") continue;
 
-		const cents = Math.abs(t.amount);
-		totalSpending += cents;
-		if (meta.classification === "essential") {
-			essential += cents;
-		} else {
-			nonEssential += cents;
-		}
+		totalSpending += Math.abs(t.amount);
 	}
 
-	return { totalSpending, essential, nonEssential, income };
-}
-
-/** @deprecated Use analyzeSpending instead */
-export function sumSpending(transactions: Doc<"transactions">[]): {
-	total: number;
-	essential: number;
-	nonEssential: number;
-} {
-	const result = analyzeSpending(transactions);
-	return { total: result.totalSpending, essential: result.essential, nonEssential: result.nonEssential };
+	return { totalSpending, income };
 }
 
 export function SpendingHero({
@@ -97,7 +73,6 @@ export function SpendingHero({
 	const isUp = pctChange > 0;
 	const hasPrevious = previous.totalSpending > 0;
 
-	// Build a human-readable date label
 	const dateLabel = (() => {
 		const start = new Date(startDate + "T12:00:00");
 		if (period === "month") {
@@ -113,7 +88,6 @@ export function SpendingHero({
 
 	return (
 		<div className="relative px-5 md:px-10 lg:px-12 pt-16 md:pt-24 pb-8 md:pb-10 bg-gradient-to-br from-secondary/8 via-card to-primary/6 overflow-hidden">
-			{/* Decorative blurs */}
 			<div className="absolute top-0 right-0 w-64 h-64 rounded-full bg-secondary/10 blur-3xl -translate-y-1/3 translate-x-1/4 pointer-events-none" />
 			<div className="absolute bottom-0 left-0 w-48 h-48 rounded-full bg-primary/8 blur-3xl translate-y-1/3 -translate-x-1/4 pointer-events-none" />
 
@@ -121,19 +95,9 @@ export function SpendingHero({
 				{/* Period tabs + navigation */}
 				<div className="flex items-center justify-between mb-6">
 					<div className="flex gap-1 bg-muted/50 backdrop-blur-sm rounded-lg p-1">
-						<PeriodTab
-							label="Monthly"
-							active={period === "month"}
-							onClick={() => onPeriodChange("month")}
-						/>
-						<PeriodTab
-							label="Weekly"
-							active={period === "week"}
-							onClick={() => onPeriodChange("week")}
-						/>
+						<PeriodTab label="Monthly" active={period === "month"} onClick={() => onPeriodChange("month")} />
+						<PeriodTab label="Weekly" active={period === "week"} onClick={() => onPeriodChange("week")} />
 					</div>
-
-					{/* Prev / Next navigation */}
 					<div className="flex items-center gap-1">
 						<button
 							onClick={() => onOffsetChange(offset - 1)}
@@ -153,7 +117,7 @@ export function SpendingHero({
 					</div>
 				</div>
 
-				{/* Date label + headline */}
+				{/* Date label + spending total */}
 				<div className="text-muted-foreground text-xs font-medium uppercase tracking-wider mb-1">
 					{dateLabel}
 				</div>
@@ -162,76 +126,39 @@ export function SpendingHero({
 						{formatCurrency(current.totalSpending)}
 					</span>
 					{hasPrevious && (
-						<span
-							className={`flex items-center gap-1 text-xs font-semibold ${isUp ? "text-destructive" : "text-success"}`}
-						>
-							{isUp ? (
-								<TrendingUpIcon className="w-3.5 h-3.5" />
-							) : (
-								<TrendingDownIcon className="w-3.5 h-3.5" />
-							)}
+						<span className={`flex items-center gap-1 text-xs font-semibold ${isUp ? "text-destructive" : "text-success"}`}>
+							{isUp ? <TrendingUpIcon className="w-3.5 h-3.5" /> : <TrendingDownIcon className="w-3.5 h-3.5" />}
 							{Math.abs(Math.round(pctChange))}% {prevLabel}
 						</span>
 					)}
 				</div>
 
-				{/* Stat pills */}
+				{/* Income + Net pills */}
 				<div className="flex flex-wrap gap-2.5">
-					<ClassificationPill
-						icon={<ShieldCheckIcon className="w-3.5 h-3.5" />}
-						label="Essential"
-						value={formatCurrency(current.essential)}
-						classification="essential"
+					<StatPill
+						icon={<DollarSignIcon className="w-3.5 h-3.5" />}
+						label="Income"
+						value={formatCurrency(current.income)}
+						colorClass="text-secondary"
 					/>
-					<ClassificationPill
-						icon={<SparklesIcon className="w-3.5 h-3.5" />}
-						label="Non-essential"
-						value={formatCurrency(current.nonEssential)}
-						classification="non-essential"
+					<StatPill
+						icon={net >= 0 ? <TrendingUpIcon className="w-3.5 h-3.5" /> : <TrendingDownIcon className="w-3.5 h-3.5" />}
+						label="Net"
+						value={`${net >= 0 ? "+" : ""}${formatCurrency(net)}`}
+						colorClass={net >= 0 ? "text-success" : "text-destructive"}
 					/>
-					<div
-						className={`flex items-center gap-2 bg-background/50 backdrop-blur-md rounded-lg px-3 py-2 shadow-sm`}
-					>
-						<span className={`opacity-70 ${net >= 0 ? "text-success" : "text-destructive"}`}>
-							{net >= 0 ? (
-								<TrendingUpIcon className="w-3.5 h-3.5" />
-							) : (
-								<TrendingDownIcon className="w-3.5 h-3.5" />
-							)}
-						</span>
-						<div>
-							<div className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider leading-none">
-								Net
-							</div>
-							<div
-								className={`text-sm font-bold tabular-nums leading-snug ${net >= 0 ? "text-success" : "text-destructive"}`}
-							>
-								{net >= 0 ? "+" : ""}{formatCurrency(net)}
-							</div>
-						</div>
-					</div>
 				</div>
 			</div>
 		</div>
 	);
 }
 
-function PeriodTab({
-	label,
-	active,
-	onClick,
-}: {
-	label: string;
-	active: boolean;
-	onClick: () => void;
-}) {
+function PeriodTab({ label, active, onClick }: { label: string; active: boolean; onClick: () => void }) {
 	return (
 		<button
 			onClick={onClick}
 			className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${
-				active
-					? "bg-background text-foreground shadow-sm"
-					: "text-muted-foreground hover:text-foreground"
+				active ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
 			}`}
 		>
 			{label}
@@ -239,28 +166,13 @@ function PeriodTab({
 	);
 }
 
-function ClassificationPill({
-	icon,
-	label,
-	value,
-	classification,
-}: {
-	icon: React.ReactNode;
-	label: string;
-	value: string;
-	classification: CategoryClassification;
-}) {
-	const colorClass = classification === "essential" ? "text-primary" : "text-secondary";
+function StatPill({ icon, label, value, colorClass }: { icon: React.ReactNode; label: string; value: string; colorClass: string }) {
 	return (
 		<div className="flex items-center gap-2 bg-background/50 backdrop-blur-md rounded-lg px-3 py-2 shadow-sm">
 			<span className={`${colorClass} opacity-70`}>{icon}</span>
 			<div>
-				<div className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider leading-none">
-					{label}
-				</div>
-				<div className={`text-sm font-bold tabular-nums ${colorClass} leading-snug`}>
-					{value}
-				</div>
+				<div className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider leading-none">{label}</div>
+				<div className={`text-sm font-bold tabular-nums ${colorClass} leading-snug`}>{value}</div>
 			</div>
 		</div>
 	);

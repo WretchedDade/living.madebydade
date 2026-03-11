@@ -1,6 +1,6 @@
 import {
 	ResponsiveContainer,
-	AreaChart,
+	ComposedChart,
 	Area,
 	Line,
 	XAxis,
@@ -103,15 +103,12 @@ export function SpendingTrend({ summaries, currentPeriodSpending, currentPeriodI
 	const secondary = `hsl(${theme.colors.secondary})`;
 
 	const hasNegativeNet = data.some((d) => d.net < 0);
-	const successColor = "hsl(var(--success))";
-	const destructiveColor = "hsl(var(--destructive))";
-
 	return (
 		<div className="px-5 md:px-10 lg:px-12 py-6">
 			<h2 className="text-sm font-semibold text-foreground mb-4">Spending vs Income</h2>
 			<div className="h-48 md:h-56">
 				<ResponsiveContainer width="100%" height="100%">
-					<AreaChart data={data} margin={{ top: 4, right: 4, left: 0, bottom: 0 }}>
+					<ComposedChart data={data} margin={{ top: 4, right: 4, left: 0, bottom: 0 }}>
 						<defs>
 							<linearGradient id="trendSpendFill" x1="0" y1="0" x2="0" y2="1">
 								<stop offset="0%" stopColor={primary} stopOpacity={0.3} />
@@ -174,14 +171,10 @@ export function SpendingTrend({ summaries, currentPeriodSpending, currentPeriodI
 							stroke="hsl(var(--muted-foreground))"
 							strokeWidth={2}
 							strokeDasharray="6 3"
-							dot={(props: Record<string, unknown>) => {
-								const { cx, cy, payload } = props as { cx: number; cy: number; payload: TrendDataPoint };
-								const color = payload.net >= 0 ? successColor : destructiveColor;
-								return <circle cx={cx} cy={cy} r={3} fill={color} stroke="none" />;
-							}}
-							activeDot={false}
+							dot={{ r: 3, fill: "hsl(var(--muted-foreground))", stroke: "none" }}
+							activeDot={{ r: 4, fill: "hsl(var(--foreground))", stroke: "none" }}
 						/>
-					</AreaChart>
+					</ComposedChart>
 				</ResponsiveContainer>
 			</div>
 			<div className="flex items-center justify-center gap-5 mt-3 text-xs text-muted-foreground">
