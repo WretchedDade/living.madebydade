@@ -64,40 +64,77 @@
 │ Checking     $3,241.52   │
 │ Bills due    -$1,993.99  │
 │ Next paycheck  Mar 15    │
-└─────────────────────────┘
-
-┌─────────────────────────┐
-│ Spending This Month      │
-│ $2,847                   │
-│ ↑12% vs last month       │
-└─────────────────────────┘
-
-┌─────────────────────────┐
-│ Upcoming Bills (3)       │
 │                          │
-│ Netflix     $15.99  Mar 15│
-│ Electric    $142.00 Mar 18│
-│ Mortgage  $1,850.00 Mar 25│
+│ Pace: ~$3,100 by EOM     │
+│       (last month: $2,847)│
+└─────────────────────────┘
+
+┌─────────────────────────┐
+│ Next 7 Days              │
+│                          │
+│ 📋 Netflix     -$15.99  Mar 15│
+│ 📋 Electric   -$142.00  Mar 18│
+│ 💰 Paycheck  +$2,250    Mar 15│
+│                          │
+│ Net: +$2,092.01          │
 │                          │
 │         View All →       │
+└─────────────────────────┘
+
+┌─────────────────────────┐
+│ This Month          $2,847│
+│ ├─ 🍔 Eating Out    $482 │
+│ ├─ 🛒 Groceries    $410 │
+│ ├─ 🛍️ Shopping     $283 │
+│ └─ … 4 more              │
+│                          │
+│ ↑12% vs last month       │
+│ Savings rate: 18%        │
 └─────────────────────────┘
 
 ┌─────────────────────────┐
 │ Accounts                 │
 │                          │
 │ 🏦 Checking    $3,241.52 │
-│ 💳 Visa        -$847.23  │
+│ 💳 Visa     $847.23 ↓3% │
 │ 🐷 Savings   $12,500.00  │
 └─────────────────────────┘
 
 ┌─────────────────────────┐
-│ Recent Activity          │
+│ ⚡ Heads Up              │
 │                          │
-│ • Paid Electric — $142   │
-│ • Added new bill — Gym   │
-│ • (collapsed by default) │
+│ • $287 charge at Best Buy │
+│   (larger than usual)     │
+│ • CC balance down 3% from │
+│   last month — nice!      │
 └─────────────────────────┘
+
+┌─ Recent Activity ────────┐
+│ (collapsed by default)   │
+└──────────────────────────┘
 ```
+
+**How each insight fits:**
+
+| Insight | Where it lives | How it shows |
+|---------|---------------|--------------|
+| Spending money | Hero card (top) | Big number + breakdown |
+| Spending pace | Inside spending money card | Subtle line: "on track for ~$X by EOM" |
+| Next 7 days forecast | "Next 7 Days" card | Combined bills + income timeline with net |
+| Top categories | "This Month" card | Inline ranked list (top 3-4 categories) |
+| Month-over-month | Inside "This Month" card | "↑12% vs last month" annotation |
+| Savings rate | Inside "This Month" card | "Savings rate: 18%" line |
+| CC debt trend | Inside "Accounts" card | Arrow + % next to CC balance |
+| Unusual transactions | "Heads Up" card | Only shows when there's something notable — hidden when nothing unusual |
+
+**Key design decisions:**
+
+- Spending Money stays as the hero card — biggest, top of page
+- "Next 7 Days" replaces the old "Upcoming Bills" — it's the same data but enriched with income so you see the net cash flow picture
+- "This Month" is a compact spending summary with top categories inline — no need for a separate card per insight
+- CC trend is just an annotation (↓3%) next to the balance in Accounts — doesn't need its own card
+- "Heads Up" card is **conditional** — only appears when there's something worth flagging (unusual charges, notable trends). Most days it won't show, which is good.
+- Activity stays at the bottom, collapsed — it's a log, not a decision-making tool
 
 **Key changes from current:**
 
@@ -112,11 +149,13 @@
 
 **Data needed:**
 
-- Current month `cashCreditSummaries` (`cashSpending + ccPurchases` = total spending)
-- Previous month for comparison
-- Upcoming unpaid bills (next 5, sorted by due date)
-- Account balances from `plaidAccounts`
-- Recent activity (last 5 items)
+- `useSpendingMoney()` hook (checking balance, unpaid bills, next paycheck date) — already exists
+- Current + previous month `cashCreditSummaries` (for spending total, pace projection, month-over-month %)
+- Savings contributions from summaries (for savings rate = savings / income)
+- Upcoming unpaid bills (next 7 days, sorted by due date) + next paycheck date/amount from user settings
+- Account balances from `plaidAccounts` (with previous month snapshot for CC trend — may need a new query)
+- Transactions for current month grouped by `categoryPrimary` (top 3-4 for "This Month" card)
+- Unusual transaction detection (new query: flag transactions > 2x the user's average for that merchant/category)
 
 ---
 
