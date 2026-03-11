@@ -56,7 +56,7 @@ export function HeroSection({ monthlySummaries }: HeroSectionProps) {
 			</div>
 
 			{/* Foreground content */}
-			<div className="relative z-10 px-6 md:px-10 lg:px-12 py-10 md:py-14">
+			<div className="relative z-10 px-6 md:px-10 lg:px-12 py-12 md:py-16">
 				{isLoading ? (
 					<div>
 						<Skeleton className="w-40 h-5 mb-3" />

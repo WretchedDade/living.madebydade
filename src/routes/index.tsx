@@ -34,7 +34,7 @@ function Home() {
 				<div className="relative flex-1 flex flex-col">
 					<div className="absolute top-0 left-0 right-0 h-48 bg-gradient-to-b from-primary/8 to-transparent pointer-events-none" />
 
-					<div className="relative px-6 md:px-10 lg:px-12 py-8 md:py-10 flex-1">
+					<div className="relative px-6 md:px-10 lg:px-12 py-8 md:py-12 flex-1">
 						<div className="grid grid-cols-1 lg:grid-cols-2 gap-6 h-full">
 							<UpcomingBillsCard
 								payments={payments ?? []}
