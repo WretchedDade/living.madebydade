@@ -119,7 +119,7 @@ export function SpendingHero({
 
 				{/* Date label + spending total */}
 				<div className="text-muted-foreground text-xs font-medium uppercase tracking-wider mb-1">
-					{dateLabel}
+					Spent · {dateLabel}
 				</div>
 				<div className="flex items-baseline gap-3 mb-4">
 					<span className="text-3xl sm:text-5xl font-extrabold text-foreground tabular-nums tracking-tight leading-none">
@@ -135,12 +135,6 @@ export function SpendingHero({
 
 				{/* Stat pills */}
 				<div className="flex flex-wrap gap-2.5">
-					<StatPill
-						icon={<WalletIcon className="w-3.5 h-3.5" />}
-						label="Spent"
-						value={formatCurrency(current.totalSpending)}
-						colorClass="text-primary"
-					/>
 					<StatPill
 						icon={<DollarSignIcon className="w-3.5 h-3.5" />}
 						label="Income"
