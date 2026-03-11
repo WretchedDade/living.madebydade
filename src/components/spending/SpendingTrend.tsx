@@ -14,6 +14,11 @@ import { formatCurrency } from "~/utils/formatters";
 
 interface SpendingTrendProps {
 	summaries: Doc<"cashCreditSummaries">[];
+	/** Transaction-based spending total (cents) for the currently selected period.
+	 *  Overrides the summary-based calculation for that period so chart matches hero. */
+	currentPeriodSpending?: number;
+	/** The startDate of the currently selected period, to identify which summary to override */
+	currentPeriodStart?: string;
 }
 
 interface TrendDataPoint {
@@ -22,7 +27,11 @@ interface TrendDataPoint {
 	income: number;
 }
 
-function buildTrendData(summaries: Doc<"cashCreditSummaries">[]): TrendDataPoint[] {
+function buildTrendData(
+	summaries: Doc<"cashCreditSummaries">[],
+	currentPeriodSpending?: number,
+	currentPeriodStart?: string,
+): TrendDataPoint[] {
 	return [...summaries]
 		.reverse()
 		.map((s) => {
@@ -31,12 +40,18 @@ function buildTrendData(summaries: Doc<"cashCreditSummaries">[]): TrendDataPoint
 				s.period === "month"
 					? start.toLocaleDateString("en-US", { month: "short" })
 					: start.toLocaleDateString("en-US", { month: "short", day: "numeric" });
-			// Correct for double-counting: cashSpending may include CC bill payments
-			// that are already reflected in ccPurchases. Subtract ccPayments to remove the overlap.
-			const correctedCashSpending = Math.max(0, (s.cashSpending ?? 0) - (s.ccPayments ?? 0));
+
+			// Use transaction-based total for the selected period (matches hero exactly)
+			const isSelectedPeriod =
+				currentPeriodStart && s.startDate.slice(0, 10) === currentPeriodStart;
+			const spending =
+				isSelectedPeriod && currentPeriodSpending != null
+					? Math.round(currentPeriodSpending / 100)
+					: Math.round(((s.cashSpending ?? 0) + (s.ccPurchases ?? 0)) / 100);
+
 			return {
 				label,
-				spending: Math.round((correctedCashSpending + (s.ccPurchases ?? 0)) / 100),
+				spending,
 				income: Math.round((s.cashIncomeExternal ?? 0) / 100),
 			};
 		});
@@ -66,12 +81,12 @@ function CustomTooltip({ active, payload, label }: TooltipProps<number, string>)
 	);
 }
 
-export function SpendingTrend({ summaries }: SpendingTrendProps) {
+export function SpendingTrend({ summaries, currentPeriodSpending, currentPeriodStart }: SpendingTrendProps) {
 	const { theme } = useTheme();
 
 	if (summaries.length < 2) return null;
 
-	const data = buildTrendData(summaries);
+	const data = buildTrendData(summaries, currentPeriodSpending, currentPeriodStart);
 	const primary = `hsl(${theme.colors.primary})`;
 	const secondary = `hsl(${theme.colors.secondary})`;
 

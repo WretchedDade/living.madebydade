@@ -28,7 +28,7 @@ interface SpendingHeroProps {
 }
 
 /** Sum actual spending from transactions, excluding transfers/payments/refunds/fees */
-function sumSpending(transactions: Doc<"transactions">[]): {
+export function sumSpending(transactions: Doc<"transactions">[]): {
 	total: number;
 	essential: number;
 	nonEssential: number;

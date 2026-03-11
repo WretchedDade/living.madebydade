@@ -4,7 +4,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { api } from "convex/_generated/api";
 import { useState, useMemo, useEffect, useCallback } from "react";
 import { AppLayout } from "~/components/layout/AppLayout";
-import { SpendingHero } from "~/components/spending/SpendingHero";
+import { SpendingHero, sumSpending } from "~/components/spending/SpendingHero";
 import { SpendingTrend } from "~/components/spending/SpendingTrend";
 import { CategoryBreakdown } from "~/components/spending/CategoryBreakdown";
 import { LoaderIcon } from "lucide-react";
@@ -112,6 +112,12 @@ function SpendingPage() {
 	);
 	const previousTransactions = prevTxnData?.items ?? [];
 
+	// Transaction-based spending total for the selected period (matches hero)
+	const currentPeriodSpending = useMemo(
+		() => sumSpending(transactions).total,
+		[transactions],
+	);
+
 	const isLoading = summariesLoading || txnsLoading;
 
 	return (
@@ -135,7 +141,13 @@ function SpendingPage() {
 					</div>
 				) : (
 					<>
-						{isClient && <SpendingTrend summaries={aggregatedSummaries} />}
+						{isClient && (
+							<SpendingTrend
+								summaries={aggregatedSummaries}
+								currentPeriodSpending={currentPeriodSpending}
+								currentPeriodStart={startDate}
+							/>
+						)}
 
 						{/* Divider */}
 						<div className="mx-5 md:mx-10 lg:mx-12">
