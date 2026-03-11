@@ -171,7 +171,7 @@ export function SpendingTrend({ summaries, currentPeriodSpending, currentPeriodI
 							type="monotone"
 							dataKey="net"
 							name="net"
-							stroke="url(#netLineGradient)"
+							stroke="hsl(var(--muted-foreground))"
 							strokeWidth={2}
 							strokeDasharray="6 3"
 							dot={(props: Record<string, unknown>) => {

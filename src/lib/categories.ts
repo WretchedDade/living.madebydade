@@ -2,6 +2,9 @@
  * Plaid personal_finance_category mapping.
  * Display names, icons, and essential/non-essential classification.
  *
+ * Uses categoryDetailed when available to refine classification
+ * (e.g., groceries at Walmart = essential, but general shopping = not).
+ *
  * All values are hardcoded — no user customization.
  * Categories not in this map fall back to a generic "Other" entry.
  */
@@ -24,7 +27,7 @@ const CATEGORY_MAP: Record<string, CategoryMeta> = {
 	FOOD_AND_DRINK: {
 		displayName: "Food & Drink",
 		icon: "🍔",
-		classification: "essential",
+		classification: "non-essential", // Default; groceries override below
 	},
 	TRANSPORTATION: {
 		displayName: "Transportation",
@@ -66,7 +69,7 @@ const CATEGORY_MAP: Record<string, CategoryMeta> = {
 	GENERAL_MERCHANDISE: {
 		displayName: "Shopping",
 		icon: "🛍️",
-		classification: "non-essential",
+		classification: "non-essential", // Superstores override below
 	},
 	PERSONAL_CARE: {
 		displayName: "Personal Care",
@@ -107,20 +110,54 @@ const CATEGORY_MAP: Record<string, CategoryMeta> = {
 	},
 };
 
+/**
+ * Detailed category overrides — when the detailed category matches one of
+ * these patterns, its classification wins over the primary category default.
+ */
+const DETAILED_ESSENTIAL_PATTERNS = [
+	"GROCERIES",
+	"SUPERMARKETS_AND_GROCERIES",
+	"SUPERSTORES",
+];
+
+const DETAILED_NON_ESSENTIAL_PATTERNS = [
+	"RESTAURANTS",
+	"FAST_FOOD",
+	"COFFEE",
+	"BEER_WINE_AND_LIQUOR",
+	"VENDING_MACHINES",
+];
+
 const FALLBACK_META: CategoryMeta = {
 	displayName: "Other",
 	icon: "📦",
 	classification: "non-essential",
 };
 
-/** Look up metadata for a Plaid primary category string */
-export function getCategoryMeta(categoryPrimary: string | null): CategoryMeta {
+/** Look up metadata for a Plaid category, using detailed category for refined classification */
+export function getCategoryMeta(
+	categoryPrimary: string | null,
+	categoryDetailed?: string | null,
+): CategoryMeta {
 	if (!categoryPrimary) return FALLBACK_META;
 	const key = categoryPrimary.toUpperCase();
-	return CATEGORY_MAP[key] ?? {
+	const baseMeta = CATEGORY_MAP[key] ?? {
 		...FALLBACK_META,
 		displayName: prettyCategoryName(key),
 	};
+
+	// Apply detailed overrides if available
+	if (categoryDetailed) {
+		const detail = categoryDetailed.toUpperCase();
+		if (DETAILED_ESSENTIAL_PATTERNS.some((p) => detail.includes(p))) {
+			return { ...baseMeta, classification: "essential" };
+		}
+		if (DETAILED_NON_ESSENTIAL_PATTERNS.some((p) => detail.includes(p))) {
+			return { ...baseMeta, classification: "non-essential" };
+		}
+	}
+
+	return baseMeta;
 }
 
 /** Convert a raw Plaid category key to a human-readable name */
@@ -134,8 +171,11 @@ export function prettyCategoryName(raw: string): string {
 }
 
 /** Check if a category counts as spending (not excluded) */
-export function isSpendingCategory(categoryPrimary: string | null): boolean {
-	const meta = getCategoryMeta(categoryPrimary);
+export function isSpendingCategory(
+	categoryPrimary: string | null,
+	categoryDetailed?: string | null,
+): boolean {
+	const meta = getCategoryMeta(categoryPrimary, categoryDetailed);
 	return meta.classification !== "excluded";
 }
 

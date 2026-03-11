@@ -51,7 +51,7 @@ export function analyzeSpending(transactions: Doc<"transactions">[]): {
 		if (t.amount <= 0) continue;
 		if (t.isRefundOrReversal || t.isInterestOrFee) continue;
 
-		const meta = getCategoryMeta(t.categoryPrimary);
+		const meta = getCategoryMeta(t.categoryPrimary, t.categoryDetailed);
 		if (meta.classification === "excluded") continue;
 
 		const cents = Math.abs(t.amount);

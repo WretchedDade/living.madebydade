@@ -25,7 +25,7 @@ function groupByCategory(transactions: Doc<"transactions">[]): CategoryGroup[] {
 		if (t.isInternalTransfer || t.isCreditCardPayment || t.isRefundOrReversal || t.isInterestOrFee)
 			continue;
 
-		const meta = getCategoryMeta(t.categoryPrimary);
+		const meta = getCategoryMeta(t.categoryPrimary, t.categoryDetailed);
 		if (meta.classification === "excluded") continue;
 
 		const key = t.categoryPrimary?.toUpperCase() ?? "UNCATEGORIZED";
