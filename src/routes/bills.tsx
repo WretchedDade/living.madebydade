@@ -79,10 +79,6 @@ function BillsPage() {
 								<div className="text-2xl font-bold text-foreground mt-1">No bills yet</div>
 							)}
 						</div>
-						<Button variant="primary" onClick={() => setShowAddDialog(true)}>
-							<PlusIcon className="w-5 h-5" />
-							Add Bill
-						</Button>
 					</div>
 				</div>
 
@@ -102,31 +98,41 @@ function BillsPage() {
 							</Button>
 						</div>
 					) : (
-						<div className="space-y-8">
-							{firstPaycheck.length > 0 && (
-								<BillGroup
-									label="1st Paycheck"
-									sublabel="1st – 14th"
-									bills={firstPaycheck}
-									unpaidBillIds={unpaidBillIds}
-									onEdit={setBillToEdit}
-									onDelete={setBillToDelete}
-								/>
-							)}
-							{firstPaycheck.length > 0 && secondPaycheck.length > 0 && (
-								<div className="h-px bg-primary/15" />
-							)}
-							{secondPaycheck.length > 0 && (
-								<BillGroup
-									label="2nd Paycheck"
-									sublabel="15th – End of Month"
-									bills={secondPaycheck}
-									unpaidBillIds={unpaidBillIds}
-									onEdit={setBillToEdit}
-									onDelete={setBillToDelete}
-								/>
-							)}
-						</div>
+						<>
+							<div className="space-y-8">
+								{firstPaycheck.length > 0 && (
+									<BillGroup
+										label="1st Paycheck"
+										sublabel="1st – 14th"
+										bills={firstPaycheck}
+										unpaidBillIds={unpaidBillIds}
+										onEdit={setBillToEdit}
+										onDelete={setBillToDelete}
+									/>
+								)}
+								{firstPaycheck.length > 0 && secondPaycheck.length > 0 && (
+									<div className="h-px bg-primary/15" />
+								)}
+								{secondPaycheck.length > 0 && (
+									<BillGroup
+										label="2nd Paycheck"
+										sublabel="15th – End of Month"
+										bills={secondPaycheck}
+										unpaidBillIds={unpaidBillIds}
+										onEdit={setBillToEdit}
+										onDelete={setBillToDelete}
+									/>
+								)}
+							</div>
+
+							<div className="h-px bg-primary/15 mt-8" />
+							<div className="flex items-center gap-3 mt-4">
+								<Button variant="ghost" onClick={() => setShowAddDialog(true)}>
+									<PlusIcon className="w-5 h-5" />
+									Add Bill
+								</Button>
+							</div>
+						</>
 					)}
 
 					{/* Add dialog */}

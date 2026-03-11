@@ -73,7 +73,7 @@ export function HeroSection({ monthlySummaries }: HeroSectionProps) {
 							<WalletIcon className={`w-5 h-5 ${valueColor}`} />
 							<span className="text-sm font-semibold text-muted-foreground">Spending Money</span>
 						</div>
-						<div className={`text-5xl sm:text-6xl font-extrabold tabular-nums ${valueColor} tracking-tight leading-none mb-8`}>
+						<div className={`text-4xl sm:text-6xl font-extrabold tabular-nums ${valueColor} tracking-tight leading-none mb-8`}>
 							{formatMoney(spendingMoney)}
 						</div>
 

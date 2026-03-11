@@ -1,15 +1,14 @@
 import { api } from "@/convex/_generated/api";
 import type { Account } from "@/convex/accounts";
 import { convexAction } from "@convex-dev/react-query";
-import { useQuery, useSuspenseQuery } from "@tanstack/react-query";
-import { createFileRoute, useParams } from "@tanstack/react-router";
+import { useQuery } from "@tanstack/react-query";
+import { createFileRoute } from "@tanstack/react-router";
 
 import { AppLayout } from "~/components/layout/AppLayout";
 import { Badge } from "~/components/ui/Badge";
 import { Skeleton } from "~/components/ui/Skeleton";
-import { Button } from "~/components/ui/Button";
-import { useNavigate } from "@tanstack/react-router";
 import { Link } from "~/components/ui/Link";
+import { CheckCircleIcon } from "@heroicons/react/24/solid";
 
 export const Route = createFileRoute("/bank/success/$itemId")({
 	component: RouteComponent,
@@ -19,107 +18,80 @@ function RouteComponent() {
 	const { itemId } = Route.useParams();
 	const query = useQuery(convexAction(api.accounts.getById, { itemId }));
 
-	if (query.isLoading) return <BankAccountsSkeleton />;
-	if (query.isError) return <BankAccountsError error={query.error} />;
-	if (query.isSuccess) return <BankAccountsList data={query.data} />;
-	return null;
-}
-
-interface BankAccountsLayoutProps {
-	children: React.ReactNode;
-	sectionClassName?: string;
-}
-function BankAccountsLayout({ children, sectionClassName }: BankAccountsLayoutProps) {
 	return (
 		<AppLayout>
-			<main className="w-full max-w-2xl mx-auto p-4 flex flex-col justify-center grow">
-				<section
-					className={`bg-card rounded-xl shadow-sm border border-border w-full overflow-hidden ${sectionClassName ?? ""}`}
-				>
-					<div className="p-6 sm:p-8">{children}</div>
-					<div className="border-t border-border bg-muted/30 px-6 sm:px-8 py-4 flex flex-col sm:flex-row sm:justify-end items-stretch gap-2">
-						<Link to="/bank" variant="primary" className="w-full sm:w-auto">
+			<main className="flex-1 w-full px-5 md:px-10 lg:px-12 py-10 md:py-16">
+				{query.isLoading ? (
+					<div>
+						<Skeleton className="h-8 w-60 mb-4" />
+						<Skeleton className="h-5 w-40 mb-8" />
+						<div className="space-y-3">
+							{[...Array(3)].map((_, i) => (
+								<div key={i} className="flex items-center justify-between py-4 px-4">
+									<div>
+										<Skeleton className="w-32 h-4 mb-1.5" />
+										<Skeleton className="w-20 h-3" />
+									</div>
+									<Skeleton className="w-16 h-5" />
+								</div>
+							))}
+						</div>
+					</div>
+				) : query.isError ? (
+					<div className="flex flex-col items-center justify-center text-center min-h-[40vh]">
+						<h1 className="text-xl font-bold text-destructive mb-3">Something went wrong</h1>
+						<p className="text-muted-foreground text-sm mb-6">
+							We couldn't load your linked accounts. Please try again.
+						</p>
+						{query.error && (
+							<p className="text-destructive text-xs mb-6">{query.error.message}</p>
+						)}
+						<Link to="/bank" variant="primary">
+							Go to Bank
+						</Link>
+					</div>
+				) : (
+					<div>
+						<div className="flex items-center gap-3 mb-2">
+							<CheckCircleIcon className="w-7 h-7 text-success" />
+							<h1 className="text-2xl font-bold text-foreground">Bank Linked!</h1>
+						</div>
+						{query.data?.[0]?.institution?.name && (
+							<p className="text-primary font-semibold mb-2">{query.data[0].institution.name}</p>
+						)}
+						<p className="text-muted-foreground text-sm mb-8">
+							Here are the accounts we found:
+						</p>
+
+						<div className="space-y-1.5 mb-10">
+							{(query.data ?? []).map(account => (
+								<div
+									key={account.account_id}
+									className="flex items-center justify-between py-3.5 px-4 rounded-xl bg-muted/30"
+								>
+									<div>
+										<div className="font-medium text-foreground">
+											{account.name}
+											{account.mask && (
+												<span className="text-muted-foreground font-mono ml-2">····{account.mask}</span>
+											)}
+										</div>
+										<div className="text-xs text-muted-foreground capitalize">
+											{account.type}
+											{account.subtype ? ` · ${account.subtype}` : ""}
+										</div>
+									</div>
+									<Badge variant="success">Linked</Badge>
+								</div>
+							))}
+						</div>
+
+						<Link to="/bank" variant="primary">
 							Go to Bank Dashboard
 						</Link>
 					</div>
-				</section>
+				)}
 			</main>
 		</AppLayout>
-	);
-}
-
-function BankAccountsSkeleton() {
-	return (
-		<BankAccountsLayout>
-			<Skeleton className="h-7 w-60 mb-4" />
-			<Skeleton className="h-5 w-40 mb-6" />
-			<div className="w-full flex flex-col gap-4">
-				{[...Array(3)].map((_, i) => (
-					<div
-						key={i}
-						className="bg-muted rounded-xl p-4 flex flex-col sm:flex-row sm:items-center gap-2 border border-border"
-					>
-						<div className="flex-1">
-							<Skeleton className="h-5 w-40 mb-2" />
-							<Skeleton className="h-4 w-24" />
-						</div>
-						<Skeleton className="h-6 w-16 ml-auto mt-2 sm:mt-0" />
-					</div>
-				))}
-			</div>
-		</BankAccountsLayout>
-	);
-}
-
-function BankAccountsError({ error }: { error: Error }) {
-	return (
-		<BankAccountsLayout sectionClassName="flex flex-col items-center">
-			<h1 className="text-2xl font-bold text-red-400 mb-4">Something went wrong</h1>
-			<p className="text-muted-foreground mb-4 text-center">
-				We couldn't load your linked accounts. Please try again or contact support if the problem persists.
-			</p>
-			{error && (
-				<div className="text-red-400 text-sm bg-red-950/60 rounded p-2 w-full text-center">{error.message}</div>
-			)}
-		</BankAccountsLayout>
-	);
-}
-
-function BankAccountsList({ data }: { data: Account[] }) {
-	const institutionName = data[0]?.institution?.name;
-
-	return (
-		<BankAccountsLayout>
-			<h1 className="text-2xl font-bold text-primary mb-2">Bank Linked Successfully!</h1>
-			{institutionName && (
-				<div className="text-primary mb-2 text-lg font-semibold">{institutionName}</div>
-			)}
-			<p className="text-muted-foreground mb-6">Your bank account has been linked. Here are the accounts we found:</p>
-			<div className="w-full flex flex-col gap-4">
-				{data.length > 0 ? (
-					data.map((account) => (
-						<div
-							key={account.account_id}
-							className="bg-muted rounded-xl p-4 flex flex-col sm:flex-row sm:items-center gap-2 border border-border"
-						>
-							<div className="flex-1">
-								<div className="font-semibold text-primary text-lg">
-									{account.name} <span className="text-muted-foreground font-mono">•••{account.mask}</span>
-								</div>
-								<div className="text-muted-foreground text-sm capitalize">
-									{account.type}
-									{account.subtype ? ` • ${account.subtype}` : ""}
-								</div>
-							</div>
-							<span style={{ marginLeft: "auto", marginTop: "0.5rem" }}>
-								<Badge variant="success">Linked</Badge>
-							</span>
-						</div>
-					))
-				) : (
-					<div className="text-muted-foreground">No accounts found.</div>
-				)}
-			</div>
-		</BankAccountsLayout>
 	);
 }

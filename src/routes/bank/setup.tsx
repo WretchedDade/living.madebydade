@@ -8,6 +8,7 @@ import { AppLayout } from "~/components/layout/AppLayout";
 import { showToast } from "~/components/feedback/Toast";
 import { Button } from "~/components/ui/Button";
 import { ArrowPathIcon } from "@heroicons/react/24/solid";
+import { BuildingLibraryIcon } from "@heroicons/react/24/outline";
 import { PlaidItem } from "@/convex/schema";
 
 function BankSetup() {
@@ -87,28 +88,28 @@ function BankSetup() {
 
 	return (
 		<AppLayout>
-			<main className="flex flex-col items-center justify-center min-h-[60vh] p-4 w-full">
-				<div className="bg-card rounded-xl shadow-sm p-8 max-w-md w-full flex flex-col items-center border border-border">
-					{!ready ? (
-						<div className="flex flex-col items-center justify-center h-48">
-							<ArrowPathIcon className="w-8 h-8 animate-spin text-primary mb-3" />
-							<span className="text-muted-foreground text-base">Preparing Plaid Link...</span>
+			<main className="flex-1 w-full flex flex-col items-center justify-center p-6 md:p-10">
+				{!ready ? (
+					<div className="flex flex-col items-center justify-center">
+						<ArrowPathIcon className="w-8 h-8 animate-spin text-primary mb-4" />
+						<span className="text-muted-foreground">Preparing Plaid Link...</span>
+					</div>
+				) : (
+					<div className="flex flex-col items-center text-center max-w-sm">
+						<div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center mb-6">
+							<BuildingLibraryIcon className="w-7 h-7 text-primary" />
 						</div>
-					) : (
-						<>
-							<h1 className="text-xl font-bold text-foreground mb-3 text-center">
-								Link Your Bank Account
-							</h1>
-							<p className="text-muted-foreground text-center mb-6 text-sm">
-								Securely connect your bank account to get started. The Plaid window will open
-								automatically.
-							</p>
-							<Button variant="primary" type="button" onClick={() => open()} className="mb-4">
-								Launch Plaid Link
-							</Button>
-						</>
-					)}
-				</div>
+						<h1 className="text-xl font-bold text-foreground mb-3">
+							Link Your Bank Account
+						</h1>
+						<p className="text-muted-foreground text-sm mb-8">
+							Securely connect your bank account through Plaid. The connection window will open automatically.
+						</p>
+						<Button variant="primary" type="button" onClick={() => open()}>
+							Launch Plaid Link
+						</Button>
+					</div>
+				)}
 			</main>
 		</AppLayout>
 	);
