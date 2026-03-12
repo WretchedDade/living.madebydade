@@ -13,6 +13,7 @@ import { createServerRootRoute } from '@tanstack/react-start/server'
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as UnauthorizedRouteImport } from './routes/unauthorized'
 import { Route as SummariesRouteImport } from './routes/summaries'
+import { Route as BudgetRouteImport } from './routes/budget'
 import { Route as BillsRouteImport } from './routes/bills'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as BankIndexRouteImport } from './routes/bank/index'
@@ -30,6 +31,11 @@ const UnauthorizedRoute = UnauthorizedRouteImport.update({
 const SummariesRoute = SummariesRouteImport.update({
   id: '/summaries',
   path: '/summaries',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BudgetRoute = BudgetRouteImport.update({
+  id: '/budget',
+  path: '/budget',
   getParentRoute: () => rootRouteImport,
 } as any)
 const BillsRoute = BillsRouteImport.update({
@@ -67,6 +73,7 @@ const DotwellKnownMicrosoftIdentityAssociationDotjsonServerRoute =
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/bills': typeof BillsRoute
+  '/budget': typeof BudgetRoute
   '/summaries': typeof SummariesRoute
   '/unauthorized': typeof UnauthorizedRoute
   '/bank/setup': typeof BankSetupRoute
@@ -76,6 +83,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/bills': typeof BillsRoute
+  '/budget': typeof BudgetRoute
   '/summaries': typeof SummariesRoute
   '/unauthorized': typeof UnauthorizedRoute
   '/bank/setup': typeof BankSetupRoute
@@ -86,6 +94,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/bills': typeof BillsRoute
+  '/budget': typeof BudgetRoute
   '/summaries': typeof SummariesRoute
   '/unauthorized': typeof UnauthorizedRoute
   '/bank/setup': typeof BankSetupRoute
@@ -97,6 +106,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/bills'
+    | '/budget'
     | '/summaries'
     | '/unauthorized'
     | '/bank/setup'
@@ -106,6 +116,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/bills'
+    | '/budget'
     | '/summaries'
     | '/unauthorized'
     | '/bank/setup'
@@ -115,6 +126,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/bills'
+    | '/budget'
     | '/summaries'
     | '/unauthorized'
     | '/bank/setup'
@@ -125,6 +137,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   BillsRoute: typeof BillsRoute
+  BudgetRoute: typeof BudgetRoute
   SummariesRoute: typeof SummariesRoute
   UnauthorizedRoute: typeof UnauthorizedRoute
   BankSetupRoute: typeof BankSetupRoute
@@ -167,6 +180,13 @@ declare module '@tanstack/react-router' {
       path: '/summaries'
       fullPath: '/summaries'
       preLoaderRoute: typeof SummariesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/budget': {
+      id: '/budget'
+      path: '/budget'
+      fullPath: '/budget'
+      preLoaderRoute: typeof BudgetRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/bills': {
@@ -221,6 +241,7 @@ declare module '@tanstack/react-start/server' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   BillsRoute: BillsRoute,
+  BudgetRoute: BudgetRoute,
   SummariesRoute: SummariesRoute,
   UnauthorizedRoute: UnauthorizedRoute,
   BankSetupRoute: BankSetupRoute,

@@ -1,17 +1,19 @@
 import { useLocation } from "@tanstack/react-router";
 import { Link as RouterLink } from "@tanstack/react-router";
-import { HomeIcon, DocumentTextIcon, BanknotesIcon, BuildingLibraryIcon } from "@heroicons/react/24/outline";
+import { HomeIcon, DocumentTextIcon, BanknotesIcon, BuildingLibraryIcon, CalculatorIcon } from "@heroicons/react/24/outline";
 import {
 	HomeIcon as HomeIconSolid,
 	DocumentTextIcon as DocumentTextIconSolid,
 	BanknotesIcon as BanknotesIconSolid,
 	BuildingLibraryIcon as BuildingLibraryIconSolid,
+	CalculatorIcon as CalculatorIconSolid,
 } from "@heroicons/react/24/solid";
 
 const navItems = [
 	{ to: "/", label: "Home", Icon: HomeIcon, ActiveIcon: HomeIconSolid },
 	{ to: "/bills", label: "Bills", Icon: DocumentTextIcon, ActiveIcon: DocumentTextIconSolid },
 	{ to: "/summaries", label: "Spending", Icon: BanknotesIcon, ActiveIcon: BanknotesIconSolid },
+	{ to: "/budget", label: "Budget", Icon: CalculatorIcon, ActiveIcon: CalculatorIconSolid },
 	{ to: "/bank", label: "Bank", Icon: BuildingLibraryIcon, ActiveIcon: BuildingLibraryIconSolid },
 ] as const;
 

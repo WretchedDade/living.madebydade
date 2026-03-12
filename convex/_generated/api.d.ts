@@ -13,6 +13,7 @@ import type * as activity from "../activity.js";
 import type * as activitySchema from "../activitySchema.js";
 import type * as billPayments from "../billPayments.js";
 import type * as bills from "../bills.js";
+import type * as budgetItems from "../budgetItems.js";
 import type * as cashCreditSummaries from "../cashCreditSummaries.js";
 import type * as crons from "../crons.js";
 import type * as http from "../http.js";
@@ -21,6 +22,8 @@ import type * as plaidHelpers from "../plaidHelpers.js";
 import type * as plaidItems from "../plaidItems.js";
 import type * as transactionSchema from "../transactionSchema.js";
 import type * as transactions from "../transactions.js";
+import type * as userSettings from "../userSettings.js";
+import type * as userShares from "../userShares.js";
 import type * as users from "../users.js";
 
 import type {
@@ -43,6 +46,7 @@ declare const fullApi: ApiFromModules<{
   activitySchema: typeof activitySchema;
   billPayments: typeof billPayments;
   bills: typeof bills;
+  budgetItems: typeof budgetItems;
   cashCreditSummaries: typeof cashCreditSummaries;
   crons: typeof crons;
   http: typeof http;
@@ -51,6 +55,8 @@ declare const fullApi: ApiFromModules<{
   plaidItems: typeof plaidItems;
   transactionSchema: typeof transactionSchema;
   transactions: typeof transactions;
+  userSettings: typeof userSettings;
+  userShares: typeof userShares;
   users: typeof users;
 }>;
 declare const fullApiWithMounts: typeof fullApi;

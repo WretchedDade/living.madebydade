@@ -93,6 +93,15 @@ export default defineSchema({
 		),
 		payDays: v.array(v.number()),
 		themeId: v.optional(v.string()),
+		payAmount: v.optional(v.number()), // integer cents per paycheck
+	}).index("byUserId", ["userId"]),
+
+	budgetItems: defineTable({
+		userId: v.string(),
+		name: v.string(),
+		amount: v.number(), // integer cents per occurrence
+		frequency: v.union(v.literal("weekly"), v.literal("biweekly"), v.literal("monthly")),
+		icon: v.optional(v.string()),
 	}).index("byUserId", ["userId"]),
 
 	cashCreditSummaries: defineTable({
