@@ -117,7 +117,9 @@ function BudgetPage() {
 									</div>
 								</div>
 								<BurndownChart
-									monthlyIncome={monthlyIncome}
+									payAmountCents={payAmountCents}
+									paySchedule={paySchedule}
+									payDays={settings?.payDays ?? [15, 0]}
 									bills={billsList}
 									budgetItems={itemsList}
 									transactions={burndownTxns?.items ?? []}

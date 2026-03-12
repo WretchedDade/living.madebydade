@@ -48,26 +48,24 @@ export function AccountsCard() {
 	const accounts = (accountsQuery.data as Account[] | undefined) ?? [];
 
 	return (
-		<div className="bg-card rounded-xl card-elevated overflow-hidden">
-			<div className="h-1 bg-gradient-to-r from-info/60 to-info/20" />
-			<div className="p-6">
-				<div className="flex items-center justify-between mb-4">
-					<h3 className="text-base font-bold text-foreground flex items-center gap-2.5">
-						<BuildingLibraryIcon className="w-[18px] h-[18px] text-info shrink-0" />
-						<span>Accounts</span>
-					</h3>
-					<Button
-						variant="ghost"
-						size="sm"
-						icon
-						className="text-muted-foreground"
-						onClick={() => setBypassCache(true)}
-						disabled={bypassCache}
-						aria-label="Refresh"
-					>
-						<ArrowPathIcon className={`w-3.5 h-3.5 ${bypassCache ? "animate-spin" : ""}`} />
-					</Button>
-				</div>
+		<div>
+			<div className="flex items-center justify-between mb-4">
+				<h3 className="text-sm font-semibold text-foreground flex items-center gap-2.5">
+					<BuildingLibraryIcon className="w-[18px] h-[18px] text-info shrink-0" />
+					<span>Accounts</span>
+				</h3>
+				<Button
+					variant="ghost"
+					size="sm"
+					icon
+					className="text-muted-foreground"
+					onClick={() => setBypassCache(true)}
+					disabled={bypassCache}
+					aria-label="Refresh"
+				>
+					<ArrowPathIcon className={`w-3.5 h-3.5 ${bypassCache ? "animate-spin" : ""}`} />
+				</Button>
+			</div>
 
 			{accountsQuery.isLoading ? (
 				<div className="space-y-3">
@@ -131,7 +129,6 @@ export function AccountsCard() {
 					})}
 				</div>
 			)}
-			</div>
 		</div>
 	);
 }

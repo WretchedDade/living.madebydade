@@ -15,31 +15,28 @@ interface UpcomingBillsCardProps {
 
 export function UpcomingBillsCard({ payments, isLoading, showAutoPay, setShowAutoPay, onMarkPaid }: UpcomingBillsCardProps) {
 	return (
-		<div className="bg-card rounded-xl card-elevated overflow-hidden">
-			{/* Color accent strip */}
-			<div className="h-1 bg-gradient-to-r from-warning/60 to-warning/20" />
-			<div className="p-6">
-				<div className="flex items-center justify-between mb-4">
-					<h3 className="text-base font-bold text-foreground flex items-center gap-2.5">
-						<ClockIcon className="w-[18px] h-[18px] text-warning shrink-0" />
-						<span>Unpaid Bills</span>
-						{!isLoading && (
-							<span className="text-xs text-muted-foreground font-normal bg-muted/50 rounded-full px-2 py-0.5">{payments.length}</span>
-						)}
-					</h3>
-					<div className="flex items-center gap-2 text-xs text-muted-foreground shrink-0">
-						<span className="hidden sm:inline">Auto-Pay</span>
-						<Switch.Root
-							checked={showAutoPay}
-							onCheckedChange={setShowAutoPay}
-							className="w-8 h-5 bg-muted rounded-full relative transition-colors data-[state=checked]:bg-primary cursor-pointer"
-						>
-							<Switch.Thumb
-								className="block w-3.5 h-3.5 bg-white rounded-full shadow absolute left-[3px] top-[3px] transition-transform data-[state=checked]:translate-x-3"
-							/>
-						</Switch.Root>
-					</div>
+		<div>
+			<div className="flex items-center justify-between mb-4">
+				<h3 className="text-sm font-semibold text-foreground flex items-center gap-2.5">
+					<ClockIcon className="w-[18px] h-[18px] text-warning shrink-0" />
+					<span>Unpaid Bills</span>
+					{!isLoading && (
+						<span className="text-xs text-muted-foreground font-normal bg-muted/50 rounded-full px-2 py-0.5">{payments.length}</span>
+					)}
+				</h3>
+				<div className="flex items-center gap-2 text-xs text-muted-foreground shrink-0">
+					<span className="hidden sm:inline">Auto-Pay</span>
+					<Switch.Root
+						checked={showAutoPay}
+						onCheckedChange={setShowAutoPay}
+						className="w-8 h-5 bg-muted rounded-full relative transition-colors data-[state=checked]:bg-primary cursor-pointer"
+					>
+						<Switch.Thumb
+							className="block w-3.5 h-3.5 bg-white rounded-full shadow absolute left-[3px] top-[3px] transition-transform data-[state=checked]:translate-x-3"
+						/>
+					</Switch.Root>
 				</div>
+			</div>
 
 			{isLoading ? (
 				<div className="space-y-3">
@@ -101,7 +98,6 @@ export function UpcomingBillsCard({ payments, isLoading, showAutoPay, setShowAut
 					))}
 				</div>
 			)}
-			</div>
 		</div>
 	);
 }
