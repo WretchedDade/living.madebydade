@@ -17,7 +17,7 @@ interface BudgetItemFormProps {
 	submitLabel?: string;
 }
 
-const EMOJI_SUGGESTIONS = ["🛒", "⛽", "🍔", "☕", "🎮", "👶", "🐕", "💊", "🏋️", "📦"];
+const EMOJI_SUGGESTIONS = ["🛒", "⛽", "🍔", "☕", "🎮", "👶", "🐕", "💊", "🏋️", "💰", "🏠", "🚗", "💇", "🧹", "✂️", "📦"];
 
 export function BudgetItemForm({
 	initialValues,
