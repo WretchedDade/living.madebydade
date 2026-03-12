@@ -2,15 +2,16 @@ import { convexQuery, useConvexMutation } from "@convex-dev/react-query";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 import { api } from "convex/_generated/api";
-import type { Doc, Id } from "convex/_generated/dataModel";
-import { useState } from "react";
+import type { Doc } from "convex/_generated/dataModel";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import { AppLayout } from "~/components/layout/AppLayout";
 import { BudgetHero } from "~/components/budget/BudgetHero";
 import { BudgetBreakdown } from "~/components/budget/BudgetBreakdown";
+import { BurndownChart } from "~/components/budget/BurndownChart";
 import { BudgetItemForm, IncomeSetupForm } from "~/components/budget/BudgetItemForm";
 import { Sheet } from "~/components/feedback/Sheet";
 import { calcMonthlyIncomeExact, calcMonthlyItemCost } from "~/lib/budget";
-import { LoaderIcon } from "lucide-react";
+import { ChevronLeftIcon, ChevronRightIcon, LoaderIcon } from "lucide-react";
 
 type SheetMode =
 	| { type: "closed" }
@@ -20,6 +21,23 @@ type SheetMode =
 
 function BudgetPage() {
 	const [sheet, setSheet] = useState<SheetMode>({ type: "closed" });
+	const [monthOffset, setMonthOffset] = useState(0);
+	const [isClient, setIsClient] = useState(false);
+	useEffect(() => setIsClient(true), []);
+
+	// Burndown month
+	const { year: burndownYear, month: burndownMonth } = useMemo(() => {
+		const d = new Date();
+		d.setMonth(d.getMonth() + monthOffset);
+		return { year: d.getFullYear(), month: d.getMonth() + 1 };
+	}, [monthOffset]);
+
+	const burndownMonthLabel = new Date(burndownYear, burndownMonth - 1).toLocaleDateString("en-US", {
+		month: "long",
+		year: "numeric",
+	});
+	const burndownStartDate = `${burndownYear}-${String(burndownMonth).padStart(2, "0")}-01`;
+	const burndownEndDate = new Date(burndownYear, burndownMonth, 0).toISOString().slice(0, 10);
 
 	// Data queries
 	const { data: settings, isLoading: settingsLoading } = useQuery(
@@ -30,6 +48,13 @@ function BudgetPage() {
 	);
 	const { data: budgetItems, isLoading: itemsLoading } = useQuery(
 		convexQuery(api.budgetItems.list, {}),
+	);
+	const { data: burndownTxns } = useQuery(
+		convexQuery(api.transactions.listByDateRange, {
+			startDate: burndownStartDate,
+			endDate: burndownEndDate,
+			limit: 1000,
+		}),
 	);
 
 	// Mutations
@@ -66,6 +91,46 @@ function BudgetPage() {
 							totalBudgetItems={totalBudgetItems}
 							hasIncome={hasIncome}
 						/>
+
+						{/* Burndown chart with month navigation */}
+						{isClient && hasIncome && (
+							<div className="px-5 md:px-10 lg:px-12 py-6">
+								<div className="flex items-center justify-between mb-4">
+									<h2 className="text-sm font-semibold text-foreground">Monthly Burndown</h2>
+									<div className="flex items-center gap-1">
+										<button
+											onClick={() => setMonthOffset(monthOffset - 1)}
+											className="p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors"
+										>
+											<ChevronLeftIcon className="w-4 h-4" />
+										</button>
+										<span className="text-xs text-muted-foreground font-medium min-w-[100px] text-center">
+											{burndownMonthLabel}
+										</span>
+										<button
+											onClick={() => setMonthOffset(monthOffset + 1)}
+											disabled={monthOffset >= 0}
+											className="p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors disabled:opacity-30 disabled:pointer-events-none"
+										>
+											<ChevronRightIcon className="w-4 h-4" />
+										</button>
+									</div>
+								</div>
+								<BurndownChart
+									monthlyIncome={monthlyIncome}
+									bills={billsList}
+									budgetItems={itemsList}
+									transactions={burndownTxns?.items ?? []}
+									year={burndownYear}
+									month={burndownMonth}
+								/>
+							</div>
+						)}
+
+						{/* Divider */}
+						<div className="mx-5 md:mx-10 lg:mx-12">
+							<div className="h-px bg-gradient-to-r from-transparent via-border to-transparent" />
+						</div>
 
 						<BudgetBreakdown
 							bills={billsList}
