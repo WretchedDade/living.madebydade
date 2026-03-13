@@ -1,14 +1,16 @@
 import { convexQuery, useConvexMutation } from "@convex-dev/react-query";
+import { convexAction } from "@convex-dev/react-query";
 import { useUser } from "@clerk/tanstack-react-start";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 import { api } from "convex/_generated/api";
-import { useState, useEffect } from "react";
+import type { Account } from "convex/accounts";
+import { useState, useEffect, useMemo } from "react";
 import { AppLayout } from "~/components/layout/AppLayout";
 import { HeroSection } from "~/components/home/HeroSection";
 import { UpcomingBillsCard } from "~/components/UpcomingBillsCard";
 import { AccountsCard } from "~/components/AccountsCard";
-import { BurndownChart } from "~/components/budget/BurndownChart";
+import { SpendingMoneyChart } from "~/components/home/SpendingMoneyChart";
 
 function Home() {
 	const [showAutoPay, setShowAutoPay] = useState(false);
@@ -24,21 +26,45 @@ function Home() {
 	const { data: payments, isLoading } = useQuery(
 		convexQuery(api.billPayments.listUnpaid, { includeAutoPay: showAutoPay }),
 	);
+	// Also get all unpaid (including auto-pay) for the chart
+	const { data: allUnpaid } = useQuery(
+		convexQuery(api.billPayments.listUnpaid, { includeAutoPay: true }),
+	);
 
 	const { data: summaryData } = useQuery(
 		convexQuery(api.cashCreditSummaries.listByPeriod, { period: "month", pageSize: 6 }),
 	);
 
-	// Budget data for burndown
-	const { data: settings } = useQuery(convexQuery(api.userSettings.get, {}));
 	const { data: bills } = useQuery(convexQuery(api.bills.list, {}));
 	const { data: budgetItems } = useQuery(convexQuery(api.budgetItems.list, {}));
 	const { data: txnData } = useQuery(
 		convexQuery(api.transactions.listByDateRange, { startDate, endDate, limit: 1000 }),
 	);
 
-	const paySchedule = settings?.paySchedule ?? "semimonthly";
-	const payAmountCents = settings?.payAmount ?? 0;
+	// Accounts for checking balance
+	const accountsQuery = useQuery(convexAction(api.accounts.get, { bypassCache: false }));
+	const accounts = (accountsQuery.data as Account[] | undefined) ?? [];
+	const checkingBalance = useMemo(
+		() =>
+			accounts.reduce((total, account) => {
+				if (account.subtype === "checking") {
+					if (account.balances?.available != null) return total + account.balances.available;
+					if (account.balances?.current != null) return total + account.balances.current;
+				}
+				return total;
+			}, 0),
+		[accounts],
+	);
+
+	// Map unpaid payments for chart
+	const unpaidPayments = useMemo(
+		() =>
+			(allUnpaid ?? []).map((p) => ({
+				billId: typeof p.billId === "string" ? p.billId : (p.billId as string),
+				dateDue: p.dateDue,
+			})),
+		[allUnpaid],
+	);
 
 	const mutation = useMutation({
 		mutationFn: useConvexMutation(api.billPayments.markPaid),
@@ -92,20 +118,18 @@ function Home() {
 							<AccountsCard />
 						</div>
 
-						{/* Burndown chart — rolling 30-day window */}
-						{isClient && payAmountCents > 0 && (
+						{/* Spending Money chart — balance-based with projection */}
+						{isClient && checkingBalance > 0 && (
 							<div className="mt-14">
-								<h2 className="text-sm font-semibold text-foreground mb-4">Cash Flow</h2>
-								<BurndownChart
-									payAmountCents={payAmountCents}
-									paySchedule={paySchedule}
-									payDays={settings?.payDays ?? [15, 0]}
+								<h2 className="text-sm font-semibold text-foreground mb-4">Spending Money</h2>
+								<SpendingMoneyChart
+									checkingBalance={checkingBalance}
 									bills={bills ?? []}
 									budgetItems={budgetItems ?? []}
 									transactions={txnData?.items ?? []}
+									unpaidPayments={unpaidPayments}
 									year={year}
 									month={month}
-									rollingWindow={[10, 20]}
 								/>
 							</div>
 						)}
