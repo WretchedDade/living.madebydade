@@ -91,6 +91,14 @@ export const deleteBill = mutation({
 			throw new Error("Not authorized to delete this bill");
 		}
 
+		// Cascade delete: remove all associated bill payments
+		const payments = await ctx.db
+			.query("billPayments")
+			.withIndex("byBillId", q => q.eq("billId", id))
+			.collect();
+
+		await Promise.all(payments.map(payment => ctx.db.delete(payment._id)));
+
 		await ctx.db.delete(id);
 	},
 });

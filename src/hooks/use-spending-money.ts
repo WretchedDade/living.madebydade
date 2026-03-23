@@ -111,7 +111,7 @@ export function useSpendingMoney() {
 			const isDayAfterEomPaycheck = includeDayAfter != null && due.hasSame(includeDayAfter, "day");
 
 			if (isBeforeNextPaycheck || isDayAfterEomPaycheck) {
-				return sum + ((payment.bill.amount ?? 0) / 100);
+				return sum + ((payment.bill?.amount ?? 0) / 100);
 			}
 			return sum;
 		},

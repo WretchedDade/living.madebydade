@@ -60,17 +60,15 @@ export const listUnpaid = query({
 
 		const payments = paymentsPerUser.flat();
 
-		return await Promise.all(
+		const paymentsWithBills = await Promise.all(
 			payments.map(async payment => {
 				const bill = await ctx.db.get(payment.billId);
-
-				if (!bill) {
-					throw new Error("Bill not found");
-				}
-
+				if (!bill) return null;
 				return { ...payment, bill };
 			}),
 		);
+
+		return paymentsWithBills.filter((p): p is NonNullable<typeof p> => p !== null);
 	},
 });
 
@@ -94,17 +92,15 @@ export const list = query({
 			.sort((a, b) => b._creationTime - a._creationTime)
 			.slice(0, take);
 
-		return Promise.all(
+		const paymentsWithBills = await Promise.all(
 			payments.map(async payment => {
 				const bill = await ctx.db.get(payment.billId);
-
-				if (!bill) {
-					throw new Error("Bill not found");
-				}
-
+				if (!bill) return null;
 				return { ...payment, bill };
 			}),
 		);
+
+		return paymentsWithBills.filter((p): p is NonNullable<typeof p> => p !== null);
 	},
 });
 
@@ -137,17 +133,15 @@ export const listRecentlyPaid = query({
 			.sort((a, b) => (b.datePaid ?? "").localeCompare(a.datePaid ?? ""))
 			.slice(0, 50);
 
-		return Promise.all(
+		const paymentsWithBills = await Promise.all(
 			userPayments.map(async payment => {
 				const bill = await ctx.db.get(payment.billId);
-
-				if (!bill) {
-					throw new Error("Bill not found");
-				}
-
+				if (!bill) return null;
 				return { ...payment, bill, datePaid: payment.datePaid! };
 			}),
 		);
+
+		return paymentsWithBills.filter((p): p is NonNullable<typeof p> => p !== null);
 	},
 });
 
