@@ -7,6 +7,22 @@ import type { BillPaymentWithBill } from "convex/billPayments";
 import { EST_TIMEZONE } from "@/constants";
 
 type PaySchedule = "semimonthly" | "biweekly" | "weekly" | "monthly";
+type Frequency = "weekly" | "biweekly" | "monthly";
+
+export interface BudgetBreakdownItem {
+	name: string;
+	icon: string;
+	/** Prorated dollar amount for the current pay period */
+	proratedAmount: number;
+}
+
+function frequencyToDays(frequency: Frequency): number {
+	switch (frequency) {
+		case "weekly": return 7;
+		case "biweekly": return 14;
+		case "monthly": return 365 / 12;
+	}
+}
 
 /** Reference Monday used for biweekly cycle alignment */
 const BIWEEKLY_REFERENCE = DateTime.fromISO("2024-01-01", { zone: EST_TIMEZONE }).startOf("day");
@@ -77,6 +93,8 @@ export function useSpendingMoney() {
 
 	const userSettingsQuery = useQuery(convexQuery(api.userSettings.get, {}));
 
+	const budgetItemsQuery = useQuery(convexQuery(api.budgetItems.list, {}));
+
 	const today = DateTime.now().setZone(EST_TIMEZONE).startOf("day");
 
 	const paySchedule: PaySchedule = userSettingsQuery.data?.paySchedule ?? "semimonthly";
@@ -120,13 +138,31 @@ export function useSpendingMoney() {
 
 	const spendingMoney = totalCheckingAmount - totalBillsBeforeNextPaycheck;
 
+	// Budget items prorated to the current pay period
+	const daysUntilPaycheck = Math.max(1, Math.round(nextPaycheckDate.diff(today, "days").days));
+
+	const budgetBreakdown: BudgetBreakdownItem[] = (budgetItemsQuery.data ?? [])
+		.map(item => ({
+			name: item.name,
+			icon: item.icon ?? "📦",
+			proratedAmount: ((item.amount / 100) / frequencyToDays(item.frequency)) * daysUntilPaycheck,
+		}))
+		.sort((a, b) => b.proratedAmount - a.proratedAmount);
+
+	const totalBudgetProrated = budgetBreakdown.reduce((sum, item) => sum + item.proratedAmount, 0);
+	const freeSpending = spendingMoney - totalBudgetProrated;
+
 	return {
 		spendingMoney,
 		totalCheckingAmount,
 		totalUnpaidBillsAmount: totalBillsBeforeNextPaycheck,
 		nextPaycheckDate: nextPaycheckDate.toISO(),
-		isLoading: unpaidPaymentsQuery.isLoading || accountsQuery.isLoading || userSettingsQuery.isLoading,
+		isLoading: unpaidPaymentsQuery.isLoading || accountsQuery.isLoading || userSettingsQuery.isLoading || budgetItemsQuery.isLoading,
 		accountsQuery,
 		unpaidPaymentsQuery,
+		budgetBreakdown,
+		totalBudgetProrated,
+		freeSpending,
+		daysUntilPaycheck,
 	};
 }

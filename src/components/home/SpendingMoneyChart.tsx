@@ -81,6 +81,8 @@ function buildChartData({
 	const actualIncomeByDay = new Map<number, number>();
 	for (const t of transactions) {
 		if (t.isInternalTransfer || t.isCreditCardPayment) continue;
+		// Only include checking account transactions for balance reconstruction
+		if (t.accountType != null && t.accountType !== "checking") continue;
 		const effectiveDate = t.authorizedDate ?? t.date;
 		const txDate = new Date(effectiveDate + (effectiveDate.includes("T") ? "" : "T12:00:00"));
 		if (txDate.getFullYear() === year && txDate.getMonth() + 1 === month) {

@@ -11,6 +11,7 @@ import { HeroSection } from "~/components/home/HeroSection";
 import { UpcomingBillsCard } from "~/components/UpcomingBillsCard";
 import { AccountsCard } from "~/components/AccountsCard";
 import { SpendingMoneyChart } from "~/components/home/SpendingMoneyChart";
+import { SpendingMoneyBreakdown } from "~/components/home/SpendingMoneyBreakdown";
 
 function Home() {
 	const [showAutoPay, setShowAutoPay] = useState(false);
@@ -118,21 +119,24 @@ function Home() {
 							<AccountsCard />
 						</div>
 
-						{/* Spending Money chart — balance-based with projection */}
-						{isClient && checkingBalance > 0 && (
-							<div className="mt-14">
-								<h2 className="text-sm font-semibold text-foreground mb-4">Spending Money</h2>
-								<SpendingMoneyChart
-									checkingBalance={checkingBalance}
-									bills={bills ?? []}
-									budgetItems={budgetItems ?? []}
-									transactions={txnData?.items ?? []}
-									unpaidPayments={unpaidPayments}
-									year={year}
-									month={month}
-								/>
-							</div>
-						)}
+						{/* Spending Money breakdown + chart */}
+						<div className="mt-14">
+							<SpendingMoneyBreakdown />
+
+							{isClient && checkingBalance > 0 && (
+								<div className="mt-8">
+									<SpendingMoneyChart
+										checkingBalance={checkingBalance}
+										bills={bills ?? []}
+										budgetItems={budgetItems ?? []}
+										transactions={txnData?.items ?? []}
+										unpaidPayments={unpaidPayments}
+										year={year}
+										month={month}
+									/>
+								</div>
+							)}
+						</div>
 					</div>
 				</div>
 			</main>
