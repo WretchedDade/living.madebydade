@@ -1,6 +1,6 @@
 import { useSpendingMoney, type PayPeriod } from "~/hooks/use-spending-money";
 import { Skeleton } from "~/components/ui/Skeleton";
-import { WalletIcon, CalendarIcon, ShoppingCartIcon } from "lucide-react";
+import { WalletIcon, CalendarIcon } from "lucide-react";
 
 const formatMoney = (n: number) =>
 	n.toLocaleString("en-US", { style: "currency", currency: "USD" });
@@ -21,7 +21,6 @@ export function SpendingMoneyBreakdown() {
 	const {
 		totalCheckingAmount,
 		freeSpending,
-		budgetBreakdown,
 		periods,
 		totalDays,
 		isLoading,
@@ -39,15 +38,6 @@ export function SpendingMoneyBreakdown() {
 	}
 
 	const [period1, period2] = periods;
-	const hasBudgetItems = budgetBreakdown.length > 0;
-	const finalAmount = hasBudgetItems ? freeSpending : period2.endBalance;
-
-	// Build running totals for budget waterfall
-	let runningTotal = period2.endBalance;
-	const waterfallSteps = budgetBreakdown.map(item => {
-		runningTotal -= item.proratedAmount;
-		return { ...item, runningTotal };
-	});
 
 	return (
 		<div>
@@ -83,50 +73,12 @@ export function SpendingMoneyBreakdown() {
 					startingBalance={period1.endBalance + period2.paycheckAmount}
 				/>
 
-				{/* Budget Items Section */}
-				{hasBudgetItems && (
-					<section className="rounded-xl bg-muted/30 px-4 py-3">
-						<h3 className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-3 flex items-center gap-2">
-							<ShoppingCartIcon className="w-3.5 h-3.5" />
-							Budget Items
-						</h3>
-
-						<div className="space-y-1.5">
-							{waterfallSteps.map(step => {
-								const color =
-									step.runningTotal < 0 ? "text-destructive"
-										: step.runningTotal < 100 ? "text-warning"
-											: "text-foreground";
-
-								return (
-									<div key={step.name} className="flex items-center justify-between py-1">
-										<div className="flex items-center gap-2">
-											<span className="text-sm">{step.icon}</span>
-											<span className="text-sm text-muted-foreground">{step.name}</span>
-										</div>
-										<div className="flex items-center gap-4">
-											<span className="text-xs tabular-nums text-muted-foreground/70">
-												−{formatMoney(step.proratedAmount)}
-											</span>
-											<span className={`text-sm tabular-nums font-medium ${color} w-24 text-right`}>
-												{formatMoney(step.runningTotal)}
-											</span>
-										</div>
-									</div>
-								);
-							})}
-						</div>
-					</section>
-				)}
-
 				{/* Free Spending Result */}
-				<section className={`rounded-xl ${amountBg(finalAmount)} px-4 py-3`}>
+				<section className={`rounded-xl ${amountBg(freeSpending)} px-4 py-3`}>
 					<div className="flex items-center justify-between">
-						<span className="text-sm font-semibold text-foreground">
-							{hasBudgetItems ? "Free Spending" : "Spending Money"}
-						</span>
-						<span className={`text-xl font-bold tabular-nums ${amountColor(finalAmount)}`}>
-							{formatMoney(finalAmount)}
+						<span className="text-sm font-semibold text-foreground">Free Spending</span>
+						<span className={`text-xl font-bold tabular-nums ${amountColor(freeSpending)}`}>
+							{formatMoney(freeSpending)}
 						</span>
 					</div>
 				</section>
@@ -145,6 +97,7 @@ function PeriodSection({
 	isFirst?: boolean;
 }) {
 	const hasBills = period.bills.length > 0;
+	const hasBudget = period.budgetItems.length > 0;
 
 	return (
 		<section className="rounded-xl bg-muted/30 px-4 py-3">
@@ -161,26 +114,39 @@ function PeriodSection({
 					</div>
 				)}
 
+				{/* Bills */}
 				{hasBills ? (
+					period.bills.map((bill, i) => (
+						<div key={`bill-${bill.name}-${i}`} className="flex items-center justify-between">
+							<span className="text-sm text-muted-foreground">{bill.name}</span>
+							<span className="text-sm tabular-nums text-destructive font-medium">−{formatMoney(bill.amount)}</span>
+						</div>
+					))
+				) : (
+					<div className="text-sm text-muted-foreground italic">No bills due</div>
+				)}
+
+				{/* Budget Items */}
+				{hasBudget && (
 					<>
-						{period.bills.map((bill, i) => (
-							<div key={`${bill.name}-${i}`} className="flex items-center justify-between">
-								<span className="text-sm text-muted-foreground">{bill.name}</span>
-								<span className="text-sm tabular-nums text-destructive font-medium">−{formatMoney(bill.amount)}</span>
+						{(hasBills || isFirst) && <div className="h-px bg-border/40 my-1" />}
+						{period.budgetItems.map((item, i) => (
+							<div key={`budget-${item.name}-${i}`} className="flex items-center justify-between">
+								<div className="flex items-center gap-2">
+									<span className="text-sm">{item.icon}</span>
+									<span className="text-sm text-muted-foreground">{item.name}</span>
+								</div>
+								<span className="text-sm tabular-nums text-muted-foreground font-medium">−{formatMoney(item.proratedAmount)}</span>
 							</div>
 						))}
 					</>
-				) : (
-					<div className="flex items-center justify-between">
-						<span className="text-sm text-muted-foreground italic">No bills due</span>
-					</div>
 				)}
 
 				<div className="h-px bg-border/60 my-1" />
 
 				<div className="flex items-center justify-between">
 					<span className="text-sm font-semibold text-foreground">
-						{isFirst ? "After Bills" : "After All Bills"}
+						{isFirst ? "Remaining" : "Remaining"}
 					</span>
 					<span className={`text-sm tabular-nums font-semibold ${amountColor(period.endBalance)}`}>
 						{formatMoney(period.endBalance)}

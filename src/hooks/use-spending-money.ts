@@ -24,8 +24,10 @@ export interface PayPeriod {
 	endDate: DateTime;
 	bills: BillInPeriod[];
 	totalBills: number;
+	budgetItems: BudgetBreakdownItem[];
+	totalBudget: number;
 	paycheckAmount: number;
-	/** Running balance at end of this period (after bills + paycheck) */
+	/** Running balance at end of this period (after bills + budget + paycheck) */
 	endBalance: number;
 }
 
@@ -162,14 +164,38 @@ export function useSpendingMoney() {
 	const totalPeriod1Bills = period1Bills.reduce((sum, b) => sum + b.amount, 0);
 	const totalPeriod2Bills = period2Bills.reduce((sum, b) => sum + b.amount, 0);
 
-	// Period 1: checking − bills
-	const endPeriod1 = totalCheckingAmount - totalPeriod1Bills;
+	// Budget items prorated per period based on days in each
+	const period1Days = Math.max(1, Math.round(nextPaycheckDate.diff(today, "days").days));
+	const period2Days = Math.max(1, Math.round(secondPaycheckDate.diff(nextPaycheckDate, "days").days));
+	const totalDays = period1Days + period2Days;
+
+	const rawBudgetItems = (budgetItemsQuery.data ?? []).map(item => {
+		const dailyRate = (item.amount / 100) / frequencyToDays(item.frequency);
+		return {
+			name: item.name,
+			icon: item.icon ?? "📦",
+			dailyRate,
+		};
+	});
+
+	const period1Budget: BudgetBreakdownItem[] = rawBudgetItems
+		.map(item => ({ name: item.name, icon: item.icon, proratedAmount: item.dailyRate * period1Days }))
+		.sort((a, b) => b.proratedAmount - a.proratedAmount);
+	const totalPeriod1Budget = period1Budget.reduce((sum, item) => sum + item.proratedAmount, 0);
+
+	const period2Budget: BudgetBreakdownItem[] = rawBudgetItems
+		.map(item => ({ name: item.name, icon: item.icon, proratedAmount: item.dailyRate * period2Days }))
+		.sort((a, b) => b.proratedAmount - a.proratedAmount);
+	const totalPeriod2Budget = period2Budget.reduce((sum, item) => sum + item.proratedAmount, 0);
+
+	// Period 1: checking − bills − budget
+	const endPeriod1 = totalCheckingAmount - totalPeriod1Bills - totalPeriod1Budget;
 
 	// + Paycheck
 	const afterPaycheck = endPeriod1 + payAmountDollars;
 
-	// Period 2: − bills
-	const endPeriod2 = afterPaycheck - totalPeriod2Bills;
+	// Period 2: − bills − budget
+	const endPeriod2 = afterPaycheck - totalPeriod2Bills - totalPeriod2Budget;
 
 	// Format period labels
 	const formatDate = (d: DateTime) =>
@@ -182,6 +208,8 @@ export function useSpendingMoney() {
 			endDate: nextPaycheckDate.minus({ days: 1 }),
 			bills: period1Bills,
 			totalBills: totalPeriod1Bills,
+			budgetItems: period1Budget,
+			totalBudget: totalPeriod1Budget,
 			paycheckAmount: 0,
 			endBalance: endPeriod1,
 		},
@@ -191,24 +219,19 @@ export function useSpendingMoney() {
 			endDate: secondPaycheckDate.minus({ days: 1 }),
 			bills: period2Bills,
 			totalBills: totalPeriod2Bills,
+			budgetItems: period2Budget,
+			totalBudget: totalPeriod2Budget,
 			paycheckAmount: payAmountDollars,
 			endBalance: endPeriod2,
 		},
 	];
 
-	// Budget items prorated across the full two-period window
-	const totalDays = Math.max(1, Math.round(secondPaycheckDate.diff(today, "days").days));
-
-	const budgetBreakdown: BudgetBreakdownItem[] = (budgetItemsQuery.data ?? [])
-		.map(item => ({
-			name: item.name,
-			icon: item.icon ?? "📦",
-			proratedAmount: ((item.amount / 100) / frequencyToDays(item.frequency)) * totalDays,
-		}))
+	// Combined budget breakdown for compatibility
+	const budgetBreakdown: BudgetBreakdownItem[] = rawBudgetItems
+		.map(item => ({ name: item.name, icon: item.icon, proratedAmount: item.dailyRate * totalDays }))
 		.sort((a, b) => b.proratedAmount - a.proratedAmount);
-
-	const totalBudgetProrated = budgetBreakdown.reduce((sum, item) => sum + item.proratedAmount, 0);
-	const freeSpending = endPeriod2 - totalBudgetProrated;
+	const totalBudgetProrated = totalPeriod1Budget + totalPeriod2Budget;
+	const freeSpending = endPeriod2;
 
 	// Legacy fields for HeroSection / SpendingMoneyCard compatibility
 	const totalUnpaidBillsAmount = totalPeriod1Bills + totalPeriod2Bills;
