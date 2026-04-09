@@ -9,10 +9,30 @@ import { EST_TIMEZONE } from "@/constants";
 type PaySchedule = "semimonthly" | "biweekly" | "weekly" | "monthly";
 type Frequency = "weekly" | "biweekly" | "monthly";
 
+/** Number of days before a due date that a bill should be "ready to pay" */
+const BILL_LEAD_DAYS = 3;
+
+export interface BillInPeriod {
+	name: string;
+	amount: number;
+	dateDue: string;
+}
+
+export interface PayPeriod {
+	label: string;
+	startDate: DateTime;
+	endDate: DateTime;
+	bills: BillInPeriod[];
+	totalBills: number;
+	paycheckAmount: number;
+	/** Running balance at end of this period (after bills + paycheck) */
+	endBalance: number;
+}
+
 export interface BudgetBreakdownItem {
 	name: string;
 	icon: string;
-	/** Prorated dollar amount for the current pay period */
+	/** Prorated dollar amount across the two-period window */
 	proratedAmount: number;
 }
 
@@ -76,93 +96,138 @@ function computeNextPaycheckDate(
 }
 
 /**
- * Calculates available spending money based on:
- *  - Total checking account balances
- *  - Sum of unpaid bill payments due BEFORE the next paycheck
+ * Calculates available spending money across two pay periods.
  *
- * Pay schedule is read from user settings, defaulting to semimonthly (15th + EOM).
+ * Uses a 3-day lead time so bills are slotted into the pay period where
+ * money needs to be ready (e.g., mortgage due the 1st → slotted into
+ * the prior EOM pay period).
  *
- * A bill due after the next paycheck (or on the next paycheck date) is NOT subtracted
- * from the current spending money, because it will be covered by that upcoming paycheck.
+ * The waterfall shows:
+ *   Period 1: checking balance − bills due in period 1
+ *   + Paycheck
+ *   Period 2: − bills due in period 2
+ *   − Budget items (prorated across the full window)
+ *   = Free Spending
  */
 export function useSpendingMoney() {
-	// Always include auto-pay when computing obligations
 	const unpaidPaymentsQuery = useQuery(convexQuery(api.billPayments.listUnpaid, { includeAutoPay: true }));
-
 	const accountsQuery = useQuery(convexAction(api.accounts.get, {}));
-
 	const userSettingsQuery = useQuery(convexQuery(api.userSettings.get, {}));
-
 	const budgetItemsQuery = useQuery(convexQuery(api.budgetItems.list, {}));
 
 	const today = DateTime.now().setZone(EST_TIMEZONE).startOf("day");
 
 	const paySchedule: PaySchedule = userSettingsQuery.data?.paySchedule ?? "semimonthly";
 	const payDays: number[] = userSettingsQuery.data?.payDays ?? [15, 0];
+	const payAmountCents: number = userSettingsQuery.data?.payAmount ?? 0;
+	const payAmountDollars = payAmountCents / 100;
 
-	// Compute next paycheck date
+	// Two upcoming paychecks
 	const nextPaycheckDate = computeNextPaycheckDate(today, paySchedule, payDays);
+	const secondPaycheckDate = computeNextPaycheckDate(nextPaycheckDate, paySchedule, payDays);
 
-	// Special-case: if the upcoming paycheck is end-of-month (semimonthly with EOM), also include
-	// bills due on the 1st (day after EOM). This covers scenarios like a 1st-of-month mortgage
-	// intentionally paid from the 15th's paycheck.
-	const isEomPaycheck = paySchedule === "semimonthly" && payDays.includes(0) && today.day >= 15;
-	const includeDayAfter = isEomPaycheck ? nextPaycheckDate.plus({ days: 1 }) : null;
-
-	// Sum checking balances (available preferred, fallback current)
+	// Sum checking balances
 	const totalCheckingAmount = ((accountsQuery.data as Account[] | undefined) ?? []).reduce((total, account) => {
 		if (account.subtype === "checking") {
 			if (account.balances?.available != null) return total + account.balances.available;
 			if (account.balances?.current != null) return total + account.balances.current;
-			console.warn(
-				`Encountered checking account (${account.name} ${account.mask}) with no balance information when calculating total checking amount.`,
-			);
 		}
 		return total;
 	}, 0);
 
-	// Determine obligations before next paycheck
-	const totalBillsBeforeNextPaycheck = ((unpaidPaymentsQuery.data as BillPaymentWithBill[] | undefined) ?? []).reduce(
-		(sum, payment) => {
-			const due = DateTime.fromISO(payment.dateDue).setZone(EST_TIMEZONE).startOf("day");
-			const isBeforeNextPaycheck = due < nextPaycheckDate;
-			const isDayAfterEomPaycheck = includeDayAfter != null && due.hasSame(includeDayAfter, "day");
+	// Slot each unpaid bill into a period using the 3-day lead time
+	const payments = (unpaidPaymentsQuery.data as BillPaymentWithBill[] | undefined) ?? [];
 
-			if (isBeforeNextPaycheck || isDayAfterEomPaycheck) {
-				return sum + ((payment.bill?.amount ?? 0) / 100);
-			}
-			return sum;
+	const period1Bills: BillInPeriod[] = [];
+	const period2Bills: BillInPeriod[] = [];
+
+	for (const payment of payments) {
+		const due = DateTime.fromISO(payment.dateDue).setZone(EST_TIMEZONE).startOf("day");
+		const effectiveDue = due.minus({ days: BILL_LEAD_DAYS });
+		const billAmount = (payment.bill?.amount ?? 0) / 100;
+		const bill: BillInPeriod = {
+			name: payment.bill?.name ?? "Unknown",
+			amount: billAmount,
+			dateDue: payment.dateDue,
+		};
+
+		if (effectiveDue < nextPaycheckDate) {
+			period1Bills.push(bill);
+		} else if (effectiveDue < secondPaycheckDate) {
+			period2Bills.push(bill);
+		}
+		// Bills beyond 2nd paycheck are not included in the window
+	}
+
+	const totalPeriod1Bills = period1Bills.reduce((sum, b) => sum + b.amount, 0);
+	const totalPeriod2Bills = period2Bills.reduce((sum, b) => sum + b.amount, 0);
+
+	// Period 1: checking − bills
+	const endPeriod1 = totalCheckingAmount - totalPeriod1Bills;
+
+	// + Paycheck
+	const afterPaycheck = endPeriod1 + payAmountDollars;
+
+	// Period 2: − bills
+	const endPeriod2 = afterPaycheck - totalPeriod2Bills;
+
+	// Format period labels
+	const formatDate = (d: DateTime) =>
+		d.toLocaleString({ month: "short", day: "numeric" });
+
+	const periods: [PayPeriod, PayPeriod] = [
+		{
+			label: `${formatDate(today)} – ${formatDate(nextPaycheckDate.minus({ days: 1 }))}`,
+			startDate: today,
+			endDate: nextPaycheckDate.minus({ days: 1 }),
+			bills: period1Bills,
+			totalBills: totalPeriod1Bills,
+			paycheckAmount: 0,
+			endBalance: endPeriod1,
 		},
-		0,
-	);
+		{
+			label: `${formatDate(nextPaycheckDate)} – ${formatDate(secondPaycheckDate.minus({ days: 1 }))}`,
+			startDate: nextPaycheckDate,
+			endDate: secondPaycheckDate.minus({ days: 1 }),
+			bills: period2Bills,
+			totalBills: totalPeriod2Bills,
+			paycheckAmount: payAmountDollars,
+			endBalance: endPeriod2,
+		},
+	];
 
-	const spendingMoney = totalCheckingAmount - totalBillsBeforeNextPaycheck;
-
-	// Budget items prorated to the current pay period
-	const daysUntilPaycheck = Math.max(1, Math.round(nextPaycheckDate.diff(today, "days").days));
+	// Budget items prorated across the full two-period window
+	const totalDays = Math.max(1, Math.round(secondPaycheckDate.diff(today, "days").days));
 
 	const budgetBreakdown: BudgetBreakdownItem[] = (budgetItemsQuery.data ?? [])
 		.map(item => ({
 			name: item.name,
 			icon: item.icon ?? "📦",
-			proratedAmount: ((item.amount / 100) / frequencyToDays(item.frequency)) * daysUntilPaycheck,
+			proratedAmount: ((item.amount / 100) / frequencyToDays(item.frequency)) * totalDays,
 		}))
 		.sort((a, b) => b.proratedAmount - a.proratedAmount);
 
 	const totalBudgetProrated = budgetBreakdown.reduce((sum, item) => sum + item.proratedAmount, 0);
-	const freeSpending = spendingMoney - totalBudgetProrated;
+	const freeSpending = endPeriod2 - totalBudgetProrated;
+
+	// Legacy fields for HeroSection / SpendingMoneyCard compatibility
+	const totalUnpaidBillsAmount = totalPeriod1Bills + totalPeriod2Bills;
+	const spendingMoney = freeSpending;
 
 	return {
 		spendingMoney,
+		freeSpending,
 		totalCheckingAmount,
-		totalUnpaidBillsAmount: totalBillsBeforeNextPaycheck,
+		totalUnpaidBillsAmount,
 		nextPaycheckDate: nextPaycheckDate.toISO(),
+		secondPaycheckDate: secondPaycheckDate.toISO(),
 		isLoading: unpaidPaymentsQuery.isLoading || accountsQuery.isLoading || userSettingsQuery.isLoading || budgetItemsQuery.isLoading,
 		accountsQuery,
 		unpaidPaymentsQuery,
+		periods,
+		payAmountDollars,
 		budgetBreakdown,
 		totalBudgetProrated,
-		freeSpending,
-		daysUntilPaycheck,
+		totalDays,
 	};
 }

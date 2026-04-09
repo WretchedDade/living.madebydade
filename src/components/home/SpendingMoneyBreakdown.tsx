@@ -1,19 +1,29 @@
-import { useSpendingMoney } from "~/hooks/use-spending-money";
+import { useSpendingMoney, type PayPeriod } from "~/hooks/use-spending-money";
 import { Skeleton } from "~/components/ui/Skeleton";
-import { WalletIcon, ShoppingCartIcon } from "lucide-react";
+import { WalletIcon, CalendarIcon, ShoppingCartIcon } from "lucide-react";
 
 const formatMoney = (n: number) =>
 	n.toLocaleString("en-US", { style: "currency", currency: "USD" });
 
+function amountColor(n: number) {
+	if (n < 0) return "text-destructive";
+	if (n < 100) return "text-warning";
+	return "text-primary";
+}
+
+function amountBg(n: number) {
+	if (n < 0) return "bg-destructive/10";
+	if (n < 100) return "bg-warning/10";
+	return "bg-primary/10";
+}
+
 export function SpendingMoneyBreakdown() {
 	const {
 		totalCheckingAmount,
-		totalUnpaidBillsAmount,
-		spendingMoney,
 		freeSpending,
 		budgetBreakdown,
-		daysUntilPaycheck,
-		nextPaycheckDate,
+		periods,
+		totalDays,
 		isLoading,
 	} = useSpendingMoney();
 
@@ -28,17 +38,12 @@ export function SpendingMoneyBreakdown() {
 		);
 	}
 
-	const paycheckLabel = nextPaycheckDate
-		? new Date(nextPaycheckDate).toLocaleDateString("en-US", { month: "short", day: "numeric" })
-		: "—";
-
+	const [period1, period2] = periods;
 	const hasBudgetItems = budgetBreakdown.length > 0;
-	const finalAmount = hasBudgetItems ? freeSpending : spendingMoney;
-	const finalColor = finalAmount < 0 ? "text-destructive" : finalAmount < 100 ? "text-warning" : "text-primary";
-	const finalBg = finalAmount < 0 ? "bg-destructive/10" : finalAmount < 100 ? "bg-warning/10" : "bg-primary/10";
+	const finalAmount = hasBudgetItems ? freeSpending : period2.endBalance;
 
-	// Build running totals for the waterfall
-	let runningTotal = spendingMoney;
+	// Build running totals for budget waterfall
+	let runningTotal = period2.endBalance;
 	const waterfallSteps = budgetBreakdown.map(item => {
 		runningTotal -= item.proratedAmount;
 		return { ...item, runningTotal };
@@ -48,40 +53,35 @@ export function SpendingMoneyBreakdown() {
 		<div>
 			<div className="flex items-baseline justify-between mb-5">
 				<h2 className="text-sm font-semibold text-foreground">Spending Money</h2>
-				<span className="text-xs text-muted-foreground">
-					{daysUntilPaycheck} days until payday ({paycheckLabel})
-				</span>
+				<span className="text-xs text-muted-foreground">{totalDays}-day outlook</span>
 			</div>
 
 			<div className="space-y-4">
-				{/* Bills Section */}
-				<section className="rounded-xl bg-muted/30 px-4 py-3">
-					<h3 className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-3 flex items-center gap-2">
-						<WalletIcon className="w-3.5 h-3.5" />
-						Bills
-					</h3>
+				{/* Period 1 */}
+				<PeriodSection
+					period={period1}
+					startingBalance={totalCheckingAmount}
+					isFirst
+				/>
 
-					<div className="space-y-2">
+				{/* Paycheck */}
+				{period2.paycheckAmount > 0 && (
+					<section className="rounded-xl bg-success/10 px-4 py-2.5">
 						<div className="flex items-center justify-between">
-							<span className="text-sm text-foreground">Checking Balance</span>
-							<span className="text-sm tabular-nums text-success font-medium">{formatMoney(totalCheckingAmount)}</span>
+							<span className="text-sm text-foreground flex items-center gap-2">
+								<CalendarIcon className="w-3.5 h-3.5 text-success" />
+								Paycheck
+							</span>
+							<span className="text-sm tabular-nums text-success font-semibold">+{formatMoney(period2.paycheckAmount)}</span>
 						</div>
+					</section>
+				)}
 
-						{totalUnpaidBillsAmount > 0 && (
-							<div className="flex items-center justify-between">
-								<span className="text-sm text-foreground">Bills Due</span>
-								<span className="text-sm tabular-nums text-destructive font-medium">−{formatMoney(totalUnpaidBillsAmount)}</span>
-							</div>
-						)}
-
-						<div className="h-px bg-border/60 my-1" />
-
-						<div className="flex items-center justify-between">
-							<span className="text-sm font-semibold text-foreground">After Bills</span>
-							<span className="text-sm tabular-nums font-semibold text-foreground">{formatMoney(spendingMoney)}</span>
-						</div>
-					</div>
-				</section>
+				{/* Period 2 */}
+				<PeriodSection
+					period={period2}
+					startingBalance={period1.endBalance + period2.paycheckAmount}
+				/>
 
 				{/* Budget Items Section */}
 				{hasBudgetItems && (
@@ -93,7 +93,7 @@ export function SpendingMoneyBreakdown() {
 
 						<div className="space-y-1.5">
 							{waterfallSteps.map(step => {
-								const runningColor =
+								const color =
 									step.runningTotal < 0 ? "text-destructive"
 										: step.runningTotal < 100 ? "text-warning"
 											: "text-foreground";
@@ -108,7 +108,7 @@ export function SpendingMoneyBreakdown() {
 											<span className="text-xs tabular-nums text-muted-foreground/70">
 												−{formatMoney(step.proratedAmount)}
 											</span>
-											<span className={`text-sm tabular-nums font-medium ${runningColor} w-24 text-right`}>
+											<span className={`text-sm tabular-nums font-medium ${color} w-24 text-right`}>
 												{formatMoney(step.runningTotal)}
 											</span>
 										</div>
@@ -120,17 +120,73 @@ export function SpendingMoneyBreakdown() {
 				)}
 
 				{/* Free Spending Result */}
-				<section className={`rounded-xl ${finalBg} px-4 py-3`}>
+				<section className={`rounded-xl ${amountBg(finalAmount)} px-4 py-3`}>
 					<div className="flex items-center justify-between">
 						<span className="text-sm font-semibold text-foreground">
 							{hasBudgetItems ? "Free Spending" : "Spending Money"}
 						</span>
-						<span className={`text-xl font-bold tabular-nums ${finalColor}`}>
+						<span className={`text-xl font-bold tabular-nums ${amountColor(finalAmount)}`}>
 							{formatMoney(finalAmount)}
 						</span>
 					</div>
 				</section>
 			</div>
 		</div>
+	);
+}
+
+function PeriodSection({
+	period,
+	startingBalance,
+	isFirst,
+}: {
+	period: PayPeriod;
+	startingBalance: number;
+	isFirst?: boolean;
+}) {
+	const hasBills = period.bills.length > 0;
+
+	return (
+		<section className="rounded-xl bg-muted/30 px-4 py-3">
+			<h3 className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-3 flex items-center gap-2">
+				<WalletIcon className="w-3.5 h-3.5" />
+				{period.label}
+			</h3>
+
+			<div className="space-y-2">
+				{isFirst && (
+					<div className="flex items-center justify-between">
+						<span className="text-sm text-foreground">Checking Balance</span>
+						<span className="text-sm tabular-nums text-success font-medium">{formatMoney(startingBalance)}</span>
+					</div>
+				)}
+
+				{hasBills ? (
+					<>
+						{period.bills.map((bill, i) => (
+							<div key={`${bill.name}-${i}`} className="flex items-center justify-between">
+								<span className="text-sm text-muted-foreground">{bill.name}</span>
+								<span className="text-sm tabular-nums text-destructive font-medium">−{formatMoney(bill.amount)}</span>
+							</div>
+						))}
+					</>
+				) : (
+					<div className="flex items-center justify-between">
+						<span className="text-sm text-muted-foreground italic">No bills due</span>
+					</div>
+				)}
+
+				<div className="h-px bg-border/60 my-1" />
+
+				<div className="flex items-center justify-between">
+					<span className="text-sm font-semibold text-foreground">
+						{isFirst ? "After Bills" : "After All Bills"}
+					</span>
+					<span className={`text-sm tabular-nums font-semibold ${amountColor(period.endBalance)}`}>
+						{formatMoney(period.endBalance)}
+					</span>
+				</div>
+			</div>
+		</section>
 	);
 }
