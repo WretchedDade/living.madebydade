@@ -53,12 +53,20 @@ export function SpendingMoneyBreakdown() {
 	const netAdjustment = adjustments.reduce((sum, a) => sum + a.amount, 0);
 	const adjustedFreeSpending = freeSpending + netAdjustment;
 
-	// Track which budget items have been checked off (by name, since ephemeral)
+	// Track which budget items have been checked off
 	const checkedBudgetItems = new Set(
 		adjustments
 			.filter(a => a.id.startsWith("budget:"))
 			.map(a => a.id),
 	);
+
+	// Compute per-period adjustment totals
+	const period1AdjTotal = adjustments
+		.filter(a => a.id.startsWith("budget:0:"))
+		.reduce((sum, a) => sum + a.amount, 0);
+	const period2AdjTotal = adjustments
+		.filter(a => a.id.startsWith("budget:1:"))
+		.reduce((sum, a) => sum + a.amount, 0);
 
 	const toggleBudgetItem = (item: BudgetBreakdownItem, periodIndex: number) => {
 		const key = `budget:${periodIndex}:${item.name}`;
@@ -101,6 +109,7 @@ export function SpendingMoneyBreakdown() {
 					startingBalance={totalCheckingAmount}
 					checkedBudgetItems={checkedBudgetItems}
 					onToggleBudget={toggleBudgetItem}
+					adjustedRemaining={period1.endBalance + period1AdjTotal}
 					isFirst
 				/>
 
@@ -121,9 +130,10 @@ export function SpendingMoneyBreakdown() {
 				<PeriodSection
 					period={period2}
 					periodIndex={1}
-					startingBalance={period1.endBalance + period2.paycheckAmount}
+					startingBalance={period1.endBalance + period1AdjTotal + period2.paycheckAmount}
 					checkedBudgetItems={checkedBudgetItems}
 					onToggleBudget={toggleBudgetItem}
+					adjustedRemaining={period2.endBalance + period1AdjTotal + period2AdjTotal}
 				/>
 
 				{/* Custom Adjustments */}
@@ -191,6 +201,7 @@ function PeriodSection({
 	startingBalance,
 	checkedBudgetItems,
 	onToggleBudget,
+	adjustedRemaining,
 	isFirst,
 }: {
 	period: PayPeriod;
@@ -198,6 +209,7 @@ function PeriodSection({
 	startingBalance: number;
 	checkedBudgetItems: Set<string>;
 	onToggleBudget: (item: BudgetBreakdownItem, periodIndex: number) => void;
+	adjustedRemaining: number;
 	isFirst?: boolean;
 }) {
 	const hasBills = period.bills.length > 0;
@@ -269,8 +281,8 @@ function PeriodSection({
 
 				<div className="flex items-center justify-between">
 					<span className="text-sm font-semibold text-foreground">Remaining</span>
-					<span className={`text-sm tabular-nums font-semibold ${amountColor(period.endBalance)}`}>
-						{formatMoney(period.endBalance)}
+					<span className={`text-sm tabular-nums font-semibold ${amountColor(adjustedRemaining)}`}>
+						{formatMoney(adjustedRemaining)}
 					</span>
 				</div>
 			</div>

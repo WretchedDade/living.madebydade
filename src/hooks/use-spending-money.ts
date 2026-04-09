@@ -38,11 +38,11 @@ export interface BudgetBreakdownItem {
 	proratedAmount: number;
 }
 
-function frequencyToDays(frequency: Frequency): number {
+function occurrencesInPeriod(frequency: Frequency, days: number): number {
 	switch (frequency) {
-		case "weekly": return 7;
-		case "biweekly": return 14;
-		case "monthly": return 365 / 12;
+		case "weekly": return Math.round(days / 7);
+		case "biweekly": return Math.round(days / 14);
+		case "monthly": return Math.round(days / (365 / 12));
 	}
 }
 
@@ -169,22 +169,28 @@ export function useSpendingMoney() {
 	const period2Days = Math.max(1, Math.round(secondPaycheckDate.diff(nextPaycheckDate, "days").days));
 	const totalDays = period1Days + period2Days;
 
-	const rawBudgetItems = (budgetItemsQuery.data ?? []).map(item => {
-		const dailyRate = (item.amount / 100) / frequencyToDays(item.frequency);
-		return {
-			name: item.name,
-			icon: item.icon ?? "📦",
-			dailyRate,
-		};
-	});
+	const rawBudgetItems = (budgetItemsQuery.data ?? []).map(item => ({
+		name: item.name,
+		icon: item.icon ?? "📦",
+		amount: item.amount / 100,
+		frequency: item.frequency,
+	}));
 
 	const period1Budget: BudgetBreakdownItem[] = rawBudgetItems
-		.map(item => ({ name: item.name, icon: item.icon, proratedAmount: item.dailyRate * period1Days }))
+		.map(item => ({
+			name: item.name,
+			icon: item.icon,
+			proratedAmount: item.amount * Math.max(1, occurrencesInPeriod(item.frequency, period1Days)),
+		}))
 		.sort((a, b) => b.proratedAmount - a.proratedAmount);
 	const totalPeriod1Budget = period1Budget.reduce((sum, item) => sum + item.proratedAmount, 0);
 
 	const period2Budget: BudgetBreakdownItem[] = rawBudgetItems
-		.map(item => ({ name: item.name, icon: item.icon, proratedAmount: item.dailyRate * period2Days }))
+		.map(item => ({
+			name: item.name,
+			icon: item.icon,
+			proratedAmount: item.amount * Math.max(1, occurrencesInPeriod(item.frequency, period2Days)),
+		}))
 		.sort((a, b) => b.proratedAmount - a.proratedAmount);
 	const totalPeriod2Budget = period2Budget.reduce((sum, item) => sum + item.proratedAmount, 0);
 
@@ -228,7 +234,11 @@ export function useSpendingMoney() {
 
 	// Combined budget breakdown for compatibility
 	const budgetBreakdown: BudgetBreakdownItem[] = rawBudgetItems
-		.map(item => ({ name: item.name, icon: item.icon, proratedAmount: item.dailyRate * totalDays }))
+		.map(item => ({
+			name: item.name,
+			icon: item.icon,
+			proratedAmount: item.amount * Math.max(1, occurrencesInPeriod(item.frequency, totalDays)),
+		}))
 		.sort((a, b) => b.proratedAmount - a.proratedAmount);
 	const totalBudgetProrated = totalPeriod1Budget + totalPeriod2Budget;
 	const freeSpending = endPeriod2;
