@@ -55,14 +55,16 @@ function buildChartData({
 	// Unpaid bill IDs — only these should be subtracted in the forecast
 	const unpaidBillIds = new Set(unpaidPayments.map((p) => p.billId));
 
-	// Map unpaid bills to their due days
+	// Map unpaid bills to their effective due days (3-day lead time)
+	const LEAD_DAYS = 3;
 	const billsByDay = new Map<number, number>();
 	for (const bill of bills) {
 		if (!unpaidBillIds.has(bill._id)) continue; // already paid, skip
-		const day =
+		const rawDay =
 			bill.dueType === "EndOfMonth"
 				? daysInMonth
 				: Math.min(bill.dayDue ?? 1, daysInMonth);
+		const day = Math.max(1, rawDay - LEAD_DAYS);
 		// Only future bills affect the forecast (past unpaid ones are already reflected in balance)
 		if (day >= currentDay) {
 			billsByDay.set(day, (billsByDay.get(day) ?? 0) + (bill.amount ?? 0));

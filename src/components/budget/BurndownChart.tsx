@@ -100,13 +100,15 @@ function buildBurndownData({
 	// Paycheck days
 	const paycheckDays = new Set(getPayDaysInMonth(paySchedule, payDays, year, month));
 
-	// Bill amounts by day
+	// Bill amounts by day (3-day lead time)
+	const LEAD_DAYS = 3;
 	const billsByDay = new Map<number, number>();
 	for (const bill of bills) {
-		const day =
+		const rawDay =
 			bill.dueType === "EndOfMonth"
 				? daysInMonth
 				: Math.min(bill.dayDue ?? 1, daysInMonth);
+		const day = Math.max(1, rawDay - LEAD_DAYS);
 		billsByDay.set(day, (billsByDay.get(day) ?? 0) + (bill.amount ?? 0));
 	}
 

@@ -38,13 +38,21 @@ function BillsPage() {
 	const totalMonthly = allBills.reduce((sum, b) => sum + (b.amount ?? 0), 0);
 	const autoPayCount = allBills.filter(b => b.isAutoPay).length;
 
-	// Group bills by paycheck period (semimonthly: 1st–14th vs 15th–EOM)
-	const firstPaycheck = allBills.filter(b =>
-		b.dueType === "Fixed" && b.dayDue !== undefined && b.dayDue < 15,
-	);
-	const secondPaycheck = allBills.filter(b =>
-		b.dueType === "EndOfMonth" || (b.dueType === "Fixed" && b.dayDue !== undefined && b.dayDue >= 15),
-	);
+	// Group bills by paycheck period using 3-day lead time
+	// A bill due on the 1st (lead day = 29th prev month) → 2nd paycheck
+	const LEAD_DAYS = 3;
+	const firstPaycheck = allBills.filter(b => {
+		if (b.dueType === "EndOfMonth") return false;
+		if (b.dayDue == null) return false;
+		const effectiveDay = b.dayDue - LEAD_DAYS;
+		return effectiveDay >= 1 && effectiveDay < 15;
+	});
+	const secondPaycheck = allBills.filter(b => {
+		if (b.dueType === "EndOfMonth") return true;
+		if (b.dayDue == null) return false;
+		const effectiveDay = b.dayDue - LEAD_DAYS;
+		return effectiveDay < 1 || effectiveDay >= 15;
+	});
 
 	return (
 		<AppLayout>
