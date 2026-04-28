@@ -264,8 +264,8 @@ const createUpcomingPaymentsForBills = async (ctx: GenericActionCtx<DataModel>, 
 		}
 
 		const daysUntilDue = nextPaymentDate.diff(today, "days").days;
-		if (daysUntilDue > 35) {
-			console.log(`Skipping bill ${bill.name} because it is more than 35 days away`);
+		if (daysUntilDue > 15) {
+			console.log(`Skipping bill ${bill.name} because it is more than 15 days away`);
 			continue;
 		}
 
