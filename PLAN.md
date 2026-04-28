@@ -133,10 +133,49 @@ public record SpendingForecast(
 ## Pages (v1)
 
 1. **Home** — `SpendingForecast` card (balance, bills due before paycheck, money left, payday) + upcoming bills list + accounts list. That's the entire page.
-2. **Bills** — list/edit bills, mark paid, see paid history.
-3. **Settings** — pay schedule, lead days, link/unlink Plaid items.
+2. **Bills** — list/edit/add bills, mark paid, see paid history, toggle auto-pay.
+3. **Bank** — link a Plaid item, see linked institutions, unlink. Re-uses existing `/bank/setup` and `/bank/success/:itemId` flow shape.
+4. **Settings** — pay schedule, pay days, lead days, theme.
 
 That's it for v1. No charts, no breakdowns, no burndown.
+
+## Features preserved from the current app
+
+Carry over only what helps answer "what's due, what's paid, do I have enough":
+
+- **Bills CRUD** — name, amount, frequency (monthly/biweekly/weekly/yearly), due-day rule (day-of-month / end-of-month / day-of-week), auto-pay flag, active flag
+- **BillPayment occurrences** — generated forward from bills, marked paid manually or inferred from a Plaid transaction match
+- **"Mark paid" action** with paid history visible per bill
+- **Auto-pay vs manual** distinction surfaced in the upcoming bills list
+- **Plaid linking flow** — link item, list institutions, unlink, transactions sync via webhook
+- **Multi-account balance display** — checking, savings, credit; pulled from Plaid
+- **Configurable pay schedule** — semimonthly / biweekly / weekly / monthly with `payDays[]` and `billLeadDays`
+- **Light/dark theme toggle** — system default, user override
+- **Responsive layout** — desktop sidebar, mobile bottom nav, mobile header
+
+### Explicitly dropped
+
+- Budget items / prorated category buckets
+- Monthly cash/credit summaries page
+- Spending category breakdown and trend charts
+- Recent activity feed (bill added/due/paid/removed/updated accordions)
+- Quests / gamification
+- Hero "spending background chart"
+
+## UI/UX vibe (carry forward)
+
+The current app's look and feel is the one part that genuinely worked. Keep it:
+
+- **Typography:** Nunito as the sans-serif body font. Tabular numerals for any monetary figure.
+- **Color system:** semantic CSS custom-property tokens — `background`, `foreground`, `primary`, `secondary`, `accent`, `muted`, `card`, plus state colors `success`, `warning`, `destructive`, `info`. Both light and dark mode driven by a `.dark` class on the root.
+- **Cards over chrome:** surfaces use a 1.5px border *or* a soft elevated shadow, not both. Rounded corners via a single `--radius` token.
+- **Hero pattern:** the home page leads with a single high-contrast "answer" — the spending money number — sitting on a soft `from-primary/10 via-card to-accent/6` gradient with a couple of large blurred decorative blobs. Big, calm, immediately readable.
+- **State coloring on the headline number:** green/primary when healthy, amber/warning when low, red/destructive when negative. The number tells you the answer at a glance before you read anything else.
+- **Layout:** desktop sidebar nav, mobile bottom nav + sticky header. App shell is `h-screen flex` with a scroll container in the middle.
+- **Density:** generous padding on mobile (`px-6 py-12`), tighter on desktop. Lists use card rows, not table rows.
+- **Motion:** minimal — Radix-style accordion expand/collapse only. No page transitions.
+
+In Blazor terms: one shared `MainLayout.razor` with the sidebar/bottom nav, a `Card.razor` component for the surface treatment, a `MoneyFigure.razor` for tabular-nums currency rendering with state coloring, and a `HeroBackdrop.razor` for the gradient + blobs treatment used by the home page.
 
 ## Cost model
 
