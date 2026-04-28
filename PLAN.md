@@ -43,6 +43,22 @@ A clean-slate rebuild of the bills/spending tracker. Goal: keep the things that 
 - `aspire publish` generates the deployment artifacts — less hand-rolled IaC
 - Built-in OTel/dashboard makes the "what's slow / what's failing" answer obvious from day one
 
+### Persistence on ACA — how SQLite survives redeploys
+
+ACA consumption containers are ephemeral — the filesystem is wiped on redeploy, replica restart, or scale-to-zero wake. The SQLite *file* doesn't survive; the *data* does, via Litestream:
+
+- Container entrypoint runs `litestream restore` against the Blob bucket before the app starts, pulling down the latest snapshot + WAL
+- App opens SQLite normally; Litestream runs as a sidecar process streaming WAL frames to Blob continuously
+- On the next start (redeploy, cold wake), restore happens again — fresh container, same data
+
+Constraints this imposes:
+- **Single writer only.** Pin `minReplicas=0, maxReplicas=1` on the Container App. SQLite + multi-replica = corruption.
+- **Cold start adds a few seconds for restore.** Fine for personal use; if Plaid webhook latency ever matters, set `minReplicas=1` (still cheap on consumption).
+
+Escape hatches if this gets gross:
+- ACA volume mount to Azure Files (persistent, slower I/O, ~couple bucks/mo)
+- Postgres Flexible Server Burstable B1ms (~$13/mo, no acrobatics)
+
 ## Domain model (sketch)
 
 ```
