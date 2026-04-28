@@ -20,18 +20,26 @@ A clean-slate rebuild of the bills/spending tracker. Goal: keep the things that 
 
 | Layer | Choice | Notes |
 |---|---|---|
-| Frontend | Vite + React + TypeScript | Tailwind for styling. No design system framework. |
-| API | ASP.NET Core minimal API (.NET 9) | Single project. EF Core for data access. |
+| App | Blazor with **static SSR** as default render mode (.NET 9) | Single ASP.NET Core app — Blazor pages, minimal-API endpoints for Plaid webhooks, EF Core for data. No separate frontend. |
+| Interactivity | Per-component opt-in (`InteractiveServer` only where needed) | Default is server-rendered HTML. Components like the "mark paid" button or Plaid Link launcher opt in. No app-wide SignalR. |
+| Styling | Tailwind CSS via the Tailwind CLI | No design system framework. |
 | DB | SQLite via EF Core, with Litestream replication to Azure Blob | Single-user app fits in a SQLite file. Cheap, simple, durable enough. |
 | Auth | Microsoft Entra External ID (free tier) OR cookie auth on a single-user table | Lean toward Entra so I learn it. No Clerk. |
 | Bank data | Plaid (keep — current cost is negligible) | Server-side only. Webhook for transaction updates. |
-| Orchestration | .NET Aspire AppHost | Local dev: AppHost orchestrates API + Vite. Publish: `aspire publish` → Azure Container Apps + Static Web Apps. |
-| Hosting | Azure (use existing credits, fall back to free tier) | API on Azure Container Apps (consumption, scale-to-zero). Frontend on Azure Static Web Apps free tier. SQLite file lives on the ACA container with Litestream pushing to Blob. |
+| Orchestration | .NET Aspire AppHost | Local dev: AppHost orchestrates the Blazor app + any future deps (Plaid mock, etc.). Publish: `aspire publish` → Azure Container Apps. |
+| Hosting | Azure (use existing credits, fall back to free tier) | One Azure Container App (consumption, scale-to-zero) hosts the whole thing. SQLite file lives in the container with Litestream pushing to Blob. |
 | Observability | Aspire dashboard locally; Application Insights free tier in Azure | OTel out of the box via Aspire. |
+
+### Why Blazor SSR over React
+
+- **One app, one deploy.** No SPA build pipeline, no API contract to keep in sync, no two languages.
+- **Server-rendered by default** — first paint is fast even on ACA scale-to-zero cold start. No hydration cliff.
+- **Component model** like React (`<SpendingForecastCard />`, `<UpcomingBillsList />`) but C# end-to-end.
+- **Interactivity is opt-in per component**, not all-or-nothing. The 2–3 places that actually need it (mark paid, Plaid Link launch) get `@rendermode="InteractiveServer"`; everything else stays static HTML.
 
 ### Why Aspire
 
-- Local dev parity with prod: one `aspire run` spins up API, frontend, and any future dependencies (Plaid mock, Postgres if I outgrow SQLite, etc.)
+- Local dev parity with prod: one `aspire run` spins up the app and any future deps (Plaid mock, Postgres if I outgrow SQLite, etc.)
 - `aspire publish` generates the deployment artifacts — less hand-rolled IaC
 - Built-in OTel/dashboard makes the "what's slow / what's failing" answer obvious from day one
 
@@ -85,29 +93,26 @@ Transaction              -- only what's needed; no aggregates
   - pending
 ```
 
-### Spending money — server-computed, versioned
+### Spending money — single source of truth
 
 The pain point in the old app was that the calc lived in a React hook. Every UI change risked changing the math.
 
-Here, the API exposes:
+Here, a `SpendingForecastService` in the app produces a `SpendingForecast` record:
 
-```
-GET /api/spending-forecast
-  → {
-      asOf,
-      formulaVersion: "v1",
-      checkingBalance,
-      nextPaycheckDate,
-      billsBeforeNextPaycheck: [{ name, amount, dateDue, effectiveDate }],
-      totalBillsBeforeNextPaycheck,
-      spendingMoney
-    }
+```csharp
+public record SpendingForecast(
+    DateTimeOffset AsOf,
+    string FormulaVersion,            // "v1"
+    decimal CheckingBalance,
+    DateOnly NextPaycheckDate,
+    IReadOnlyList<BillDueBeforePaycheck> Bills,
+    decimal TotalBillsBeforeNextPaycheck,
+    decimal SpendingMoney);
 ```
 
-- Formula lives in one place, behind one DTO
-- Versioned so I can introduce a v2 without breaking v1 callers
-- Trivially testable in C# (no React Testing Library gymnastics)
-- Frontend just renders it
+- Formula lives in one place, in C#, easily unit-testable
+- Versioned so a future v2 doesn't silently change semantics
+- Pages/components consume the record — they never recompute
 
 ## Pages (v1)
 
@@ -123,12 +128,11 @@ Estimated monthly cost in Azure with current usage pattern (single user, low tra
 
 | Service | Cost |
 |---|---|
-| Azure Static Web Apps (Free) | $0 |
 | Azure Container Apps (consumption, scale-to-zero) | ~$0–$2 |
 | Azure Blob Storage (Litestream backup) | <$0.10 |
 | Application Insights (free tier, 5GB/mo) | $0 |
 | Plaid | $0 (current) |
-| **Total** | **<$3/mo, fully covered by Azure credits** |
+| **Total** | **<$2/mo, fully covered by Azure credits** |
 
 ## Migration / cutover
 
@@ -140,9 +144,9 @@ Estimated monthly cost in Azure with current usage pattern (single user, low tra
 
 - [ ] SQLite + Litestream vs. PostgreSQL Flexible Server (Burstable B1ms is ~$13/mo, not free but more familiar). Lean SQLite for v1, escape hatch to Postgres if I need it.
 - [ ] Entra External ID vs. cookie auth on a single-user table. Entra is more learning, cookie is more pragmatic for a single user.
-- [ ] React Router vs. TanStack Router. Current app uses TanStack Start; for a non-SSR app, plain React Router + Vite is simpler.
-- [ ] Server state: TanStack Query vs. just `fetch` in a small app. Probably TanStack Query — caching is genuinely useful even at this scale.
-- [ ] Where does the Plaid webhook land in scale-to-zero? ACA cold start on webhook = potential delay. Acceptable for personal use, but worth noting.
+- [ ] Tailwind in a Blazor project — straightforward via the Tailwind CLI watching the project's content paths, but worth confirming the Aspire publish flow handles the CSS build step.
+- [ ] Plaid webhook + ACA scale-to-zero: cold start could delay the webhook response. Acceptable for personal use, but worth measuring. Fallback: keep min replicas at 1 (cheap on consumption).
+- [ ] Should `SpendingForecast` be a cached read model (rebuilt on bill/account change) or recomputed on each request? Recompute for v1; revisit if it's measurable.
 
 ## Out of scope for v1 (revisit later)
 
